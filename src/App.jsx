@@ -382,7 +382,7 @@ export default function App(){
   const[result,setResult]=useState(null);
   const[err,setErr]=useState('');
   const[tab,setTab]=useState('schedule');
-  const[chat,setChat]=useState([{role:'assistant',content:"Hi! I'm your Absovex AI Advisor.\n\nYour plan is ready. Ask me anything about your medications, timing, or interactions — or share any adjustments you'd like to make before downloading."}]);
+  const[chat,setChat]=useState([{role:'assistant',content:"Hi, I'm your Absovex AI Advisor.\n\nI'm here to help you understand and refine your plan before you download.\n\nAsk about:\n• timing and spacing\n• interactions or conflicts\n• how to take something for better absorption\n\nIf something looks off or missing, I can help improve your schedule."}]);
   const[chatIn,setChatIn]=useState('');
   const[chatLoad,setChatLoad]=useState(false);
   const chatEnd=useRef(null);
@@ -1019,7 +1019,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
       {id:'schedule',label:'Schedule'},
       {id:'conflicts',label:`Conflicts (${(a.conflicts||[]).length})`},
       {id:'recommendations',label:'Recommendations'},
-      {id:'chat',label:'AI Advisor',pink:true},
+      {id:'chat',label:'Absovex AI Advisor',pink:true},
     ];
     return(
       <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
@@ -1054,7 +1054,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         <div style={{maxWidth:700,margin:'0 auto',padding:'20px'}}>
           <div onClick={()=>setTab('chat')} style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:10,padding:'10px 16px',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:8}}>
             <span style={{fontSize:14}}>✨</span>
-            <span style={{fontSize:13,color:'#C0186A',fontWeight:600}}>Review your plan with the AI Advisor before downloading.</span>
+            <span style={{fontSize:13,color:'#C0186A',fontWeight:600}}>Optimize your plan with the Absovex AI Advisor before you download.</span>
           </div>
           <div style={{display:'flex',gap:8,marginBottom:20,background:'white',padding:'6px',borderRadius:12,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:`1px solid ${C.g200}`,overflowX:'auto'}}>
             {tabs.map(t=>{
