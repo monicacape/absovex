@@ -560,6 +560,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
   if(screen==='welcome')return(
     <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
       <div style={{maxWidth:540,textAlign:'center'}}>
+        <div style={{marginBottom:24}}><LogoHeader/></div>
         <div style={{marginBottom:20}}>
           <div style={{width:80,height:80,borderRadius:'50%',background:C.tealBg,border:`2px solid ${C.tealBorder}`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
             {Ic.molecule()}
@@ -568,7 +569,8 @@ Return this JSON with SHORT values, maximum 10 words per text field:
         <h1 style={{margin:'0 0 12px',fontSize:36,fontWeight:800,color:C.g900}}>Your Medication Optimizer</h1>
         <p style={{margin:'0 0 28px',fontSize:16,color:C.g600,lineHeight:1.6}}>Get a personalized daily schedule that minimizes conflicts and maximizes absorption for all your medications, supplements, and vitamins.</p>
         <button onClick={()=>setScreen('input')} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:14,padding:18,fontSize:18,fontWeight:800,cursor:'pointer',marginBottom:12,boxShadow:'0 4px 15px rgba(13,126,122,0.2)'}}>Start Your Optimization</button>
-        <p style={{fontSize:13,color:C.g400,margin:0}}>Takes about 3-5 minutes. No account needed.</p>
+        <p style={{fontSize:13,color:C.g400,margin:'0 0 8px'}}>Takes about 3-5 minutes. No account needed.</p>
+        <p style={{fontSize:13,color:C.g500,margin:0}}>🔒 Your data is private and never stored.</p>
       </div>
     </div>
   );
@@ -583,9 +585,15 @@ Return this JSON with SHORT values, maximum 10 words per text field:
         </div>
       </div>
       <div style={{maxWidth:720,margin:'0 auto',padding:'20px 16px'}}>
-        <div style={{background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:10,padding:'10px 16px',marginBottom:14,display:'flex',gap:10,alignItems:'center'}}>
-          {Ic.signal()}
-          <span style={{fontSize:12,fontWeight:700,color:C.blue}}>Live Drug Database - FDA - RxNorm - DailyMed</span>
+        <div style={{display:'flex',gap:10,marginBottom:14}}>
+          <div style={{flex:1,background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:10,padding:'10px 16px',display:'flex',gap:10,alignItems:'center'}}>
+            {Ic.signal()}
+            <span style={{fontSize:12,fontWeight:700,color:C.blue}}>Live Drug Database - FDA - RxNorm - DailyMed</span>
+          </div>
+          <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:10,padding:'10px 16px',display:'flex',gap:8,alignItems:'center',whiteSpace:'nowrap'}}>
+            <span style={{fontSize:14}}>🔒</span>
+            <span style={{fontSize:12,fontWeight:700,color:C.primary}}>Your data is private and never stored</span>
+          </div>
         </div>
         <div style={{background:'white',borderRadius:14,padding:'22px',boxShadow:'0 2px 8px rgba(0,0,0,0.07)',marginBottom:14}}>
           <h2 style={{margin:'0 0 6px',fontSize:18,fontWeight:800,color:C.g900}}>Your Current Health Stack</h2>
@@ -664,7 +672,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
         <button onClick={()=>{const f=items.filter(i=>i.name.trim());if(f.length<2){setErr('Please add at least 2 items.');return;}setErr('');setScreen('routine');}} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:15,fontSize:16,fontWeight:800,cursor:'pointer'}}>
           Next: Set My Daily Routine
         </button>
-        <p style={{textAlign:'center',color:C.g400,fontSize:12,marginTop:8}}>Your data is private and never stored.</p>
+        <p style={{textAlign:'center',color:C.g500,fontSize:13,marginTop:8}}>🔒 Your data is private and never stored.</p>
       </div>
     </div>
   );
