@@ -560,7 +560,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
   if(screen==='welcome')return(
     <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
       <div style={{maxWidth:540,textAlign:'center'}}>
-        <div style={{marginBottom:24}}><LogoHeader/></div>
+        <div style={{marginBottom:24}}><img src="/Logo.png" alt="Absovex" style={{height:60,width:'auto'}}/></div>
         <div style={{marginBottom:20}}>
           <div style={{width:80,height:80,borderRadius:'50%',background:C.tealBg,border:`2px solid ${C.tealBorder}`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
             {Ic.molecule()}
@@ -570,7 +570,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
         <p style={{margin:'0 0 28px',fontSize:16,color:C.g600,lineHeight:1.6}}>Get a personalized daily schedule that minimizes conflicts and maximizes absorption for all your medications, supplements, and vitamins.</p>
         <button onClick={()=>setScreen('input')} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:14,padding:18,fontSize:18,fontWeight:800,cursor:'pointer',marginBottom:12,boxShadow:'0 4px 15px rgba(13,126,122,0.2)'}}>Start Your Optimization</button>
         <p style={{fontSize:13,color:C.g400,margin:'0 0 8px'}}>Takes about 3-5 minutes. No account needed.</p>
-        <p style={{fontSize:13,color:C.g500,margin:0}}>🔒 Your data is private and never stored.</p>
+        <p style={{fontSize:13,color:C.g500,margin:0}}>Your data is private and never stored.</p>
       </div>
     </div>
   );
@@ -672,7 +672,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
         <button onClick={()=>{const f=items.filter(i=>i.name.trim());if(f.length<2){setErr('Please add at least 2 items.');return;}setErr('');setScreen('routine');}} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:15,fontSize:16,fontWeight:800,cursor:'pointer'}}>
           Next: Set My Daily Routine
         </button>
-        <p style={{textAlign:'center',color:C.g500,fontSize:13,marginTop:8}}>🔒 Your data is private and never stored.</p>
+        <p style={{textAlign:'center',color:C.g500,fontSize:13,marginTop:8}}>Your data is private and never stored.</p>
       </div>
     </div>
   );
