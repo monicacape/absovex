@@ -31,7 +31,6 @@ const SEV={
   low:{color:C.sky,bg:C.skyBg,label:'Low'}
 };
 
-// SVG icon library - no emojis
 const Ic = {
   person:(c=C.primary)=><svg width={20} height={20} viewBox="0 0 24 24" fill="none"><circle cx={12} cy={8} r={4} stroke={c} strokeWidth={2}/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke={c} strokeWidth={2} strokeLinecap="round"/></svg>,
   sun:(c=C.primary)=><svg width={20} height={20} viewBox="0 0 24 24" fill="none"><circle cx={12} cy={12} r={4} stroke={c} strokeWidth={2}/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke={c} strokeWidth={2} strokeLinecap="round"/></svg>,
@@ -48,19 +47,16 @@ const Ic = {
   check:(c='white')=><svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke={c} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>,
   lock:(c=C.pink)=><svg width={24} height={24} viewBox="0 0 24 24" fill="none"><rect x={3} y={11} width={18} height={11} rx={2} stroke={c} strokeWidth={2}/><path d="M7 11V7a5 5 0 0110 0v4" stroke={c} strokeWidth={2} strokeLinecap="round"/></svg>,
   download:(c='white')=><svg width={18} height={18} viewBox="0 0 24 24" fill="none"><path d="M12 3v13M7 11l5 5 5-5" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/><path d="M4 20h16" stroke={c} strokeWidth={2} strokeLinecap="round"/></svg>,
-  chevronR:(c=C.g400)=><svg width={16} height={16} viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>,
-  warning:(c=C.amber)=><svg width={16} height={16} viewBox="0 0 24 24" fill="none"><path d="M12 2L2 19h20L12 2z" stroke={c} strokeWidth={2} strokeLinejoin="round"/><path d="M12 9v5" stroke={c} strokeWidth={2} strokeLinecap="round"/><circle cx={12} cy={17} r={1} fill={c}/></svg>,
-  chat:(c=C.primary)=><svg width={18} height={18} viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke={c} strokeWidth={2} strokeLinejoin="round"/></svg>,
   send:(c=C.primary)=><svg width={18} height={18} viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke={c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>,
 };
 
 const fmtTime=str=>{
   if(!str)return str;
   return str.replace(/\b(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?\b/g,(match,h,m,mer)=>{
-    let hour=parseInt(h),h24,h12,suf;
-    if(mer){suf=mer.toUpperCase();h12=hour;h24=suf==='AM'&&hour===12?0:suf==='PM'&&hour!==12?hour+12:hour;}
-    else{h24=hour;if(h24===0){h12=12;suf='AM';}else if(h24<12){h12=h24;suf='AM';}else if(h24===12){h12=12;suf='PM';}else{h12=h24-12;suf='PM';}}
-    return `${h12}:${m} ${suf} [${String(h24).padStart(2,'0')}:${m}]`;
+    let hour=parseInt(h),h12,suf;
+    if(mer){suf=mer.toUpperCase();h12=hour;}
+    else{if(hour===0){h12=12;suf='AM';}else if(hour<12){h12=hour;suf='AM';}else if(hour===12){h12=12;suf='PM';}else{h12=hour-12;suf='PM';}}
+    return `${h12}:${m} ${suf}`;
   });
 };
 
@@ -134,6 +130,7 @@ const MED_DB=[
   {name:'Losartan',type:'medication',dose:'50mg',aliases:'cozaar arb blood pressure'},
   {name:'Amlodipine',type:'medication',dose:'5mg',aliases:'norvasc calcium channel'},
   {name:'Metoprolol',type:'medication',dose:'25mg',aliases:'toprol lopressor beta blocker heart'},
+  {name:'Nebivolol',type:'medication',dose:'5mg',aliases:'bystolic beta blocker blood pressure heart'},
   {name:'Hydrochlorothiazide',type:'medication',dose:'25mg',aliases:'hctz diuretic water pill'},
   {name:'Furosemide',type:'medication',dose:'20mg',aliases:'lasix diuretic'},
   {name:'Warfarin',type:'medication',dose:'5mg',aliases:'coumadin blood thinner'},
@@ -147,6 +144,7 @@ const MED_DB=[
   {name:'Levothyroxine',type:'medication',dose:'50mcg',aliases:'synthroid thyroid t4 hypothyroid'},
   {name:'Liothyronine',type:'medication',dose:'5mcg',aliases:'cytomel thyroid t3'},
   {name:'Armour Thyroid',type:'medication',dose:'30mg',aliases:'ndt natural desiccated thyroid'},
+  {name:'Tibolone',type:'medication',dose:'2.5mg',aliases:'tibolona livial hormone hrt menopause postmenopause'},
   {name:'Omeprazole',type:'medication',dose:'20mg',aliases:'prilosec ppi acid reflux gerd'},
   {name:'Pantoprazole',type:'medication',dose:'40mg',aliases:'protonix ppi acid reflux'},
   {name:'Esomeprazole',type:'medication',dose:'40mg',aliases:'nexium ppi acid'},
@@ -183,8 +181,11 @@ const MED_DB=[
   {name:'Zolpidem',type:'medication',dose:'5mg',aliases:'ambien sleep insomnia'},
   {name:'Colchicine',type:'medication',dose:'0.6mg',aliases:'colcrys gout'},
   {name:'Allopurinol',type:'medication',dose:'100mg',aliases:'zyloprim gout uric acid'},
-  {name:'Vitamin D3',type:'vitamin',dose:'2000 IU',aliases:'cholecalciferol sunshine vitamin'},
-  {name:'Vitamin D3 5000 IU',type:'vitamin',dose:'5000 IU',aliases:'cholecalciferol high dose'},
+  {name:'Vitamin D3',type:'vitamin',dose:'2000 IU',aliases:'cholecalciferol sunshine vitamin d'},
+  {name:'Vitamin D3 5000 IU',type:'vitamin',dose:'5000 IU',aliases:'cholecalciferol high dose d3'},
+  {name:'Vitamin D3 10000 IU',type:'vitamin',dose:'10000 IU',aliases:'cholecalciferol high dose d3'},
+  {name:'Vitamin D3 + K2 (5000 IU/100mcg)',type:'vitamin',dose:'5000 IU/100mcg',aliases:'d3 k2 combo bone heart menaquinone'},
+  {name:'Vitamin D3 + K2 (10000 IU/200mcg)',type:'vitamin',dose:'10000 IU/200mcg',aliases:'d3 k2 combo high dose bone heart menaquinone'},
   {name:'Vitamin C',type:'vitamin',dose:'500mg',aliases:'ascorbic acid immune'},
   {name:'Vitamin B12 (Methylcobalamin)',type:'vitamin',dose:'1000mcg',aliases:'methyl b12 energy nerve'},
   {name:'Vitamin B12 (Cyanocobalamin)',type:'vitamin',dose:'1000mcg',aliases:'cyano b12'},
@@ -192,7 +193,7 @@ const MED_DB=[
   {name:'Vitamin B Complex',type:'vitamin',dose:'1 capsule',aliases:'b vitamins energy stress'},
   {name:'Vitamin A',type:'vitamin',dose:'5000 IU',aliases:'retinol eye immune'},
   {name:'Vitamin E',type:'vitamin',dose:'400 IU',aliases:'tocopherol antioxidant'},
-  {name:'Vitamin K2 (MK-7)',type:'vitamin',dose:'100mcg',aliases:'menaquinone bone heart'},
+  {name:'Vitamin K2 (MK-7)',type:'vitamin',dose:'100mcg',aliases:'menaquinone bone heart k2'},
   {name:'Folate (Methylfolate)',type:'vitamin',dose:'400mcg',aliases:'5-mthf methylated folic acid pregnancy'},
   {name:'Folic Acid',type:'vitamin',dose:'400mcg',aliases:'folate b9 pregnancy'},
   {name:'Biotin',type:'vitamin',dose:'5000mcg',aliases:'b7 hair nails skin'},
@@ -202,45 +203,37 @@ const MED_DB=[
   {name:'Magnesium Glycinate',type:'mineral',dose:'400mg',aliases:'chelated magnesium sleep anxiety calm'},
   {name:'Magnesium Citrate',type:'mineral',dose:'400mg',aliases:'magnesium constipation'},
   {name:'Magnesium Malate',type:'mineral',dose:'400mg',aliases:'magnesium energy fibromyalgia'},
-  {name:'Magnesium L-Threonate',type:'mineral',dose:'2g',aliases:'magtein brain cognitive'},
-  {name:'Zinc Picolinate',type:'mineral',dose:'15mg',aliases:'zinc immune testosterone'},
-  {name:'Zinc Bisglycinate',type:'mineral',dose:'15mg',aliases:'zinc chelated gentle'},
-  {name:'Iron (Ferrous Sulfate)',type:'mineral',dose:'65mg',aliases:'iron ferrous anemia'},
-  {name:'Iron (Ferrous Bisglycinate)',type:'mineral',dose:'25mg',aliases:'iron gentle anemia chelated'},
-  {name:'Calcium Citrate',type:'mineral',dose:'500mg',aliases:'calcium bone osteoporosis'},
-  {name:'Calcium Carbonate',type:'mineral',dose:'500mg',aliases:'calcium tums bone'},
-  {name:'Potassium Citrate',type:'mineral',dose:'99mg',aliases:'potassium electrolyte heart'},
-  {name:'Selenium',type:'mineral',dose:'200mcg',aliases:'selenium thyroid antioxidant'},
-  {name:'Chromium Picolinate',type:'mineral',dose:'200mcg',aliases:'chromium blood sugar insulin'},
-  {name:'Iodine',type:'mineral',dose:'150mcg',aliases:'iodine thyroid'},
-  {name:'Boron',type:'mineral',dose:'3mg',aliases:'boron testosterone bone estrogen'},
-  {name:'Lithium Orotate',type:'mineral',dose:'5mg',aliases:'low dose lithium mood brain'},
-  {name:'Fish Oil Omega-3',type:'supplement',dose:'1000mg',aliases:'omega3 epa dha heart brain'},
-  {name:'CoQ10 (Ubiquinol)',type:'supplement',dose:'100mg',aliases:'coq10 heart energy mitochondria statin'},
-  {name:'Alpha Lipoic Acid',type:'supplement',dose:'300mg',aliases:'ala antioxidant nerve blood sugar'},
-  {name:'NAC (N-Acetyl Cysteine)',type:'supplement',dose:'600mg',aliases:'n acetyl cysteine glutathione liver'},
-  {name:'Glutathione',type:'supplement',dose:'250mg',aliases:'master antioxidant liver detox'},
-  {name:'Collagen Peptides',type:'supplement',dose:'10g',aliases:'collagen skin hair joints'},
-  {name:'Probiotics',type:'supplement',dose:'10 billion CFU',aliases:'probiotic gut microbiome digestive'},
-  {name:'Melatonin',type:'supplement',dose:'3mg',aliases:'sleep circadian hormone'},
-  {name:'Melatonin Low Dose',type:'supplement',dose:'0.5mg',aliases:'sleep low dose melatonin'},
-  {name:'5-HTP',type:'supplement',dose:'100mg',aliases:'serotonin mood sleep depression'},
-  {name:'DHEA',type:'supplement',dose:'25mg',aliases:'hormone adrenal energy libido menopause'},
-  {name:'Berberine',type:'supplement',dose:'500mg',aliases:'blood sugar cholesterol metformin natural'},
-  {name:'Quercetin',type:'supplement',dose:'500mg',aliases:'antioxidant anti-inflammatory allergy'},
-  {name:'Resveratrol',type:'supplement',dose:'250mg',aliases:'antioxidant longevity red wine'},
-  {name:'NMN',type:'supplement',dose:'250mg',aliases:'nad longevity energy'},
-  {name:'L-Theanine',type:'supplement',dose:'200mg',aliases:'calm focus anxiety sleep coffee'},
-  {name:'L-Carnitine',type:'supplement',dose:'500mg',aliases:'energy fat burning heart muscle'},
-  {name:'Creatine Monohydrate',type:'supplement',dose:'5g',aliases:'creatine muscle strength brain'},
-  {name:'Glucosamine Sulfate',type:'supplement',dose:'1500mg',aliases:'joint cartilage arthritis'},
-  {name:'Hyaluronic Acid',type:'supplement',dose:'120mg',aliases:'joints skin hydration'},
-  {name:'Spirulina',type:'supplement',dose:'3g',aliases:'algae protein detox superfood'},
-  {name:'Ashwagandha (KSM-66)',type:'herb',dose:'600mg',aliases:'adaptogen stress cortisol thyroid withania'},
-  {name:'Turmeric / Curcumin',type:'herb',dose:'500mg',aliases:'anti-inflammatory pain joint curcuma'},
-  {name:'Rhodiola Rosea',type:'herb',dose:'400mg',aliases:'adaptogen fatigue energy stress'},
-  {name:'Lions Mane Mushroom',type:'herb',dose:'500mg',aliases:'brain nerve cognitive memory'},
-  {name:'Reishi Mushroom',type:'herb',dose:'500mg',aliases:'immune sleep adaptogen'},
+  {name:'Magnesium Threonate',type:'mineral',dose:'2g',aliases:'magtein brain cognition blood brain barrier'},
+  {name:'Magnesium Taurate',type:'mineral',dose:'400mg',aliases:'heart cardiovascular'},
+  {name:'Zinc Picolinate',type:'mineral',dose:'15mg',aliases:'zinc immune'},
+  {name:'Iron (Ferrous Sulfate)',type:'mineral',dose:'65mg',aliases:'iron absorption blood'},
+  {name:'Iron (Ferrous Bisglycinate)',type:'mineral',dose:'25mg',aliases:'chelated iron gentle'},
+  {name:'Copper',type:'mineral',dose:'2mg',aliases:'trace mineral'},
+  {name:'Selenium',type:'mineral',dose:'200mcg',aliases:'selenomethionine thyroid immune'},
+  {name:'Iodine',type:'mineral',dose:'150mcg',aliases:'potassium iodide thyroid'},
+  {name:'Chromium',type:'mineral',dose:'200mcg',aliases:'blood sugar glucose'},
+  {name:'Fish Oil Omega-3',type:'supplement',dose:'1000mg',aliases:'epa dha omega 3 heart brain'},
+  {name:'Krill Oil',type:'supplement',dose:'1000mg',aliases:'astaxanthin omega 3'},
+  {name:'Alpha-Lipoic Acid',type:'supplement',dose:'300mg',aliases:'ala antioxidant blood sugar'},
+  {name:'NAC (N-Acetyl Cysteine)',type:'supplement',dose:'600mg',aliases:'acetylcysteine antioxidant glutathione'},
+  {name:'Milk Thistle',type:'supplement',dose:'300mg',aliases:'silymarin liver detox'},
+  {name:'Spirulina',type:'supplement',dose:'1000mg',aliases:'algae protein detox'},
+  {name:'Chlorella',type:'supplement',dose:'1000mg',aliases:'algae detox'},
+  {name:'Activated Charcoal',type:'supplement',dose:'500mg',aliases:'detox gas bloating'},
+  {name:'Psyllium Husk',type:'supplement',dose:'5g',aliases:'fiber digestion prebiotic'},
+  {name:'Slippery Elm',type:'supplement',dose:'400mg',aliases:'digestion gut inflammation'},
+  {name:'L-Glutamine',type:'supplement',dose:'5g',aliases:'amino acid gut healing'},
+  {name:'Collagen Peptides',type:'supplement',dose:'10g',aliases:'type 1 3 skin joints'},
+  {name:'Creatine Monohydrate',type:'supplement',dose:'5g',aliases:'muscle strength cognition'},
+  {name:'Beta-Alanine',type:'supplement',dose:'3g',aliases:'endurance muscle'},
+  {name:'Whey Protein',type:'supplement',dose:'25g',aliases:'protein muscle'},
+  {name:'Ashwagandha (KSM-66)',type:'herb',dose:'600mg',aliases:'stress adapton anxiety cortisol'},
+  {name:'Rhodiola Rosea',type:'herb',dose:'300mg',aliases:'adapton energy fatigue'},
+  {name:'Holy Basil (Tulsi)',type:'herb',dose:'300mg',aliases:'adapton stress'},
+  {name:'Cordyceps',type:'herb',dose:'500mg',aliases:'mushroom energy endurance'},
+  {name:'Reishi Mushroom',type:'herb',dose:'500mg',aliases:'mushroom sleep stress adaptogen'},
+  {name:'Lion\'s Mane Mushroom',type:'herb',dose:'500mg',aliases:'mushroom brain cognition memory'},
+  {name:'Chaga Mushroom',type:'herb',dose:'400mg',aliases:'mushroom immune antioxidant'},
   {name:'Maca Root',type:'herb',dose:'1500mg',aliases:'energy libido fertility hormone'},
   {name:'Ginseng (Panax)',type:'herb',dose:'200mg',aliases:'energy immune cognitive adaptogen'},
   {name:'Ginkgo Biloba',type:'herb',dose:'120mg',aliases:'brain memory circulation cognitive'},
@@ -259,6 +252,7 @@ const MED_DB=[
 ];
 
 const NEW_ITEM=id=>({id,name:'',type:'supplement',dose:'',timing:'',frequency:'1x day',notes:'',rxcui:null,fdaLabel:null,fetching:false});
+
 const SAMPLE=[
   {id:1,name:'Metformin',type:'medication',dose:'500mg',timing:'Wake (before breakfast)',frequency:'2x day',notes:'',rxcui:null,fdaLabel:null,fetching:false},
   {id:2,name:'Vitamin D3',type:'vitamin',dose:'2000 IU',timing:'Wake (before breakfast)',frequency:'1x day',notes:'',rxcui:null,fdaLabel:null,fetching:false},
@@ -286,7 +280,7 @@ function NameField({value,onCommit,onSelect}){
   return(
     <div>
       <input type="text" value={v} onChange={e=>setV(e.target.value)} onBlur={()=>onCommit(v)}
-        placeholder="e.g., Levothyroxine, Vitamin D3, Ashwagandha..."
+        placeholder="e.g., Levothyroxine, Vitamin D3, Tibolone..."
         autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false"
         style={{border:`1px solid ${C.g300}`,borderRadius:8,padding:'11px 13px',fontSize:16,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827'}}/>
       {hits.length>0&&(
@@ -329,7 +323,6 @@ function TimeInput({value,onChange}){
   </select>;
 }
 
-// RRow: icon is now a JSX element (SVG), not a string emoji
 function RRow({icon,title,sub,children,optional}){
   return <div style={{background:'white',borderRadius:14,padding:'18px 20px',marginBottom:10,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:`1px solid ${C.g100}`}}>
     <div style={{display:'flex',alignItems:'flex-start',gap:14}}>
@@ -343,34 +336,44 @@ function RRow({icon,title,sub,children,optional}){
   </div>;
 }
 
-function Gauge({score,color,label,sub}){
-  const r=52,circ=2*Math.PI*r,off=circ-(score/100)*circ;
-  return <div style={{textAlign:'center'}}>
-    <svg width={130} height={130} viewBox="0 0 130 130">
-      <circle cx={65} cy={65} r={r} fill="none" stroke={C.g100} strokeWidth={11}/>
-      <circle cx={65} cy={65} r={r} fill="none" stroke={color} strokeWidth={11} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" transform="rotate(-90 65 65)" style={{transition:'stroke-dashoffset 1.2s ease'}}/>
-      <text x={65} y={61} textAnchor="middle" fontSize={30} fontWeight={800} fill={color}>{score}</text>
-      <text x={65} y={78} textAnchor="middle" fontSize={12} fill={C.g400}>/100</text>
-    </svg>
-    <div style={{fontSize:13,fontWeight:700,color:C.g600,marginTop:4}}>{label}</div>
-    {sub&&<div style={{fontSize:11,color:C.g400,marginTop:2}}>{sub}</div>}
-  </div>;
-}
-
 function LogoHeader(){
   return(
     <div style={{display:'flex',alignItems:'center'}}>
-      <img src="/Logo.png" alt="Absovex" style={{height:32,width:'auto'}}
-        onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='block';}}
-      />
-      <span style={{display:'none',fontWeight:800,fontSize:16,color:C.primary}}>
-        Abs<span style={{color:C.pink}}>o</span>vex
+      <span style={{fontWeight:800,fontSize:20,color:C.primary,letterSpacing:'-0.5px'}}>
+        ABS<span style={{color:C.pink}}>O</span>VEX
       </span>
     </div>
   );
 }
 
 const SS={border:`1px solid ${C.g300}`,borderRadius:6,padding:'10px 11px',fontSize:16,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none',cursor:'pointer'};
+
+function renderMd(text){
+  const lines=text.split('\n');
+  const out=[];
+  let i=0;
+  while(i<lines.length){
+    const l=lines[i];
+    if(/^###\s/.test(l)){out.push(<div key={i} style={{fontWeight:700,fontSize:13,color:C.primary,marginTop:10,marginBottom:2}}>{l.replace(/^###\s/,'')}</div>);}
+    else if(/^##\s/.test(l)){out.push(<div key={i} style={{fontWeight:800,fontSize:15,color:C.g900,marginTop:12,marginBottom:4}}>{l.replace(/^##\s/,'')}</div>);}
+    else if(/^#\s/.test(l)){out.push(<div key={i} style={{fontWeight:800,fontSize:16,color:C.g900,marginTop:12,marginBottom:4}}>{l.replace(/^#\s/,'')}</div>);}
+    else if(/^---+$/.test(l.trim())){out.push(<hr key={i} style={{border:'none',borderTop:`1px solid ${C.g200}`,margin:'8px 0'}}/>);}
+    else if(/^[-*]\s/.test(l)){out.push(<div key={i} style={{display:'flex',gap:6,marginBottom:2}}><span style={{color:C.primary,flexShrink:0}}>•</span><span>{inlineMd(l.replace(/^[-*]\s/,''))}</span></div>);}
+    else if(l.trim()===''){out.push(<div key={i} style={{height:6}}/>);}
+    else{out.push(<div key={i} style={{marginBottom:2}}>{inlineMd(l)}</div>);}
+    i++;
+  }
+  return out;
+}
+
+function inlineMd(text){
+  const parts=text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((p,i)=>{
+    if(/^\*\*[^*]+\*\*$/.test(p))return<strong key={i}>{p.slice(2,-2)}</strong>;
+    if(/^`[^`]+`$/.test(p))return<code key={i} style={{background:C.g100,borderRadius:3,padding:'1px 5px',fontSize:12,fontFamily:'monospace'}}>{p.slice(1,-1)}</code>;
+    return p;
+  });
+}
 
 export default function App(){
   const[screen,setScreen]=useState('welcome');
@@ -383,6 +386,12 @@ export default function App(){
   const[chatIn,setChatIn]=useState('');
   const[chatLoad,setChatLoad]=useState(false);
   const chatEnd=useRef(null);
+  
+  // STRIPE STATE
+  const[paymentStatus,setPaymentStatus]=useState(null); // 'processing', 'paid', 'failed', 'cancelled'
+  const[promoCode,setPromoCode]=useState(''); // User enters BETA or other promo code
+  const[stripeLoading,setStripeLoading]=useState(false);
+  const[stripeErr,setStripeErr]=useState('');
 
   const updItem=(id,f,v)=>setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i));
   const updR=(f,v)=>setRoutine(p=>({...p,[f]:v}));
@@ -399,40 +408,114 @@ export default function App(){
     if(filled.length<2){setErr('Please add at least 2 items.');return;}
     setErr('');setScreen('loading');
     const r=routine;
-    const stackLines=filled.map((i,n)=>`${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${i.timing||'unspecified'}${i.notes?', '+i.notes:''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,120):''})`).join('\n');
+    const stackLines=filled.map((i,n)=>`${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${i.timing||'unspecified'}${i.notes?', '+i.notes:''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,60):''})`).join('\n');
     const routineStr=`${r.sex}${r.age?', age '+r.age:''}${r.hormonalStage?', '+r.hormonalStage:''}. Wake ${r.wakeTime}. ${r.coffeeTea?'Coffee at '+r.coffeeTime+'.':''} Breakfast ${r.breakfastStart}-${r.breakfastEnd}. Lunch ${r.lunchStart}-${r.lunchEnd}. Dinner ${r.dinnerTime}. Bedtime ${r.bedtime}. Water ${r.waterGlasses} glasses/day. Alcohol ${r.alcoholFrequency==='never'?'none':r.alcoholFrequency+', '+r.alcoholDrinks+' drinks'}.`;
-    const prompt=`As a clinical pharmacist, analyze this medication/supplement stack. Return ONLY a raw JSON object. No markdown. No backticks. Start with { and end with }.
+    const prompt=`You are a clinical pharmacist. Return ONLY a JSON object. No text before or after. No markdown. No backticks. Keep ALL text fields under 10 words.
 
 ROUTINE: ${routineStr}
 STACK:
 ${stackLines}
 
-Return this JSON:
-{"currentScore":<35-65>,"optimizedScore":<82-95>,"scoreSummary":"<2 sentences>","issueCount":<int>,"topIssues":[{"issue":"<text>","penalty":<int>,"severity":"high|medium|low"}],"topBenefits":["<text>"],"schedule":{"morning_fasting":[{"name":"","dose":"","instruction":"<time + how>","reason":"<why>"}],"morning_with_breakfast":[{"name":"","dose":"","instruction":"","reason":""}],"midday":[{"name":"","dose":"","instruction":"","reason":""}],"evening_with_dinner":[{"name":"","dose":"","instruction":"","reason":""}],"bedtime":[{"name":"","dose":"","instruction":"","reason":""}]},"conflicts":[{"items":["",""],"issue":"<text>","penalty":<int>,"severity":"high|medium|low","recommendation":"<text>"}],"optimizationLogic":[{"item":"","oldTiming":"","newTiming":"","reason":"<1-2 sentences>"}],"quickReference":[{"time":"<label>","items":["<name dose instruction>"]}],"recommendations":[{"category":"Food|Lifestyle|Supplement|Medical|Hormonal","tip":"<text>"}],"doctorPrompts":["<question>"],"routineInsights":["<personalized insight>"]}`;
+Return this JSON with SHORT values, maximum 10 words per text field:
+{"currentScore":68,"optimizedScore":87,"scoreSummary":"Two sentences max.","issueCount":3,"topIssues":[{"issue":"short text","penalty":10,"severity":"high"}],"topBenefits":["short text"],"schedule":{"morning_fasting":[{"name":"","dose":"","instruction":"short","reason":"short"}],"morning_with_breakfast":[{"name":"","dose":"","instruction":"short","reason":"short"}],"midday":[{"name":"","dose":"","instruction":"short","reason":"short"}],"evening_with_dinner":[{"name":"","dose":"","instruction":"short","reason":"short"}],"bedtime":[{"name":"","dose":"","instruction":"short","reason":"short"}]},"conflicts":[{"items":["item1","item2"],"issue":"short","penalty":5,"severity":"medium","recommendation":"short"}],"optimizationLogic":[{"item":"","oldTiming":"","newTiming":"","reason":"short"}],"quickReference":[{"time":"8AM","items":["item dose"]}],"recommendations":[{"category":"Food","tip":"short"}],"doctorPrompts":["short question"],"routineInsights":["short insight"]}`;
 
     try{
       const res=await fetch('/api/claude',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:6000,messages:[{role:'user',content:prompt}]})
+        body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:8000,messages:[{role:'user',content:prompt}]})
       });
       if(!res.ok){const d=await res.json();throw new Error(d?.error?.message||`HTTP ${res.status}`);}
       const d=await res.json();
       if(d.error)throw new Error(d.error.message);
       const txt=(d.content?.find(b=>b.type==='text')?.text||'').trim();
+      const cleaned=txt.replace(/```json/g,'').replace(/```/g,'').trim();
       let parsed=null;
       const attempts=[
-        ()=>JSON.parse(txt),
-        ()=>JSON.parse(txt.replace(/^```json\s*/i,'').replace(/```\s*$/,'')),
-        ()=>{const m=txt.match(/\{[\s\S]*\}/);if(m)return JSON.parse(m[0]);throw new Error('no match');},
-        ()=>{const s=txt.indexOf('{');const e=txt.lastIndexOf('}');if(s>=0&&e>s)return JSON.parse(txt.slice(s,e+1));throw new Error('no match');}
+        ()=>JSON.parse(cleaned),
+        ()=>{const m=cleaned.match(/\{[\s\S]*\}/);if(m)return JSON.parse(m[0]);throw new Error('no match');},
+        ()=>{const s=cleaned.indexOf('{');const e=cleaned.lastIndexOf('}');if(s>=0&&e>s)return JSON.parse(cleaned.slice(s,e+1));throw new Error('no match');}
       ];
       for(const a of attempts){try{parsed=a();if(parsed)break;}catch(_){}}
       if(!parsed)throw new Error('Could not parse response. Please try again.');
-      setResult(parsed);setScreen('preview');
+      setResult(parsed);
+      setPaymentStatus(null);
+      setPromoCode('');
+      setStripeErr('');
+      setScreen('preview');
     }catch(e){setErr('Analysis failed: '+e.message);setScreen('routine');}
   };
 
+  // Stripe: Create checkout session
+  const startCheckout=async()=>{
+    setStripeLoading(true);
+    setStripeErr('');
+    try{
+      const res=await fetch('/api/create-checkout-session',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({promoCode:promoCode.trim().toUpperCase()})
+      });
+      const d=await res.json();
+      if(!res.ok||d.error){
+        setStripeErr(d.error||'Failed to create checkout session');
+        setStripeLoading(false);
+        return;
+      }
+      if(d.sessionId){
+        localStorage.setItem('absovexReport', JSON.stringify({
+          items,
+          routine,
+          result,
+          tab,
+          chat
+        }));
+        window.location.href=d.sessionUrl;
+      }
+    }catch(e){
+      setStripeErr('Error starting checkout: '+e.message);
+      setStripeLoading(false);
+    }
+  };
+
+  // Check payment status when returning from Stripe
+  useEffect(()=>{
+    const searchParams=new URLSearchParams(window.location.search);
+    const sessionId=searchParams.get('session_id');
+    const cancelled=searchParams.get('cancelled');
+    
+    if(cancelled==='true'){
+      const saved=localStorage.getItem('absovexReport');
+      if(saved){
+        const data=JSON.parse(saved);
+        setItems(data.items);
+        setRoutine(data.routine);
+        setResult(data.result);
+        setTab(data.tab);
+        setChat(data.chat);
+        setPaymentStatus('cancelled');
+        setScreen('preview');
+      }else{
+        setScreen('welcome');
+      }
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if(sessionId){
+      const saved=localStorage.getItem('absovexReport');
+      if(saved){
+        const data=JSON.parse(saved);
+        setItems(data.items);
+        setRoutine(data.routine);
+        setResult(data.result);
+        setTab(data.tab);
+        setChat(data.chat);
+        localStorage.removeItem('absovexReport');
+      }
+      setScreen('results');
+    }
+}, []);
+  
   const sendChat=async()=>{
     if(!chatIn.trim()||chatLoad)return;
     const msg=chatIn.trim();setChatIn('');
@@ -449,78 +532,43 @@ Return this JSON:
 
   const downloadReport=d=>{
     const date=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    const improvement=((d.optimizedScore||0)-(d.currentScore||0));
     const sc2={high:{c:'#DC2626',bg:'#FEF2F2',l:'High Priority'},medium:{c:'#D97706',bg:'#FFFBEB',l:'Medium'},low:{c:'#0284C7',bg:'#F0F9FF',l:'Low'}};
     const blks={morning_fasting:{label:'Morning - Fasting',color:'#D97706',bg:'#FFFBEB',time:'Before food or coffee'},morning_with_breakfast:{label:'Morning - With Breakfast',color:'#EA580C',bg:'#FFF7ED',time:'With first meal'},midday:{label:'Midday',color:'#0284C7',bg:'#F0F9FF',time:'With or between meals'},evening_with_dinner:{label:'Evening - Dinner',color:'#7C3AED',bg:'#F5F3FF',time:'With evening meal'},bedtime:{label:'Bedtime',color:'#4338CA',bg:'#EEF2FF',time:'30 min before sleep'}};
     const ph=(n,t)=>`<div style="background:#0D7E7A;padding:20px 40px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#A8DCDC;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase">Page ${n} of 6</div><h2 style="color:white;font-size:20px;font-weight:800;margin:4px 0 0">${t}</h2></div>`;
     const pf=n=>`<div style="padding:8px 40px 14px;border-top:1px solid #F3F4F6;display:table;width:100%"><div style="display:table-row"><div style="display:table-cell;font-size:11px;color:#D1D5DB">Page ${n} of 6 - Absovex - ${date}</div><div style="display:table-cell;text-align:right;font-size:11px;color:#9CA3AF">absovex.com</div></div></div>`;
-    const sched=Object.entries(blks).map(([k,tb])=>{const its=d.schedule?.[k]||[];if(!its.length)return'';return`<div style="margin-bottom:18px;page-break-inside:avoid"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid ${tb.color}44"><div style="width:4px;height:24px;background:${tb.color};border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact"></div><div><div style="font-weight:800;font-size:13px;color:${tb.color}">${tb.label}</div><div style="font-size:11px;color:#9CA3AF">${tb.time}</div></div></div>${its.map((it,i)=>`<div style="display:table;width:100%;margin-bottom:5px;background:${i%2===0?tb.bg:'white'};border-radius:6px;page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="display:table-row"><div style="display:table-cell;width:150px;padding:8px 10px;vertical-align:top"><div style="font-weight:700;font-size:13px;color:#111827">${it.name}</div><div style="font-size:11px;color:#6B7280;margin-top:2px">${fmtTime(it.instruction)}</div><div style="background:${tb.color};color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;display:inline-block;margin-top:4px;-webkit-print-color-adjust:exact;print-color-adjust:exact">${it.dose}</div></div><div style="display:table-cell;padding:8px 10px;vertical-align:top"><div style="font-size:12px;color:#4B5563;line-height:1.5;font-style:italic">${it.reason}</div></div></div></div>`).join('')}</div>`;}).join('');
-    const conf=(!d.conflicts||!d.conflicts.length)?'<div style="text-align:center;padding:20px">No significant conflicts detected.</div>':d.conflicts.map(c=>{const sv=sc2[c.severity]||sc2.medium;return`<div style="border-left:5px solid ${sv.c};border-radius:8px;padding:12px 16px;margin-bottom:12px;background:${sv.bg};page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="margin-bottom:6px"><span style="font-size:11px;font-weight:800;color:${sv.c};margin-right:6px">${sv.l}</span><span style="font-size:11px;background:#FEF2F2;color:#DC2626;padding:2px 7px;border-radius:20px;font-weight:700;margin-right:6px">-${c.penalty}pts</span><span style="font-size:13px;font-weight:800;color:#111827">${(c.items||[]).join(' + ')}</span></div><p style="margin:0 0 8px;font-size:12px;color:#374151;line-height:1.6">${c.issue}</p><div style="background:#E8F7F7;border-radius:5px;padding:7px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><span style="font-size:12px;color:#0D7E7A;font-weight:600">${c.recommendation}</span></div></div>`;}).join('');
-    const logic=(d.optimizationLogic||[]).map((l,i,a)=>`<div style="margin-bottom:14px;padding-bottom:14px;${i<a.length-1?'border-bottom:1px solid #F3F4F6':''};page-break-inside:avoid"><div style="margin-bottom:6px;line-height:1.7"><span style="font-weight:800;font-size:13px;color:#111827;margin-right:5px">${l.item}</span><span style="font-size:11px;background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:20px;margin-right:5px">${fmtTime(l.oldTiming)}</span><span style="color:#D1D5DB;margin-right:5px">to</span><span style="font-size:11px;background:#E8F7F7;color:#0D7E7A;padding:2px 8px;border-radius:20px;font-weight:700">${fmtTime(l.newTiming)}</span></div><p style="margin:0;font-size:12px;color:#4B5563;line-height:1.7">${l.reason}</p></div>`).join('');
-    const qref=(d.quickReference||[]).map((row,i)=>`<div style="display:table;width:100%;border-top:1px solid #F3F4F6;background:${i%2===0?'white':'#F9FAFB'}"><div style="display:table-row"><div style="display:table-cell;width:170px;padding:10px 18px;vertical-align:top;font-weight:700;font-size:12px;color:#374151">${fmtTime(row.time)}</div><div style="display:table-cell;padding:10px 18px 10px 0;vertical-align:top">${(row.items||[]).map(it=>`<span style="background:#E8F7F7;color:#0D7E7A;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;display:inline-block;margin:2px 3px 2px 0;-webkit-print-color-adjust:exact;print-color-adjust:exact">${it}</span>`).join('')}</div></div></div>`).join('');
-    const recs=(d.recommendations||[]).map(r=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 12px;margin-bottom:7px;background:#F9FAFB;border-radius:7px;page-break-inside:avoid"><span style="background:#E8F7F7;color:#0D7E7A;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact">${r.category}</span><span style="font-size:12px;color:#374151;line-height:1.5">${r.tip}</span></div>`).join('');
-    const ins=(d.routineInsights||[]).length>0?`<div style="background:#E8F7F7;border:1px solid #A8DCDC;border-radius:8px;padding:12px 16px;margin-bottom:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="font-size:11px;font-weight:800;color:#0D7E7A;margin-bottom:8px;text-transform:uppercase">Personalized Routine Insights</div>${(d.routineInsights||[]).map(i=>`<div style="font-size:12px;color:#0A6B68;line-height:1.6;margin-bottom:4px;padding-left:10px;border-left:2px solid #0D7E7A">${i}</div>`).join('')}</div>`:'';
-    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Absovex Health Stack Report</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Georgia,serif;background:#F3F4F6;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{max-width:750px;margin:0 auto 28px;background:white;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.09);}@media print{body{background:white!important;}.page{box-shadow:none!important;border-radius:0!important;margin:0!important;max-width:100%!important;page-break-after:always;break-after:page;}.page:last-child{page-break-after:avoid;}.no-print{display:none!important;}}@page{size:letter;margin:0.6in 0.5in;}</style></head><body>
-<div class="no-print" style="background:#0D7E7A;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100"><span style="color:white;font-weight:700;font-size:14px">Absovex - Health Stack Report</span><button onclick="window.print()" style="background:white;color:#0D7E7A;border:none;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:800;cursor:pointer">Print / Save PDF</button></div>
-<div class="page"><div style="background:#0D7E7A;padding:32px 40px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#A8DCDC;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px">Personalized Health Stack Report</div><h1 style="color:white;font-size:24px;font-weight:800;margin:0 0 5px">Absovex</h1><div style="color:#A8DCDC;font-size:13px;margin-bottom:22px">Generated ${date}</div><div style="display:table;width:100%"><div style="display:table-row">${[['Current Score',d.currentScore,d.currentScore<60?'#FCA5A5':'#FCD34D'],['Optimized Score',d.optimizedScore,'#86EFAC'],['Improvement','+'+(d.optimizedScore-d.currentScore)+' pts','#86EFAC'],['Issues Found',d.issueCount,'#FCD34D']].map(([lbl,val,col])=>`<div style="display:table-cell;padding-right:10px"><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 14px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:${col};font-size:22px;font-weight:800">${val}</div><div style="color:rgba(255,255,255,0.6);font-size:10px;margin-top:2px">${lbl}</div></div></div>`).join('')}</div></div></div><div style="padding:22px 40px"><h2 style="font-size:11px;font-weight:800;color:#111827;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em">Summary</h2><p style="font-size:13px;color:#374151;line-height:1.8;margin:0 0 14px">${d.scoreSummary}</p>${ins}<div style="display:table;width:100%;border-collapse:separate;border-spacing:7px"><div style="display:table-row"><div style="display:table-cell;width:50%;vertical-align:top;background:#FEF2F2;border-radius:8px;padding:11px 13px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="font-size:10px;font-weight:800;color:#DC2626;text-transform:uppercase;margin-bottom:7px">Top Issues</div>${(d.topIssues||[]).map(i=>`<div style="font-size:11px;color:#374151;margin-bottom:5px;padding-left:9px;border-left:2px solid #DC2626;line-height:1.5">${i.issue}</div>`).join('')}</div><div style="display:table-cell;width:50%;vertical-align:top;background:#E8F7F7;border-radius:8px;padding:11px 13px;padding-left:18px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="font-size:10px;font-weight:800;color:#0D7E7A;text-transform:uppercase;margin-bottom:7px">Top Benefits</div>${(d.topBenefits||[]).map(b=>`<div style="font-size:11px;color:#374151;margin-bottom:5px;padding-left:9px;border-left:2px solid #0A6B68;line-height:1.5">${b}</div>`).join('')}</div></div></div></div>${pf(1)}</div>
-<div class="page">${ph(2,'Your Optimized Daily Schedule')}<div style="padding:22px 40px">${sched}</div>${pf(2)}</div>
-<div class="page">${ph(3,'Conflicts and Interaction Analysis')}<div style="padding:22px 40px">${conf}</div>${pf(3)}</div>
-<div class="page">${ph(4,'Optimization Logic')}<div style="padding:22px 40px">${logic}</div>${pf(4)}</div>
-<div class="page">${ph(5,'Quick Reference - Fridge Chart')}<div style="padding:22px 40px"><div style="border:2px solid #E5E7EB;border-radius:9px;overflow:hidden"><div style="background:#E8F7F7;padding:12px 18px;display:table;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="display:table-row"><div style="display:table-cell;font-weight:800;font-size:14px;color:#0D7E7A">My Daily Health Stack</div><div style="display:table-cell;text-align:right;font-size:11px;color:#0A6B68">Score: ${d.optimizedScore}/100</div></div></div>${qref}</div></div>${pf(5)}</div>
-<div class="page">${ph(6,'Recommendations and Doctor Prompts')}<div style="padding:22px 40px">${recs}${(d.doctorPrompts||[]).length>0?`<div style="margin-top:16px;background:#EFF6FF;border-radius:9px;padding:14px 18px;border:1px solid #BFDBFE;-webkit-print-color-adjust:exact;print-color-adjust:exact"><h4 style="margin:0 0 10px;font-size:11px;font-weight:800;color:#1E40AF;text-transform:uppercase">Questions for Your Doctor</h4>${(d.doctorPrompts||[]).map(q=>`<div style="font-size:12px;color:#1D4ED8;margin-bottom:7px;padding-left:10px;border-left:3px solid #93C5FD;line-height:1.5">${q}</div>`).join('')}</div>`:''}<div style="margin-top:12px;background:#FFF7ED;border-radius:7px;padding:10px 14px;border:1px solid #FED7AA"><p style="margin:0;font-size:10px;color:#92400E;line-height:1.6"><strong>Disclaimer:</strong> This report is for informational purposes only. Always consult your healthcare provider before changing your medication routine.</p></div></div>${pf(6)}</div>
-</body></html>`;
+    const chip=txt=>`<span style="background:#E8F7F7;color:#0D7E7A;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;display:inline-block;margin:2px 3px 2px 0;-webkit-print-color-adjust:exact;print-color-adjust:exact">${txt}</span>`;
+    const h=`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Absovex Health Stack Report</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Georgia,serif;background:#F3F4F6;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{max-width:750px;margin:0 auto 28px;background:white;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.09);}@media print{body{background:white!important;}.page{box-shadow:none!important;border-radius:0!important;margin:0!important;max-width:100%!important;page-break-after:always;break-after:page;}.page:last-child{page-break-after:avoid;}.no-print{display:none!important;}}@page{size:letter;margin:0.4in 0.5in;}</style></head><body>`;
+    const printBtn=`<div class="no-print" style="background:#0D7E7A;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100"><span style="color:white;font-weight:700;font-size:14px">Absovex - Health Stack Report</span><button onclick="window.print()" style="background:white;color:#0D7E7A;border:none;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:800;cursor:pointer">Print / Save PDF</button></div>`;
+    const p1=`<div class="page"><div style="background:#0D7E7A;padding:32px 40px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#A8DCDC;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px">Personalized Health Stack Report</div><h1 style="color:white;font-size:24px;font-weight:800;margin:0 0 5px">Absovex</h1><div style="color:#A8DCDC;font-size:13px;margin-bottom:22px">Generated ${date}</div><div style="display:table;width:100%"><div style="display:table-row"><div style="display:table-cell;padding-right:10px"><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 14px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#FCD34D;font-size:22px;font-weight:800">${d.currentScore||'—'}</div><div style="color:rgba(255,255,255,0.6);font-size:10px;margin-top:2px">Current Score</div></div></div><div style="display:table-cell;padding-right:10px"><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 14px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#86EFAC;font-size:22px;font-weight:800">${d.optimizedScore||'—'}</div><div style="color:rgba(255,255,255,0.6);font-size:10px;margin-top:2px">Optimized Score</div></div></div><div style="display:table-cell;padding-right:10px"><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 14px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#86EFAC;font-size:22px;font-weight:800">+${improvement} pts</div><div style="color:rgba(255,255,255,0.6);font-size:10px;margin-top:2px">Improvement</div></div></div><div style="display:table-cell;padding-right:10px"><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 14px;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#FCD34D;font-size:22px;font-weight:800">${d.issueCount||0}</div><div style="color:rgba(255,255,255,0.6);font-size:10px;margin-top:2px">Issues Found</div></div></div></div></div></div><div style="padding:22px 40px"><div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:12px 16px;margin-bottom:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="font-size:10px;font-weight:800;color:#92400E;text-transform:uppercase;margin-bottom:6px">Medical Disclaimer</div><p style="margin:0;font-size:10px;color:#92400E;line-height:1.7">This report is provided by Absovex, operated by Extra You, Inc., for informational and educational purposes only. It does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice, and does not replace a physician, licensed pharmacist, or qualified healthcare professional. This report is generated solely from user-submitted information and may not reflect all relevant medical conditions, medications, contraindications, interactions, or personal health factors. It may be incomplete, inaccurate, or unsuitable for a particular individual. Before making any change to your medication timing, dosage, supplement routine, or related health practice, consult a qualified healthcare professional. Do not use this report for emergency or urgent medical decisions. By using this report, you acknowledge sole responsibility for verifying its contents and any decisions made based on it.</p></div><h2 style="font-size:11px;font-weight:800;color:#111827;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.08em">Summary</h2><p style="font-size:13px;color:#374151;line-height:1.8;margin:0 0 14px">${d.scoreSummary||''}</p>${(d.routineInsights&&d.routineInsights.length>0)?`<div style="background:#E8F7F7;border:1px solid #A8DCDC;border-radius:8px;padding:12px 16px;margin-bottom:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="font-size:11px;font-weight:800;color:#0D7E7A;margin-bottom:8px;text-transform:uppercase">Personalized Routine Insights</div>${d.routineInsights.map(i=>`<div style="font-size:12px;color:#0A6B68;line-height:1.6;margin-bottom:4px;padding-left:10px;border-left:2px solid #0D7E7A">${i}</div>`).join('')}</div>`:''}<div style="display:table;width:100%;border-collapse:separate;border-spacing:7px"><div style="display:table-row"><div style="display:table-cell;width:50%;vertical-align:top;background:#FEF2F2;border-radius:8px;padding:11px 13px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="font-size:10px;font-weight:800;color:#DC2626;text-transform:uppercase;margin-bottom:7px">Top Issues</div>${(d.topIssues||[]).map(i=>`<div style="font-size:11px;color:#374151;margin-bottom:5px;padding-left:9px;border-left:2px solid #DC2626;line-height:1.5">${i.issue||i}</div>`).join('')}</div><div style="display:table-cell;width:50%;vertical-align:top;background:#E8F7F7;border-radius:8px;padding:11px 13px;padding-left:18px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="font-size:10px;font-weight:800;color:#0D7E7A;text-transform:uppercase;margin-bottom:7px">Top Benefits</div>${(d.topBenefits||[]).map(b=>`<div style="font-size:11px;color:#374151;margin-bottom:5px;padding-left:9px;border-left:2px solid #0A6B68;line-height:1.5">${b}</div>`).join('')}</div></div></div></div>${pf(1)}</div>`;
+    const p2=`<div class="page"><div style="background:#0D7E7A;padding:20px 40px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="color:#A8DCDC;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase">Page 2 of 6</div><h2 style="color:white;font-size:20px;font-weight:800;margin:4px 0 0">Your Optimized Daily Schedule</h2></div><div style="padding:14px 36px">${Object.entries(d.schedule||{}).filter(([k,v])=>v&&v.length>0).map(([blkKey,items])=>{const b=blks[blkKey]||{label:blkKey,color:'#6B7280',bg:'#F9FAFB',time:''};return`<div style="margin-bottom:12px;page-break-inside:avoid"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid ${b.color}44"><div style="width:4px;height:24px;background:${b.color};border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact"></div><div><div style="font-weight:800;font-size:13px;color:${b.color}">${b.label}</div><div style="font-size:11px;color:#9CA3AF">${b.time}</div></div></div>${items.map((it,i)=>`<div style="padding:8px 10px;margin-bottom:4px;background:${i%2===0?b.bg:'white'};border-radius:6px;page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px"><div style="font-weight:700;font-size:13px;color:#111827">${it.name}</div><div style="background:${b.color};color:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:800;-webkit-print-color-adjust:exact;print-color-adjust:exact">${it.dose}</div></div><div style="font-size:11px;color:#6B7280;margin-bottom:4px">${it.instruction}</div><div style="font-size:12px;color:#4B5563;line-height:1.5;font-style:italic">${it.reason||''}</div></div>`).join('')}</div>`;}).join('')}</div>${pf(2)}</div>`;
+    const p3=`<div class="page">${ph(3,'Conflicts and Interaction Analysis')}<div style="padding:22px 40px">${(d.conflicts||[]).length>0?d.conflicts.map(c=>{const s=sc2[c.severity]||sc2.medium;return`<div style="border-left:5px solid ${s.c};border-radius:8px;padding:12px 16px;margin-bottom:12px;background:${s.bg};page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="margin-bottom:6px"><span style="font-size:11px;font-weight:800;color:${s.c};margin-right:6px">${s.l}</span><span style="font-size:11px;background:#FEF2F2;color:#DC2626;padding:2px 7px;border-radius:20px;font-weight:700;margin-right:6px">-${c.penalty}pts</span><span style="font-size:13px;font-weight:800;color:#111827">${c.items.join(' + ')}</span></div><p style="margin:0 0 8px;font-size:12px;color:#374151;line-height:1.6">${c.issue}</p><div style="background:#E8F7F7;border-radius:5px;padding:7px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact"><span style="font-size:12px;color:#0D7E7A;font-weight:600">${c.recommendation}</span></div></div>`}).join(''):'<div style="padding:20px;text-align:center;color:#059669;font-size:14px">No conflicts detected in your routine.</div>'}</div>${pf(3)}</div>`;
+    const p4=`<div class="page">${ph(4,'Optimization Logic')}<div style="padding:22px 40px">${(d.optimizationLogic||[]).length>0?d.optimizationLogic.map(l=>`<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F3F4F6;page-break-inside:avoid"><div style="margin-bottom:6px;line-height:1.7"><span style="font-weight:800;font-size:13px;color:#111827;margin-right:5px">${l.item}</span><span style="font-size:11px;background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:20px;margin-right:5px">${fmtTime(l.oldTiming)}</span><span style="color:#D1D5DB;margin-right:5px">to</span><span style="font-size:11px;background:#E8F7F7;color:#0D7E7A;padding:2px 8px;border-radius:20px;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact">${fmtTime(l.newTiming)}</span></div><p style="margin:0;font-size:12px;color:#4B5563;line-height:1.7">${l.reason}</p></div>`).join(''):'<div style="padding:20px;color:#6B7280;font-size:13px">No timing changes needed.</div>'}</div>${pf(4)}</div>`;
+    const p5=`<div class="page">${ph(5,'Quick Reference - Fridge Chart')}<div style="padding:22px 40px"><div style="border:2px solid #E5E7EB;border-radius:9px;overflow:hidden"><div style="background:#E8F7F7;padding:12px 18px;display:table;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="display:table-row"><div style="display:table-cell;font-weight:800;font-size:14px;color:#0D7E7A">My Daily Health Stack</div><div style="display:table-cell;text-align:right;font-size:11px;color:#0A6B68">Score: ${d.optimizedScore}/100</div></div></div>${(d.quickReference||[]).map((row,i)=>`<div style="display:table;width:100%;border-top:1px solid #F3F4F6;background:${i%2===0?'white':'#F9FAFB'};-webkit-print-color-adjust:exact;print-color-adjust:exact"><div style="display:table-row"><div style="display:table-cell;width:170px;padding:10px 18px;vertical-align:top;font-weight:700;font-size:12px;color:#374151">${row.time}</div><div style="display:table-cell;padding:10px 18px 10px 0;vertical-align:top">${(row.items||[]).map(item=>chip(item)).join('')}</div></div></div>`).join('')}</div></div>${pf(5)}</div>`;
+    const p6=`<div class="page">${ph(6,'Recommendations and Doctor Prompts')}<div style="padding:22px 40px">${(d.recommendations||[]).map(r=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 12px;margin-bottom:7px;background:#F9FAFB;border-radius:7px;page-break-inside:avoid"><span style="background:#E8F7F7;color:#0D7E7A;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact">${r.category}</span><span style="font-size:12px;color:#374151;line-height:1.5">${r.tip}</span></div>`).join('')}<div style="margin-top:16px;background:#EFF6FF;border-radius:9px;padding:14px 18px;border:1px solid #BFDBFE;-webkit-print-color-adjust:exact;print-color-adjust:exact"><h4 style="margin:0 0 10px;font-size:11px;font-weight:800;color:#1E40AF;text-transform:uppercase">Questions for Your Doctor</h4>${(d.doctorPrompts||[]).map(q=>`<div style="font-size:12px;color:#1D4ED8;margin-bottom:7px;padding-left:10px;border-left:3px solid #93C5FD;line-height:1.5">${q}</div>`).join('')}</div><div style="margin-top:12px;background:#FFF7ED;border-radius:7px;padding:10px 14px;border:1px solid #FED7AA"><p style="margin:0;font-size:10px;color:#92400E;line-height:1.6"><strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice. It is based solely on user-submitted information and may be incomplete or inaccurate. Consult a physician, licensed pharmacist, or qualified healthcare professional before making any changes to your medication or supplement routine. Do not use this report for emergency medical decisions.</p></div></div>${pf(6)}</div>`;
+    const html=h+printBtn+p1+p2+p3+p4+p5+p6+'</body></html>';
     const blob=new Blob([html],{type:'text/html'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;a.download=`Absovex-Report-${new Date().toISOString().slice(0,10)}.html`;
-    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    a.href=url;
+    a.download='ABSOVEX-Health-Stack-Report-'+date.replace(/\s+/g,'-')+'.html';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // ─── WELCOME ────────────────────────────────────────────────────────────────
   if(screen==='welcome')return(
-    <div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',padding:'40px 24px',fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
-      <div style={{maxWidth:540,width:'100%'}}>
-        <div style={{textAlign:'center',marginBottom:32}}>
-          <img src="/Logo.png" alt="Absovex" style={{maxWidth:360,height:'auto',display:'block',margin:'0 auto'}}
-            onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex';}}
-          />
-          <div style={{display:'none',flexDirection:'column',alignItems:'center',gap:6}}>
-            <div style={{display:'flex',alignItems:'center',lineHeight:1}}>
-              <span style={{fontSize:52,fontWeight:800,color:'#0D7E7A',letterSpacing:'-1px'}}>Abs</span>
-              <span style={{display:'inline-block',position:'relative',width:38,height:56,flexShrink:0,verticalAlign:'middle'}}>
-                <svg viewBox="0 0 38 56" width="38" height="56" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="19" cy="32" r="20" fill="#EC008B"/>
-                  <circle cx="25" cy="24" r="16" fill="#FFFAF3"/>
-                </svg>
-              </span>
-              <span style={{fontSize:52,fontWeight:800,color:'#0D7E7A',letterSpacing:'-1px'}}>vex</span>
-            </div>
-            <div style={{color:'#EC008B',fontSize:14,fontWeight:600}}>Optimize every dose</div>
+    <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
+      <div style={{maxWidth:540,textAlign:'center'}}>
+        <div style={{marginBottom:20}}>
+          <div style={{width:80,height:80,borderRadius:'50%',background:C.tealBg,border:`2px solid ${C.tealBorder}`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
+            {Ic.molecule()}
           </div>
         </div>
-        <p style={{color:C.dark,fontSize:17,lineHeight:1.7,margin:'0 0 32px',textAlign:'center'}}>
-          Get your personal <strong style={{color:C.primary}}>Health Stack Score</strong> and a science-based daily schedule built around your life, your body, and your routine.
-        </p>
-        <div style={{background:'#BAE6C6',borderRadius:18,padding:'22px 26px',marginBottom:28,border:'1px solid #A8DCBA'}}>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
-            {[
-              {icon:<svg width={20} height={20} viewBox="0 0 24 24" fill="none"><rect x={2} y={12} width={4} height={10} rx={1} fill={C.primary}/><rect x={9} y={7} width={4} height={15} rx={1} fill={C.primary}/><rect x={16} y={3} width={4} height={19} rx={1} fill={C.pink}/></svg>,label:'Health Stack Score'},
-              {icon:<svg width={20} height={20} viewBox="0 0 24 24" fill="none"><circle cx={12} cy={12} r={9} stroke={C.primary} strokeWidth={2}/><path d="M12 7v5l3 3" stroke={C.pink} strokeWidth={2} strokeLinecap="round"/></svg>,label:'Live FDA Drug Data'},
-              {icon:<svg width={20} height={20} viewBox="0 0 24 24" fill="none"><path d="M12 2L2 19h20L12 2z" stroke={C.primary} strokeWidth={2} strokeLinejoin="round"/><path d="M12 9v5" stroke={C.pink} strokeWidth={2} strokeLinecap="round"/><circle cx={12} cy={17} r={1} fill={C.pink}/></svg>,label:'Interaction Detection'},
-              {icon:<svg width={20} height={20} viewBox="0 0 24 24" fill="none"><path d="M12 21C7 17 3 13.5 3 9a5 5 0 0110 0 5 5 0 0110 0c0 4.5-4 8-9 12z" stroke={C.primary} strokeWidth={2}/><circle cx={12} cy={9} r={2} fill={C.pink}/></svg>,label:'Age and Hormone-Aware'},
-              {icon:<svg width={20} height={20} viewBox="0 0 24 24" fill="none"><circle cx={12} cy={12} r={9} stroke={C.primary} strokeWidth={2}/><path d="M12 7v5l3 3" stroke={C.pink} strokeWidth={2} strokeLinecap="round"/></svg>,label:'Fits Your Daily Schedule'},
-              {icon:<svg width={20} height={20} viewBox="0 0 24 24" fill="none"><rect x={4} y={2} width={16} height={20} rx={2} stroke={C.primary} strokeWidth={2}/><path d="M8 7h8M8 11h8M8 15h5" stroke={C.pink} strokeWidth={2} strokeLinecap="round"/></svg>,label:'6-Page Report'},
-            ].map(({icon,label})=>(
-              <div key={label} style={{display:'flex',alignItems:'center',gap:10,color:C.dark,fontSize:14,fontWeight:500}}>
-                <div style={{width:36,height:36,borderRadius:10,background:'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{icon}</div>
-                {label}
-              </div>
-            ))}
-          </div>
-        </div>
-        <button onClick={()=>setScreen('input')} style={{width:'100%',background:C.pink,color:'white',border:'none',borderRadius:14,padding:'17px 24px',fontSize:17,fontWeight:800,cursor:'pointer',marginBottom:14,boxShadow:'0 4px 20px rgba(236,0,139,0.3)',fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
-          Get My Free Score Preview
-        </button>
-        <p style={{textAlign:'center',color:C.g500,fontSize:13,margin:0}}>Free score preview - Full report $29 - No account needed</p>
+        <h1 style={{margin:'0 0 12px',fontSize:36,fontWeight:800,color:C.g900}}>Your Medication Optimizer</h1>
+        <p style={{margin:'0 0 28px',fontSize:16,color:C.g600,lineHeight:1.6}}>Get a personalized daily schedule that minimizes conflicts and maximizes absorption for all your medications, supplements, and vitamins.</p>
+        <button onClick={()=>setScreen('input')} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:14,padding:18,fontSize:18,fontWeight:800,cursor:'pointer',marginBottom:12,boxShadow:'0 4px 15px rgba(13,126,122,0.2)'}}>Start Your Optimization</button>
+        <p style={{fontSize:13,color:C.g400,margin:0}}>Takes about 3-5 minutes. No account needed.</p>
       </div>
     </div>
   );
@@ -632,7 +680,6 @@ Return this JSON:
       </div>
       <div style={{maxWidth:600,margin:'0 auto',padding:'20px 16px'}}>
         <div style={{marginBottom:18}}><h2 style={{margin:'0 0 4px',fontSize:20,fontWeight:800,color:C.g900}}>My Routine</h2><p style={{margin:0,fontSize:14,color:C.g500}}>Set your daily schedule to perfectly time your medications.</p></div>
-
         <RRow icon={Ic.person()} title="About You" sub="Helps personalize advice for hormonal health, absorption, and age-related patterns">
           <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:16,alignItems:'start'}}>
             <div>
@@ -656,9 +703,7 @@ Return this JSON:
             <div><div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:8}}>Age</div><input type="number" value={routine.age} onChange={e=>updR('age',e.target.value)} placeholder="--" min="1" max="120" style={{border:`1.5px solid ${C.g200}`,borderRadius:10,padding:'10px 12px',fontSize:16,width:72,textAlign:'center',outline:'none',color:C.g800}}/></div>
           </div>
         </RRow>
-
         <RRow icon={Ic.sun()} title="Wake Time" sub="When do you typically wake up?"><TimeInput value={routine.wakeTime} onChange={v=>updR('wakeTime',v)}/></RRow>
-
         <RRow icon={Ic.coffee()} title="Morning Tea or Coffee" sub="Helps plan spacing for thyroid and other sensitive medications">
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.coffeeTea?12:0}}>
             <span style={{fontSize:15,color:C.g600}}>I drink coffee or tea in the morning</span>
@@ -666,7 +711,6 @@ Return this JSON:
           </div>
           {routine.coffeeTea&&<div><div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:6}}>Usually around</div><TimeInput value={routine.coffeeTime} onChange={v=>updR('coffeeTime',v)}/></div>}
         </RRow>
-
         <RRow icon={Ic.fork()} title="Breakfast Window" sub="Set a range if your breakfast time varies">
           <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
             <TimeInput value={routine.breakfastStart} onChange={v=>updR('breakfastStart',v)}/>
@@ -674,7 +718,6 @@ Return this JSON:
             <TimeInput value={routine.breakfastEnd} onChange={v=>updR('breakfastEnd',v)}/>
           </div>
         </RRow>
-
         <RRow icon={Ic.salad()} title="Lunch Window" sub="Your midday meal time range">
           <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
             <TimeInput value={routine.lunchStart} onChange={v=>updR('lunchStart',v)}/>
@@ -682,9 +725,7 @@ Return this JSON:
             <TimeInput value={routine.lunchEnd} onChange={v=>updR('lunchEnd',v)}/>
           </div>
         </RRow>
-
         <RRow icon={Ic.plate()} title="Dinner" sub="Your evening meal time"><TimeInput value={routine.dinnerTime} onChange={v=>updR('dinnerTime',v)}/></RRow>
-
         <RRow icon={Ic.moon()} title="Evening Snack" sub="Useful for planning around evening medications" optional>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.eveningSnack?12:0}}>
             <span style={{fontSize:15,color:C.g600}}>I usually have an evening snack</span>
@@ -692,9 +733,7 @@ Return this JSON:
           </div>
           {routine.eveningSnack&&<TimeInput value={routine.snackTime} onChange={v=>updR('snackTime',v)}/>}
         </RRow>
-
         <RRow icon={Ic.bed()} title="Bedtime" sub="When do you go to sleep?"><TimeInput value={routine.bedtime} onChange={v=>updR('bedtime',v)}/></RRow>
-
         <RRow icon={Ic.drop()} title="Daily Water Intake" sub="Hydration affects how your body absorbs medications and supplements">
           <div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
@@ -705,7 +744,6 @@ Return this JSON:
             <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:C.g400,marginTop:4}}><span>1</span><span>8</span><span>16 glasses</span></div>
           </div>
         </RRow>
-
         <RRow icon={Ic.wine()} title="Alcohol Consumption" sub="Alcohol interacts with many medications and affects absorption" optional>
           <div>
             <div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:8}}>How often do you drink?</div>
@@ -718,136 +756,174 @@ Return this JSON:
             </div>
             {routine.alcoholFrequency!=='never'&&(
               <div>
-                <div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:6}}>Drinks per occasion</div>
-                <div style={{display:'flex',gap:8}}>
-                  {['1','1-2','2-3','3+'].map(d=>(
-                    <button key={d} type="button" onClick={()=>updR('alcoholDrinks',d)} style={{flex:1,padding:'9px 0',borderRadius:10,border:`1.5px solid ${routine.alcoholDrinks===d?C.teal:C.g200}`,background:routine.alcoholDrinks===d?C.tealBg:'white',color:routine.alcoholDrinks===d?C.teal:C.g600,fontSize:14,fontWeight:routine.alcoholDrinks===d?700:400,cursor:'pointer'}}>
-                      {d}
-                    </button>
+                <div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:6}}>How many drinks per occasion?</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {['1','1-2','2-3','3+'].map(dr=>(
+                    <button key={dr} onClick={()=>updR('alcoholDrinks',dr)} style={{padding:'8px 14px',borderRadius:20,border:`1.5px solid ${routine.alcoholDrinks===dr?C.teal:C.g200}`,background:routine.alcoholDrinks===dr?C.tealBg:'white',color:routine.alcoholDrinks===dr?C.teal:C.g600,fontSize:13,fontWeight:routine.alcoholDrinks===dr?700:400,cursor:'pointer'}}>{dr} {dr==='1'?'drink':'drinks'}</button>
                   ))}
                 </div>
               </div>
             )}
           </div>
         </RRow>
-
-        {err&&<div style={{background:C.redBg,border:`1px solid ${C.red}`,borderRadius:8,padding:'10px 14px',color:C.red,fontSize:14,marginBottom:12}}>{err}</div>}
-        <button onClick={analyze} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:16,fontSize:16,fontWeight:800,cursor:'pointer',marginTop:4}}>
-          Analyze My Health Stack
+        <button onClick={analyze} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:15,fontSize:16,fontWeight:800,cursor:'pointer',marginTop:20}}>
+          Analyze My Stack
         </button>
-        <p style={{textAlign:'center',color:C.g400,fontSize:12,marginTop:8}}>Your data is private and never stored.</p>
+        {err&&<div style={{background:C.redBg,border:`1px solid ${C.red}`,borderRadius:8,padding:'10px 14px',color:C.red,fontSize:14,marginTop:12}}>{err}</div>}
       </div>
     </div>
   );
 
   // ─── LOADING ────────────────────────────────────────────────────────────────
   if(screen==='loading')return(
-    <div style={{minHeight:'100vh',background:C.cream,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:20,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes fade{0%,100%{opacity:0.2}50%{opacity:1}}`}</style>
-      <div style={{animation:'spin 4s linear infinite'}}>{Ic.molecule()}</div>
+    <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',display:'flex',alignItems:'center',justifyContent:'center'}}>
       <div style={{textAlign:'center'}}>
-        <h2 style={{color:C.primary,fontSize:22,fontWeight:800,margin:'0 0 6px'}}>Analyzing Your Health Stack...</h2>
-        <p style={{color:C.g500,fontSize:14,margin:'0 0 4px'}}>Please keep this window open</p>
-        <p style={{color:C.light,fontSize:13,margin:0,fontWeight:600}}>Usually 30-60 seconds</p>
-      </div>
-      <div style={{width:300,display:'flex',flexDirection:'column',gap:10}}>
-        {['Reviewing FDA label data','Checking drug interactions','Mapping to your daily schedule','Calculating Health Stack Score','Building optimized report'].map((t,i)=>(
-          <div key={t} style={{display:'flex',alignItems:'center',gap:10,fontSize:13,color:C.g500,animation:`fade 1.8s ${i*0.35}s ease-in-out infinite`}}>
-            <div style={{width:8,height:8,borderRadius:'50%',background:C.light,flexShrink:0}}/>{t}
-          </div>
-        ))}
+        <div style={{width:60,height:60,borderRadius:'50%',border:`3px solid ${C.tealBorder}`,borderTop:`3px solid ${C.primary}`,animation:'spin 1s linear infinite',margin:'0 auto 20px'}}/>
+        <h2 style={{margin:'0 0 8px',fontSize:20,fontWeight:800,color:C.g900}}>Analyzing Your Stack</h2>
+        <p style={{margin:0,fontSize:14,color:C.g500}}>Finding conflicts and optimizations...</p>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   );
 
-  // ─── PREVIEW ────────────────────────────────────────────────────────────────
-  if(screen==='preview'&&result){const a=result;return(
-    <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
-      <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px'}}>
-        <div style={{maxWidth:700,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div><LogoHeader/><div style={{color:C.g500,fontSize:11,marginTop:2}}>Your Health Stack Score</div></div>
-          <button onClick={()=>setScreen('routine')} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'6px 12px',fontSize:13,cursor:'pointer'}}>Edit</button>
-        </div>
-      </div>
-      <div style={{maxWidth:620,margin:'0 auto',padding:'32px 16px'}}>
-
-        {/* Score card */}
-        <div style={{background:'white',borderRadius:20,padding:'32px 28px',boxShadow:'0 4px 24px rgba(13,126,122,0.12)',marginBottom:24,textAlign:'center',border:`1px solid ${C.tealBorder}`}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.g500,textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:6}}>Your Health Stack Score</div>
-          <div style={{fontSize:13,color:C.g400,marginBottom:24}}>Based on how you currently take your medications and supplements</div>
-          <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:20,flexWrap:'wrap',marginBottom:24}}>
-            <div style={{textAlign:'center'}}>
-              <div style={{fontSize:72,fontWeight:800,color:a.currentScore<60?C.red:a.currentScore<75?C.amber:C.primary,lineHeight:1}}>{a.currentScore}</div>
-              <div style={{fontSize:13,color:C.g400,marginTop:6}}>/100 current</div>
-            </div>
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
-              <svg width={40} height={24} viewBox="0 0 40 24"><path d="M0 12 L32 12 M24 4 L32 12 L24 20" stroke={C.pink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <div style={{background:C.pinkPale,color:C.pink,borderRadius:20,padding:'5px 14px',fontSize:14,fontWeight:800}}>+{a.optimizedScore-a.currentScore} pts</div>
-            </div>
-            <div style={{textAlign:'center'}}>
-              <div style={{fontSize:72,fontWeight:800,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
-              <div style={{fontSize:13,color:C.g400,marginTop:6}}>/100 optimized</div>
-            </div>
-          </div>
-          <div style={{background:C.tealBg,borderRadius:12,padding:'14px 18px',fontSize:14,color:C.primary,lineHeight:1.6,fontWeight:500}}>{a.scoreSummary}</div>
-        </div>
-
-        {/* Blurred issues paywall */}
-        <div style={{background:'white',borderRadius:20,padding:'24px 28px',boxShadow:'0 4px 24px rgba(13,126,122,0.08)',marginBottom:24,border:`1px solid ${C.g200}`,position:'relative',overflow:'hidden'}}>
-          <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'rgba(255,250,243,0.92)',backdropFilter:'blur(3px)',zIndex:2,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:20}}>
-            <div style={{textAlign:'center',padding:'0 24px'}}>
-              <div style={{width:52,height:52,borderRadius:'50%',background:C.pinkPale,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}>
-                {Ic.lock()}
-              </div>
-              <div style={{fontWeight:800,color:C.dark,fontSize:16,marginBottom:6}}>{a.issueCount} Issues Found in Your Routine</div>
-              <div style={{color:C.g500,fontSize:13,lineHeight:1.5}}>Get your full report to see every conflict, fix, and optimized daily schedule</div>
-            </div>
-          </div>
-          <div style={{filter:'blur(5px)',userSelect:'none',pointerEvents:'none'}}>
-            <div style={{fontSize:13,fontWeight:700,color:C.g700,marginBottom:10}}>Issues detected:</div>
-            {[1,2,3].map(i=><div key={i} style={{height:36,background:C.g100,borderRadius:8,marginBottom:8}}/>)}
-          </div>
-        </div>
-
-        {/* Pricing card */}
-        <div style={{background:`linear-gradient(150deg,${C.primary} 0%,${C.mid} 60%,${C.light} 100%)`,borderRadius:24,padding:'32px 28px',boxShadow:'0 8px 32px rgba(13,126,122,0.3)'}}>
-          <div style={{textAlign:'center',marginBottom:24}}>
-            <div style={{color:'rgba(255,255,255,0.8)',fontSize:12,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:8}}>Absovex Full Report</div>
-            <div style={{display:'flex',alignItems:'baseline',justifyContent:'center',gap:4,marginBottom:6}}>
-              <span style={{color:'white',fontSize:52,fontWeight:800,lineHeight:1}}>$29</span>
-            </div>
-            <div style={{color:'rgba(255,255,255,0.7)',fontSize:13,marginBottom:20}}>One-time - Instant access - Downloadable PDF</div>
-          </div>
-
-          {/* Feature list */}
-          <div style={{background:'rgba(255,255,255,0.1)',borderRadius:14,padding:'18px 20px',marginBottom:24}}>
-            <div style={{color:'white',fontSize:12,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:14,textAlign:'center'}}>What is inside your report</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-              {['Full optimized daily schedule','All conflicts and how to fix them','Personalized routine insights','Printable fridge chart','Food and absorption tips','Questions for your doctor','AI Health Advisor chat','Full score breakdown'].map(text=>(
-                <div key={text} style={{display:'flex',alignItems:'flex-start',gap:8,color:'white',fontSize:13}}>
-                  <span style={{width:18,height:18,borderRadius:'50%',background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>
-                    {Ic.check()}
-                  </span>
-                  <span style={{lineHeight:1.4}}>{text}</span>
+  // ─── PREVIEW / PAYWALL ──────────────────────────────────────────────────────
+  if(screen==='preview'&&result){
+    const a=result;
+    return(
+      <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
+        <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px'}}>
+          <div style={{maxWidth:700,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
+            <div style={{display:'flex',alignItems:'center',gap:16}}>
+              <LogoHeader/>
+              <div style={{display:'flex',gap:8}}>
+                <div style={{textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:800,color:a.currentScore<60?C.red:a.currentScore<75?C.amber:C.primary,lineHeight:1}}>{a.currentScore}</div>
+                  <div style={{fontSize:10,color:C.g400}}>current</div>
                 </div>
-              ))}
+                <div style={{display:'flex',alignItems:'center',padding:'0 4px'}}>
+                  <svg width={24} height={14} viewBox="0 0 24 14"><path d="M0 7 L18 7 M12 2 L18 7 L12 12" stroke={C.pink} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+                <div style={{textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:800,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
+                  <div style={{fontSize:10,color:C.g400}}>optimized</div>
+                </div>
+              </div>
+            </div>
+            <button onClick={()=>setScreen('routine')} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'8px 12px',fontSize:13,cursor:'pointer'}}>Edit</button>
+          </div>
+        </div>
+        <div style={{maxWidth:700,margin:'0 auto',padding:'24px 20px'}}>
+          <div style={{background:'white',borderRadius:20,padding:'32px 24px',boxShadow:'0 4px 24px rgba(13,126,122,0.08)',marginBottom:24,border:`1px solid ${C.g200}`,textAlign:'center'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',gap:20,marginBottom:24}}>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:48,fontWeight:800,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
+                <div style={{fontSize:12,color:C.g400,marginTop:6}}>/100 current</div>
+              </div>
+              <div style={{display:'flex',alignItems:'center',padding:'0 4px'}}>
+                <svg width={32} height={20} viewBox="0 0 32 20"><path d="M0 10 L24 10 M18 2 L24 10 L18 18" stroke={C.pink} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:48,fontWeight:800,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
+                <div style={{fontSize:12,color:C.g400,marginTop:6}}>/100 optimized</div>
+              </div>
+            </div>
+            <div style={{background:C.tealBg,borderRadius:12,padding:'14px 18px',fontSize:14,color:C.primary,lineHeight:1.6,fontWeight:500}}>{a.scoreSummary}</div>
+          </div>
+
+          {/* Locked preview of issues */}
+          <div style={{background:'white',borderRadius:20,padding:'24px 28px',boxShadow:'0 4px 24px rgba(13,126,122,0.08)',marginBottom:24,border:`1px solid ${C.g200}`,position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',top:0,left:0,right:0,bottom:0,background:'rgba(255,250,243,0.92)',backdropFilter:'blur(3px)',zIndex:2,display:'flex',alignItems:'center',justifyContent:'center',borderRadius:20}}>
+              <div style={{textAlign:'center',padding:'0 24px'}}>
+                <div style={{width:52,height:52,borderRadius:'50%',background:C.pinkPale,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}>
+                  {Ic.lock()}
+                </div>
+                <div style={{fontWeight:800,color:C.dark,fontSize:16,marginBottom:6}}>{a.issueCount} Issues Found in Your Routine</div>
+                <div style={{color:C.g500,fontSize:13,lineHeight:1.5}}>Get your full report to see every conflict, fix, and optimized daily schedule</div>
+              </div>
+            </div>
+            <div style={{filter:'blur(5px)',userSelect:'none',pointerEvents:'none'}}>
+              <div style={{fontSize:13,fontWeight:700,color:C.g700,marginBottom:10}}>Issues detected:</div>
+              {[1,2,3].map(i=><div key={i} style={{height:36,background:C.g100,borderRadius:8,marginBottom:8}}/>)}
             </div>
           </div>
 
-          <button
-            onClick={()=>{setTab('schedule');setScreen('results');}}
-            style={{width:'100%',background:C.pink,color:'white',border:'none',borderRadius:14,padding:'16px 24px',fontSize:17,fontWeight:800,cursor:'pointer',boxShadow:'0 4px 20px rgba(0,0,0,0.2)',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
-            {Ic.download()}
-            Get Full Report - $29
-          </button>
-          <p style={{color:'rgba(255,255,255,0.6)',fontSize:12,textAlign:'center',margin:0}}>No account needed - Instant access after checkout</p>
+          {/* Paywall section */}
+          <div style={{background:`linear-gradient(150deg,${C.primary} 0%,${C.mid} 60%,${C.light} 100%)`,borderRadius:24,padding:'32px 28px',boxShadow:'0 8px 32px rgba(13,126,122,0.3)'}}>
+            <div style={{textAlign:'center',marginBottom:24}}>
+              <div style={{color:'rgba(255,255,255,0.8)',fontSize:12,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:8}}>ABSOVEX Full Report</div>
+              <div style={{display:'flex',alignItems:'baseline',justifyContent:'center',gap:4,marginBottom:6}}>
+                <span style={{color:'white',fontSize:52,fontWeight:800,lineHeight:1}}>$29</span>
+              </div>
+              <div style={{color:'rgba(255,255,255,0.7)',fontSize:13,marginBottom:20}}>One-time - Instant access - Downloadable PDF</div>
+            </div>
+            <div style={{background:'rgba(255,255,255,0.1)',borderRadius:14,padding:'18px 20px',marginBottom:24}}>
+              <div style={{color:'white',fontSize:12,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:14,textAlign:'center'}}>What is inside your report</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                {['Full optimized daily schedule','All conflicts and how to fix them','Personalized routine insights','Printable fridge chart','Food and absorption tips','Questions for your doctor','AI Health Advisor chat','Full score breakdown'].map(text=>(
+                  <div key={text} style={{display:'flex',alignItems:'flex-start',gap:8,color:'white',fontSize:13}}>
+                    <span style={{width:18,height:18,borderRadius:'50%',background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>
+                      {Ic.check()}
+                    </span>
+                    <span style={{lineHeight:1.4}}>{text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Promo code input */}
+            {paymentStatus!=='paid'&&(
+              <div style={{background:'rgba(255,255,255,0.05)',borderRadius:12,padding:'12px 16px',marginBottom:16,border:'1px solid rgba(255,255,255,0.1)'}}>
+                <style>{`.promo-input::placeholder{color:rgba(255,255,255,0.6);}`}</style>
+                <input
+                  className="promo-input"
+                  type="text"
+                  value={promoCode}
+                  onChange={e=>setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="Have a promo code? Enter here"
+                  style={{width:'100%',background:'rgba(255,255,255,0.08)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:8,padding:'10px 12px',fontSize:13,color:'white',outline:'none'}}
+                />
+              </div>
+            )}
+
+            {/* Status messages */}
+            {paymentStatus==='paid'&&(
+              <div style={{background:'rgba(76,175,80,0.2)',border:'1px solid rgba(76,175,80,0.5)',borderRadius:12,padding:'12px 16px',marginBottom:16,color:'white',fontSize:13,fontWeight:700,textAlign:'center'}}>
+                Payment confirmed! Unlocking your full report...
+              </div>
+            )}
+
+            {paymentStatus==='cancelled'&&(
+              <div style={{background:'rgba(255,152,0,0.2)',border:'1px solid rgba(255,152,0,0.5)',borderRadius:12,padding:'12px 16px',marginBottom:16,color:'#FFE082',fontSize:13,fontWeight:700,textAlign:'center'}}>
+                You left before completing checkout. Start over whenever you're ready. Your session is not saved since we don't store personal data.
+              </div>
+            )}
+
+            {stripeErr&&(
+              <div style={{background:C.redBg,border:`1px solid ${C.red}`,borderRadius:12,padding:'12px 16px',marginBottom:16,color:C.red,fontSize:13}}>
+                {stripeErr}
+              </div>
+            )}
+
+            {/* Checkout button */}
+            <button
+              onClick={startCheckout}
+              disabled={stripeLoading||paymentStatus==='paid'}
+              style={{width:'100%',background:paymentStatus==='paid'?'rgba(255,255,255,0.3)':C.pink,color:'white',border:'none',borderRadius:14,padding:'16px 24px',fontSize:17,fontWeight:800,cursor:paymentStatus==='paid'?'default':'pointer',boxShadow:paymentStatus==='paid'?'none':'0 4px 20px rgba(0,0,0,0.2)',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'center',gap:10,opacity:stripeLoading?0.7:1}}>
+              {stripeLoading?'Processing...':paymentStatus==='paid'?'Proceeding to Report...':'Get Full Report - $29'}
+            </button>
+
+            {paymentStatus!=='paid'&&(
+              <p style={{color:'rgba(255,255,255,0.6)',fontSize:12,textAlign:'center',margin:0}}>No account needed - Instant access after checkout</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );}
+    );
+  }
 
   // ─── RESULTS ────────────────────────────────────────────────────────────────
-  if(screen==='results'&&result){const a=result;
+  if(screen==='results'&&result){
+    const a=result;
     const tabs=[
       {id:'schedule',label:'Schedule'},
       {id:'conflicts',label:`Conflicts (${(a.conflicts||[]).length})`},
@@ -856,7 +932,6 @@ Return this JSON:
     ];
     return(
       <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
-        {/* Header */}
         <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px',position:'sticky',top:0,zIndex:10}}>
           <div style={{maxWidth:700,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}>
             <div style={{display:'flex',alignItems:'center',gap:16}}>
@@ -880,55 +955,36 @@ Return this JSON:
                 {Ic.download()}
                 Download PDF
               </button>
-              <button onClick={()=>setScreen('routine')} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'8px 12px',fontSize:13,cursor:'pointer'}}>Edit</button>
+              <button onClick={()=>{setScreen('routine');setPaymentStatus(null);}} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'8px 12px',fontSize:13,cursor:'pointer'}}>Edit</button>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div style={{background:'white',borderBottom:`1px solid ${C.g200}`,position:'sticky',top:65,zIndex:9}}>
-          <div style={{maxWidth:700,margin:'0 auto',display:'flex',overflowX:'auto'}}>
+        <div style={{maxWidth:700,margin:'0 auto',padding:'20px'}}>
+          <div style={{display:'flex',gap:8,marginBottom:20,background:'white',padding:'6px',borderRadius:12,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:`1px solid ${C.g200}`,overflowX:'auto'}}>
             {tabs.map(t=>(
-              <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:'14px 20px',fontSize:14,fontWeight:tab===t.id?700:500,color:tab===t.id?C.primary:C.g500,border:'none',background:'none',cursor:'pointer',borderBottom:`2px solid ${tab===t.id?C.primary:'transparent'}`,whiteSpace:'nowrap',transition:'all 0.15s'}}>
+              <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,minWidth:100,padding:'10px 14px',borderRadius:10,background:tab===t.id?C.primary:'transparent',color:tab===t.id?'white':C.g600,border:'none',cursor:'pointer',fontSize:13,fontWeight:tab===t.id?700:500,whiteSpace:'nowrap'}}>
                 {t.label}
               </button>
             ))}
           </div>
-        </div>
 
-        <div style={{maxWidth:700,margin:'0 auto',padding:'24px 16px'}}>
-
-          {/* ── Schedule Tab ── */}
           {tab==='schedule'&&(
-            <div>
-              {(a.routineInsights||[]).length>0&&(
-                <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:12,padding:'14px 18px',marginBottom:20}}>
-                  <div style={{fontSize:11,fontWeight:700,color:C.teal,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>Personalized Insights</div>
-                  {(a.routineInsights||[]).map((ins,i)=>(
-                    <div key={i} style={{fontSize:13,color:C.mid,lineHeight:1.6,paddingLeft:10,borderLeft:`2px solid ${C.teal}`,marginBottom:6}}>{ins}</div>
-                  ))}
-                </div>
-              )}
-              {Object.entries(TB).map(([key,tb])=>{
-                const its=(a.schedule||{})[key]||[];
-                if(!its.length)return null;
+            <div style={{display:'flex',flexDirection:'column',gap:16}}>
+              {Object.entries(a.schedule||{}).map(([k,items])=>{
+                if(!items||items.length===0)return null;
+                const b=TB[k];
                 return(
-                  <div key={key} style={{background:'white',borderRadius:16,padding:'20px',marginBottom:16,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g100}`}}>
-                    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14,paddingBottom:10,borderBottom:`2px solid ${tb.color}33`}}>
-                      <div style={{width:4,height:28,background:tb.color,borderRadius:3}}/>
-                      <div>
-                        <div style={{fontWeight:800,fontSize:14,color:tb.color}}>{tb.label}</div>
-                        <div style={{fontSize:12,color:C.g400}}>{tb.time}</div>
-                      </div>
-                    </div>
-                    {its.map((it,i)=>(
-                      <div key={i} style={{display:'flex',gap:14,padding:'10px 12px',borderRadius:10,background:i%2===0?tb.bg:'white',marginBottom:6}}>
-                        <div style={{flex:'0 0 auto',minWidth:140}}>
-                          <div style={{fontWeight:700,fontSize:14,color:C.g900}}>{it.name}</div>
-                          <div style={{fontSize:12,color:C.g500,marginTop:2}}>{fmtTime(it.instruction)}</div>
-                          <div style={{display:'inline-block',background:tb.color,color:'white',borderRadius:20,padding:'2px 9px',fontSize:11,fontWeight:700,marginTop:4}}>{it.dose}</div>
+                  <div key={k} style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',borderLeft:`4px solid ${b.color}`}}>
+                    <div style={{fontSize:13,fontWeight:700,color:b.color,marginBottom:14,textTransform:'uppercase',letterSpacing:'0.08em'}}>{b.label}</div>
+                    <div style={{fontSize:12,color:C.g500,marginBottom:12}}>{b.time}</div>
+                    {items.map((it,i)=>(
+                      <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:i<items.length-1?`1px solid ${C.g100}`:'none'}}>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{it.name}</div>
+                          <div style={{fontSize:12,color:C.g500,marginTop:2}}>{it.dose}</div>
+                          <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{it.instruction}</div>
                         </div>
-                        <div style={{fontSize:13,color:C.g600,lineHeight:1.5,fontStyle:'italic',paddingTop:2}}>{it.reason}</div>
                       </div>
                     ))}
                   </div>
@@ -937,54 +993,24 @@ Return this JSON:
             </div>
           )}
 
-          {/* ── Conflicts Tab ── */}
           {tab==='conflicts'&&(
             <div>
-              {!(a.conflicts||[]).length?(
-                <div style={{background:'white',borderRadius:16,padding:'40px',textAlign:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-                  <div style={{width:52,height:52,borderRadius:'50%',background:C.tealBg,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}>
-                    {Ic.check(C.teal)}
+              {(a.conflicts||[]).length>0?(a.conflicts||[]).map((c,i)=>(
+                <div key={i} style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',marginBottom:16}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+                    <span style={{fontSize:14,fontWeight:700,color:C.g900}}>{c.items.join(' + ')}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:C.red,background:C.redBg,padding:'3px 10px',borderRadius:20}}>-{c.penalty} pts</span>
                   </div>
-                  <div style={{fontWeight:700,fontSize:16,color:C.g900,marginBottom:6}}>No Significant Conflicts Detected</div>
-                  <div style={{fontSize:14,color:C.g500}}>Your stack looks clean. Review the Schedule tab for timing optimizations.</div>
-                </div>
-              ):(a.conflicts||[]).map((c,i)=>{
-                const sv=SEV[c.severity]||SEV.medium;
-                return(
-                  <div key={i} style={{background:'white',borderRadius:16,padding:'20px',marginBottom:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',borderLeft:`4px solid ${sv.color}`}}>
-                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexWrap:'wrap'}}>
-                      <span style={{fontSize:11,fontWeight:800,color:sv.color,background:sv.bg,padding:'3px 10px',borderRadius:20}}>{sv.label}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:C.red,background:C.redBg,padding:'3px 10px',borderRadius:20}}>-{c.penalty} pts</span>
-                      <span style={{fontSize:14,fontWeight:700,color:C.g900}}>{(c.items||[]).join(' + ')}</span>
-                    </div>
-                    <p style={{margin:'0 0 10px',fontSize:14,color:C.g700,lineHeight:1.6}}>{c.issue}</p>
-                    <div style={{background:C.tealBg,borderRadius:8,padding:'10px 14px'}}>
-                      <div style={{fontSize:11,fontWeight:700,color:C.teal,marginBottom:4}}>Recommended Fix</div>
-                      <div style={{fontSize:13,color:C.mid,lineHeight:1.5}}>{c.recommendation}</div>
-                    </div>
+                  <p style={{margin:'0 0 10px',fontSize:14,color:C.g700,lineHeight:1.6}}>{c.issue}</p>
+                  <div style={{background:C.tealBg,borderRadius:8,padding:'10px 14px'}}>
+                    <div style={{fontSize:11,fontWeight:700,color:C.teal,marginBottom:4}}>Recommended Fix</div>
+                    <div style={{fontSize:13,color:C.mid,lineHeight:1.5}}>{c.recommendation}</div>
                   </div>
-                );
-              })}
-              {(a.optimizationLogic||[]).length>0&&(
-                <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',marginTop:8}}>
-                  <div style={{fontSize:13,fontWeight:700,color:C.g700,marginBottom:14,textTransform:'uppercase',letterSpacing:'0.08em'}}>Timing Changes Made</div>
-                  {(a.optimizationLogic||[]).map((l,i,arr)=>(
-                    <div key={i} style={{paddingBottom:12,marginBottom:12,borderBottom:i<arr.length-1?`1px solid ${C.g100}`:'none'}}>
-                      <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:6}}>
-                        <span style={{fontWeight:700,fontSize:14,color:C.g900}}>{l.item}</span>
-                        <span style={{fontSize:12,color:C.g500,background:C.g100,padding:'2px 8px',borderRadius:20}}>{fmtTime(l.oldTiming)}</span>
-                        <svg width={16} height={10} viewBox="0 0 16 10"><path d="M0 5h12M8 1l4 4-4 4" stroke={C.pink} strokeWidth={1.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        <span style={{fontSize:12,color:C.teal,background:C.tealBg,padding:'2px 8px',borderRadius:20,fontWeight:700}}>{fmtTime(l.newTiming)}</span>
-                      </div>
-                      <div style={{fontSize:13,color:C.g600,lineHeight:1.5}}>{l.reason}</div>
-                    </div>
-                  ))}
                 </div>
-              )}
+              )):<div style={{background:'white',borderRadius:16,padding:'20px',textAlign:'center',color:C.g500}}>No conflicts detected. Your routine is well-optimized!</div>}
             </div>
           )}
 
-          {/* ── Recommendations Tab ── */}
           {tab==='recommendations'&&(
             <div>
               {(a.recommendations||[]).length>0&&(
@@ -1010,19 +1036,18 @@ Return this JSON:
                 </div>
               )}
               <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:12,padding:'12px 16px',marginTop:16}}>
-                <div style={{fontSize:12,color:'#92400E',lineHeight:1.6}}><strong>Disclaimer:</strong> This report is for informational purposes only. Always consult your healthcare provider before changing your medication routine.</div>
+                <div style={{fontSize:12,color:'#92400E',lineHeight:1.6}}><strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice. Consult a physician, licensed pharmacist, or qualified healthcare professional before making any changes to your medication or supplement routine.</div>
               </div>
             </div>
           )}
 
-          {/* ── Chat Tab ── */}
           {tab==='chat'&&(
             <div style={{display:'flex',flexDirection:'column',gap:0}}>
               <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',marginBottom:12,minHeight:400,maxHeight:500,overflowY:'auto',display:'flex',flexDirection:'column',gap:12}}>
                 {chat.map((m,i)=>(
                   <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
                     <div style={{maxWidth:'80%',padding:'12px 16px',borderRadius:m.role==='user'?'16px 16px 4px 16px':'16px 16px 16px 4px',background:m.role==='user'?C.primary:'white',color:m.role==='user'?'white':C.g800,fontSize:14,lineHeight:1.6,border:m.role==='assistant'?`1px solid ${C.g200}`:undefined,boxShadow:m.role==='assistant'?'0 1px 4px rgba(0,0,0,0.06)':undefined}}>
-                      {m.content}
+                      {m.role==='assistant'?renderMd(m.content):m.content}
                     </div>
                   </div>
                 ))}
@@ -1048,30 +1073,6 @@ Return this JSON:
             </div>
           )}
 
-          {/* Quick Reference fridge chart */}
-          {tab==='schedule'&&(a.quickReference||[]).length>0&&(
-            <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',marginTop:16,border:`1px solid ${C.g200}`}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-                <div style={{fontSize:13,fontWeight:700,color:C.g700,textTransform:'uppercase',letterSpacing:'0.08em'}}>Quick Reference - Fridge Chart</div>
-                <button onClick={()=>downloadReport(a)} style={{background:C.tealBg,color:C.teal,border:`1px solid ${C.tealBorder}`,borderRadius:8,padding:'6px 12px',fontSize:12,cursor:'pointer',fontWeight:700,display:'flex',alignItems:'center',gap:5}}>
-                  {Ic.download(C.teal)}
-                  Download
-                </button>
-              </div>
-              <div style={{border:`1px solid ${C.g200}`,borderRadius:10,overflow:'hidden'}}>
-                {(a.quickReference||[]).map((row,i)=>(
-                  <div key={i} style={{display:'flex',gap:0,borderBottom:i<(a.quickReference.length-1)?`1px solid ${C.g100}`:'none',background:i%2===0?C.g50:'white'}}>
-                    <div style={{width:160,padding:'10px 14px',fontWeight:700,fontSize:13,color:C.g700,borderRight:`1px solid ${C.g100}`,flexShrink:0}}>{fmtTime(row.time)}</div>
-                    <div style={{padding:'10px 14px',display:'flex',flexWrap:'wrap',gap:5,alignItems:'center'}}>
-                      {(row.items||[]).map((it,j)=>(
-                        <span key={j} style={{background:C.tealBg,color:C.teal,fontSize:12,padding:'3px 10px',borderRadius:20,fontWeight:600}}>{it}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     );
