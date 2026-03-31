@@ -382,15 +382,15 @@ export default function App(){
   const[result,setResult]=useState(null);
   const[err,setErr]=useState('');
   const[tab,setTab]=useState('schedule');
-  const[chat,setChat]=useState([{role:'assistant',content:"Hi! I'm your Absovex AI Advisor.\n\nYour report includes:\n• Up to 5 questions about your plan\n• Up to 2 report updates before download\n\nAsk me anything about your medications, timing, or interactions — or request a change to your schedule."}]);
+  const[chat,setChat]=useState([{role:'assistant',content:"Hi! I'm your Absovex AI Advisor.\n\nYour plan is ready. Ask me anything about your medications, timing, or interactions — or share any adjustments you'd like to make before downloading."}]);
   const[chatIn,setChatIn]=useState('');
   const[chatLoad,setChatLoad]=useState(false);
   const chatEnd=useRef(null);
-  const[questionCount,setQuestionCount]=useState(0);
-  const[revisionCount,setRevisionCount]=useState(0);
+  const[interactionCount,setInteractionCount]=useState(0);
+  const[reportUpdateUsed,setReportUpdateUsed]=useState(false);
   const[revisionPending,setRevisionPending]=useState(null);
-  const[advisorMode,setAdvisorMode]=useState(null);
   const[reportVersion,setReportVersion]=useState(1);
+  const[nearingLimitShown,setNearingLimitShown]=useState(false);
   
   // STRIPE STATE
   const[paymentStatus,setPaymentStatus]=useState(null); // 'processing', 'paid', 'failed', 'cancelled'
@@ -521,9 +521,6 @@ Return this JSON with SHORT values, maximum 10 words per text field:
     }
 }, []);
   
-  const isRevisionIntent=msg=>/\b(add|remove|delete|change|update|adjust|rebuild|replace|switch|move|re-optimize|i forgot|my wake time|instead)\b/i.test(msg);
-  const isQuestionIntent=msg=>/\b(why|what|how|can i|does|explain|is it|should|which|tell me)\b/i.test(msg);
-
   const ADVISOR_SYSTEM=`You are the Absovex AI Advisor — a board-certified clinical pharmacist specializing in medication timing, supplement timing, food effects on absorption, nutrient interactions, and patient-friendly counseling.
 
 Your job: help users understand how to take their medications, supplements, vitamins, minerals, and herbs for best absorption, spacing, and effectiveness based on their daily routine.
@@ -540,7 +537,9 @@ When useful, structure responses as: Summary → What stands out → Why it matt
 
 If unsure: "I want to be careful here because this depends on details not fully clear. Based on general guidance: [guidance]. Timing and safety can change based on dose, formulation, medical history, and other medications. Confirm with your pharmacist or doctor before making changes."
 
-This is a bounded review session. Do not invite open-ended conversation. After answering, optionally add: "Need me to explain another part of your plan, or update something before download?"
+REPORT UPDATE RULE: You have the ability to suggest one report update for the user. If — and only if — you spot a clear, specific, meaningful improvement to the schedule that would benefit the user AND the update has not already been used, end your response with exactly this token on its own line: [SUGGEST_UPDATE: one-sentence description of the change]. Only suggest when it is genuinely warranted. Do not suggest for minor questions or when the update has already been used.
+
+Do not invite open-ended conversation. After answering, optionally add one short line nudging toward download.
 
 Report data: `;
 
@@ -565,61 +564,51 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
       setResult(parsed);
       const newVer=reportVersion+1;
       setReportVersion(newVer);
-      setRevisionCount(c=>c+1);
+      setReportUpdateUsed(true);
       setChat(prev=>[...prev,{role:'assistant',content:`Your report has been updated (v${newVer}). This is now the version that will be downloaded. Download your latest optimized report when you're ready.`}]);
     }catch{
       setChat(prev=>[...prev,{role:'assistant',content:"Something went wrong while updating your report. Your current version is still available, and no update was used."}]);
     }
     setChatLoad(false);
-    setAdvisorMode(null);
     setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth'}),100);
   };
 
   const sendChat=async()=>{
     if(!chatIn.trim()||chatLoad)return;
+    if(interactionCount>=15)return;
     const msg=chatIn.trim();
     setChatIn('');
-    const questionsRemaining=5-questionCount;
-    const revisionsRemaining=2-revisionCount;
-    const questionLocked=questionsRemaining===0;
-    const revisionLocked=revisionsRemaining===0;
-    const effectiveMode=advisorMode||(isRevisionIntent(msg)?'revision':isQuestionIntent(msg)?'question':'unknown');
-
-    if(effectiveMode==='revision'){
-      if(revisionLocked){
-        setChat(prev=>[...prev,{role:'user',content:msg},{role:'assistant',content:"You've used your included report updates. Your latest version is ready to download."}]);
-        return;
-      }
-      setChat(prev=>[...prev,{role:'user',content:msg}]);
-      setRevisionPending(msg);
-      return;
-    }
-
-    if(effectiveMode==='unknown'){
-      setChat(prev=>[...prev,{role:'user',content:msg},{role:'assistant',content:"Do you want me to explain the current plan, or update something before download?"}]);
-      return;
-    }
-
-    // Question flow
-    if(questionLocked){
-      setChat(prev=>[...prev,{role:'user',content:msg},{role:'assistant',content:"You've used your included AI questions for this report."}]);
-      return;
-    }
     const msgs=[...chat,{role:'user',content:msg}];
-    setChat(msgs);setChatLoad(true);
+    setChat(msgs);
+    setChatLoad(true);
     try{
       const res=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:ADVISOR_SYSTEM+JSON.stringify(result),messages:msgs.map(m=>({role:m.role,content:m.content}))})});
       if(!res.ok){const d=await res.json();throw new Error(d?.error?.message||`HTTP ${res.status}`);}
       const d=await res.json();
-      const reply=d.content?.find(b=>b.type==='text')?.text;
+      let reply=d.content?.find(b=>b.type==='text')?.text;
       if(!reply)throw new Error('no reply');
-      setChat([...msgs,{role:'assistant',content:reply}]);
-      setQuestionCount(c=>c+1);
+      const suggestMatch=reply.match(/\[SUGGEST_UPDATE:\s*(.+?)\]/);
+      if(suggestMatch&&!reportUpdateUsed){
+        reply=reply.replace(/\[SUGGEST_UPDATE:\s*.+?\]/,'').trim();
+        const suggestionMsg=`Based on what you shared, I see an opportunity to improve your schedule. I can update your report one time to reflect this — ${suggestMatch[1]}. Would you like me to make that change?`;
+        setChat([...msgs,{role:'assistant',content:reply},{role:'assistant',content:suggestionMsg}]);
+        setRevisionPending(suggestMatch[1]);
+      }else{
+        reply=reply.replace(/\[SUGGEST_UPDATE:\s*.+?\]/,'').trim();
+        setChat([...msgs,{role:'assistant',content:reply}]);
+      }
+      const newCount=interactionCount+1;
+      setInteractionCount(newCount);
+      if(newCount===12&&!nearingLimitShown){
+        setNearingLimitShown(true);
+        setTimeout(()=>{
+          setChat(prev=>[...prev,{role:'assistant',content:"Just so you know, you have a few interactions remaining in this review session. Feel free to ask anything else, or download your report when you're ready."}]);
+        },500);
+      }
     }catch{
-      setChat([...msgs,{role:'assistant',content:"I could not complete that response right now. No question was used. Please try again."}]);
+      setChat([...msgs,{role:'assistant',content:"I could not complete that response right now. Please try again."}]);
     }
     setChatLoad(false);
-    setAdvisorMode(null);
     setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth'}),100);
   };
 
@@ -1025,11 +1014,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
   // ─── RESULTS ────────────────────────────────────────────────────────────────
   if(screen==='results'&&result){
     const a=result;
-    const questionsRemaining=5-questionCount;
-    const revisionsRemaining=2-revisionCount;
-    const questionLocked=questionsRemaining===0;
-    const revisionLocked=revisionsRemaining===0;
-    const fullyLocked=questionLocked&&revisionLocked;
+    const advisorLocked=interactionCount>=15;
     const tabs=[
       {id:'schedule',label:'Schedule'},
       {id:'conflicts',label:`Conflicts (${(a.conflicts||[]).length})`},
@@ -1069,7 +1054,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         <div style={{maxWidth:700,margin:'0 auto',padding:'20px'}}>
           <div onClick={()=>setTab('chat')} style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:10,padding:'10px 16px',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:8}}>
             <span style={{fontSize:14}}>✨</span>
-            <span style={{fontSize:13,color:'#C0186A',fontWeight:600}}>Have a question or need a change before download? Use the AI Advisor now.</span>
+            <span style={{fontSize:13,color:'#C0186A',fontWeight:600}}>Review your plan with the AI Advisor before downloading.</span>
           </div>
           <div style={{display:'flex',gap:8,marginBottom:20,background:'white',padding:'6px',borderRadius:12,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:`1px solid ${C.g200}`,overflowX:'auto'}}>
             {tabs.map(t=>{
@@ -1157,27 +1142,10 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
 
           {tab==='chat'&&(
             <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              {/* Usage counter */}
-              <div style={{background:'white',borderRadius:12,padding:'12px 16px',boxShadow:'0 1px 6px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
-                <div style={{display:'flex',gap:16}}>
-                  <div>
-                    <span style={{fontSize:12,color:questionLocked?'#FF4DAD':C.g500,fontWeight:600}}>Questions left: </span>
-                    <span style={{fontSize:12,fontWeight:700,color:questionLocked?'#FF4DAD':C.g800}}>{questionsRemaining} of 5</span>
-                    <span style={{marginLeft:6}}>{[...Array(5)].map((_,i)=><span key={i} style={{fontSize:10,color:i<questionsRemaining?C.primary:C.g200}}>●</span>)}</span>
-                  </div>
-                  <div>
-                    <span style={{fontSize:12,color:revisionLocked?'#FF4DAD':C.g500,fontWeight:600}}>Updates left: </span>
-                    <span style={{fontSize:12,fontWeight:700,color:revisionLocked?'#FF4DAD':C.g800}}>{revisionsRemaining} of 2</span>
-                    <span style={{marginLeft:6}}>{[...Array(2)].map((_,i)=><span key={i} style={{fontSize:10,color:i<revisionsRemaining?'#FF4DAD':C.g200}}>●</span>)}</span>
-                  </div>
-                </div>
-                <div style={{fontSize:11,color:C.g400}}>v{reportVersion} {reportVersion>1?'· updated':''}</div>
-              </div>
-
               {/* Revision confirmation modal */}
               {revisionPending&&(
                 <div style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:12,padding:'16px',boxShadow:'0 2px 12px rgba(0,0,0,0.08)'}}>
-                  <p style={{margin:'0 0 12px',fontSize:14,color:C.g800,lineHeight:1.6}}>This will update your report and use <strong>1 of your {revisionsRemaining} included updates</strong>. Continue?</p>
+                  <p style={{margin:'0 0 12px',fontSize:14,color:C.g800,lineHeight:1.6}}>This will use <strong>your 1 included report update</strong>. Continue?</p>
                   <div style={{display:'flex',gap:10}}>
                     <button onClick={()=>setRevisionPending(null)} style={{flex:1,background:'white',border:`1px solid ${C.g200}`,borderRadius:8,padding:'9px',fontSize:13,fontWeight:600,color:C.g600,cursor:'pointer'}}>Cancel</button>
                     <button onClick={()=>{const m=revisionPending;setRevisionPending(null);runRevision(m);}} style={{flex:2,background:'#FF4DAD',border:'none',borderRadius:8,padding:'9px',fontSize:13,fontWeight:700,color:'white',cursor:'pointer'}}>Update My Report</button>
@@ -1202,20 +1170,8 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                 <div ref={chatEnd}/>
               </div>
 
-              {/* Mode selector buttons */}
-              {!fullyLocked&&(
-                <div style={{display:'flex',gap:8}}>
-                  <button onClick={()=>setAdvisorMode(advisorMode==='question'?null:'question')} disabled={questionLocked} style={{flex:1,padding:'9px 12px',borderRadius:10,border:`1px solid ${advisorMode==='question'?C.primary:C.g200}`,background:advisorMode==='question'?C.tealBg:'white',color:questionLocked?C.g300:advisorMode==='question'?C.primary:C.g600,fontSize:12,fontWeight:600,cursor:questionLocked?'default':'pointer'}}>
-                    Ask a Question {!questionLocked&&`(${questionsRemaining} left)`}
-                  </button>
-                  <button onClick={()=>setAdvisorMode(advisorMode==='revision'?null:'revision')} disabled={revisionLocked} style={{flex:1,padding:'9px 12px',borderRadius:10,border:`1px solid ${advisorMode==='revision'?'#FF4DAD':C.g200}`,background:advisorMode==='revision'?'#FFF0F8':'white',color:revisionLocked?C.g300:advisorMode==='revision'?'#FF4DAD':C.g600,fontSize:12,fontWeight:600,cursor:revisionLocked?'default':'pointer'}}>
-                    Update My Report {!revisionLocked&&`(${revisionsRemaining} left)`}
-                  </button>
-                </div>
-              )}
-
               {/* Input area */}
-              {fullyLocked?(
+              {advisorLocked?(
                 <div style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:12,padding:'14px 16px',textAlign:'center'}}>
                   <p style={{margin:'0 0 12px',fontSize:13,color:'#C0186A',fontWeight:600}}>You've completed the included AI review for this report. Your final version is ready to download.</p>
                   <button onClick={()=>downloadReport(a)} style={{background:'#FF4DAD',color:'white',border:'none',borderRadius:8,padding:'10px 20px',fontSize:14,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:8}}>
@@ -1223,14 +1179,14 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                   </button>
                 </div>
               ):(
-                <div style={{display:'flex',gap:10,background:'white',padding:12,borderRadius:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${advisorMode==='revision'?'#FF4DAD':advisorMode==='question'?C.primary:C.g200}`}}>
+                <div style={{display:'flex',gap:10,background:'white',padding:12,borderRadius:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
                   <input
                     value={chatIn}
                     onChange={e=>setChatIn(e.target.value)}
                     onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&sendChat()}
-                    placeholder={advisorMode==='revision'?"Describe what you'd like to change...":advisorMode==='question'?"Ask about your medications, timing, or interactions...":"Ask a question or describe a change..."}
+                    placeholder="Ask about your medications, timing, or interactions..."
                     style={{flex:1,border:'none',outline:'none',fontSize:14,color:C.g800,background:'transparent'}}/>
-                  <button onClick={sendChat} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?(advisorMode==='revision'?'#FF4DAD':C.primary):C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
+                  <button onClick={sendChat} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?C.primary:C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
                     {Ic.send(chatIn.trim()&&!chatLoad?'white':C.g400)}
                     Send
                   </button>
