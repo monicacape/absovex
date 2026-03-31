@@ -5,3 +5,5 @@ node_modules/
 .gitignore.env.local
 *.backup.jsx
 package-lock.json
+api/
+.env
