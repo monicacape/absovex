@@ -560,7 +560,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
   if(screen==='welcome')return(
     <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}}>
       <div style={{maxWidth:540,textAlign:'center'}}>
-        <div style={{marginBottom:24}}><img src="/Logo.png" alt="Absovex" style={{height:60,width:'auto'}}/></div>
+        <div style={{marginBottom:24}}><img src="/Logo.png" alt="Absovex" style={{height:120,width:'auto'}}/></div>
         <div style={{marginBottom:20}}>
           <div style={{width:80,height:80,borderRadius:'50%',background:C.tealBg,border:`2px solid ${C.tealBorder}`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
             {Ic.molecule()}
