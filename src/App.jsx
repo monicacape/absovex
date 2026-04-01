@@ -181,6 +181,8 @@ const MED_DB=[
   {name:'Zolpidem',brand:'Ambien',type:'medication',dose:'5mg',aliases:'ambien sleep insomnia'},
   {name:'Colchicine',brand:'Colcrys',type:'medication',dose:'0.6mg',aliases:'colcrys gout'},
   {name:'Allopurinol',type:'medication',dose:'100mg',aliases:'zyloprim gout uric acid'},
+  {name:'Levocetirizine',brand:'Xyzal',type:'medication',dose:'5mg',aliases:'xyzal antihistamine allergy'},
+  {name:'MacuHealth (Lutein + Zeaxanthin + Meso-zeaxanthin)',type:'supplement',dose:'1 capsule',aliases:'macuhealth lutein zeaxanthin meso-zeaxanthin eye macular vision'},
   {name:'Vitamin D3',type:'vitamin',dose:'2000 IU',aliases:'cholecalciferol sunshine vitamin d'},
   {name:'Vitamin D3 5000 IU',type:'vitamin',dose:'5000 IU',aliases:'cholecalciferol high dose d3'},
   {name:'Vitamin D3 10000 IU',type:'vitamin',dose:'10000 IU',aliases:'cholecalciferol high dose d3'},
@@ -251,7 +253,7 @@ const MED_DB=[
   {name:'Black Seed Oil',type:'herb',dose:'1000mg',aliases:'black cumin seed immune nigella'},
 ];
 
-const NEW_ITEM=id=>({id,name:'',type:'supplement',dose:'',timing:'',frequency:'1x day',notes:'',rxcui:null,fdaLabel:null,fetching:false});
+const NEW_ITEM=id=>({id,name:'',type:'supplement',dose:'',timing:'',frequency:'1x day',notes:'',ingredients:'',unrecognized:false,rxcui:null,fdaLabel:null,fetching:false});
 
 const SAMPLE=[
   {id:1,name:'Metformin',type:'medication',dose:'500mg',timing:'Wake (before breakfast)',frequency:'2x day',notes:'',rxcui:null,fdaLabel:null,fetching:false},
@@ -272,14 +274,22 @@ function StableInput({value,onCommit,placeholder,style}){
   return <input type="text" value={v} onChange={e=>setV(e.target.value)} onBlur={()=>onCommit(v)} placeholder={placeholder||''} autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false" style={style||{border:`1px solid ${C.g300}`,borderRadius:8,padding:'11px 13px',fontSize:16,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827'}}/>;
 }
 
-function NameField({value,onCommit,onSelect}){
+function NameField({value,onCommit,onSelect,onUnrecognized}){
   const[v,setV]=useState(value||'');
   useEffect(()=>setV(value||''),[value]);
   const q=v.trim().toLowerCase();
   const hits=q.length>1?MED_DB.filter(m=>m.name.toLowerCase().includes(q)||(m.aliases||'').toLowerCase().includes(q)).slice(0,7):[];
+  const handleBlur=()=>{
+    onCommit(v);
+    if(onUnrecognized&&v.trim().length>2){
+      const t=v.trim().toLowerCase();
+      const matched=MED_DB.some(m=>m.name.toLowerCase().includes(t)||(m.aliases||'').toLowerCase().includes(t));
+      onUnrecognized(!matched);
+    }
+  };
   return(
     <div>
-      <input type="text" value={v} onChange={e=>setV(e.target.value)} onBlur={()=>onCommit(v)}
+      <input type="text" value={v} onChange={e=>setV(e.target.value)} onBlur={handleBlur}
         placeholder="e.g., Levothyroxine, Vitamin D3, Tibolone..."
         autoComplete="off" autoCorrect="off" autoCapitalize="none" spellCheck="false"
         style={{border:`1px solid ${C.g300}`,borderRadius:8,padding:'11px 13px',fontSize:16,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827'}}/>
@@ -406,7 +416,7 @@ export default function App(){
   const HORMONAL=routine.sex==='female'?['Pre-menopausal','Peri-menopausal','Post-menopausal','On HRT','Prefer not to say']:['Standard','On TRT','Prefer not to say'];
 
   const pickDrug=async(itemId,drug)=>{
-    setItems(p=>p.map(i=>i.id===itemId?{...i,name:drug.name,type:drug.type,dose:drug.dose,rxcui:null,fdaLabel:null,fetching:true}:i));
+    setItems(p=>p.map(i=>i.id===itemId?{...i,name:drug.name,type:drug.type,dose:drug.dose,unrecognized:false,rxcui:null,fdaLabel:null,fetching:true}:i));
     const{rxcui,label}=await lookupDrug(drug.generic||drug.name);
     setItems(p=>p.map(i=>i.id===itemId?{...i,rxcui,fdaLabel:label,fetching:false}:i));
   };
@@ -416,7 +426,7 @@ export default function App(){
     if(filled.length<2){setErr('Please add at least 2 items.');return;}
     setErr('');setScreen('loading');
     const r=routine;
-    const stackLines=filled.map((i,n)=>`${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${i.timing||'unspecified'}${i.notes?', '+i.notes:''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,60):''})`).join('\n');
+    const stackLines=filled.map((i,n)=>`${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${i.timing||'unspecified'}${i.ingredients?', ingredients: '+i.ingredients:''}${i.notes?', '+i.notes:''}${i.unrecognized?', [user-submitted, not in database — include in analysis using clinical judgment]':''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,60):''})`).join('\n');
     const routineStr=`${r.sex}${r.age?', age '+r.age:''}${r.hormonalStage?', '+r.hormonalStage:''}. Wake ${r.wakeTime}. ${r.coffeeTea?'Coffee at '+r.coffeeTime+'.':''} Breakfast ${r.breakfastStart}-${r.breakfastEnd}. Lunch ${r.lunchStart}-${r.lunchEnd}. Dinner ${r.dinnerTime}. Bedtime ${r.bedtime}. Water ${r.waterGlasses} glasses/day. Alcohol ${r.alcoholFrequency==='never'?'none':r.alcoholFrequency+', '+r.alcoholDrinks+' drinks'}.`;
     const prompt=`You are a clinical pharmacist. Return ONLY a JSON object. No text before or after. No markdown. No backticks. Keep ALL text fields under 10 words.
 
@@ -695,7 +705,23 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                   </div>
                   <div style={{marginBottom:10}}>
                     <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Name</label>
-                    <NameField value={item.name} onCommit={v=>updItem(item.id,'name',v)} onSelect={m=>pickDrug(item.id,m)}/>
+                    <NameField
+                      value={item.name}
+                      onCommit={v=>updItem(item.id,'name',v)}
+                      onSelect={m=>{updItem(item.id,'unrecognized',false);pickDrug(item.id,m);}}
+                      onUnrecognized={flag=>updItem(item.id,'unrecognized',flag)}/>
+                    {item.unrecognized&&!item.fetching&&!item.fdaLabel&&(
+                      <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:8,padding:'9px 13px',marginTop:6,fontSize:12,color:'#92400E',lineHeight:1.5}}>
+                        We didn't find an exact match. You can still add this and we'll include it in your report.
+                      </div>
+                    )}
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Ingredients or active components <span style={{fontWeight:400,color:C.g400}}>(optional)</span></label>
+                    <StableInput value={item.ingredients||''} onCommit={v=>updItem(item.id,'ingredients',v)} placeholder="e.g., Lutein 10mg, Zeaxanthin 2mg, Meso-zeaxanthin 10mg" style={{...SS,cursor:'text'}}/>
+                    {item.ingredients&&item.ingredients.trim()&&(
+                      <div style={{fontSize:11,color:C.primary,marginTop:4,fontWeight:500}}>Got it. We'll include the ingredients you listed in your report analysis.</div>
+                    )}
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:10}}>
                     <div>
