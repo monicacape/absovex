@@ -123,63 +123,63 @@ const getTip=name=>{
 };
 
 const MED_DB=[
-  {name:'Atorvastatin',type:'medication',dose:'20mg',aliases:'lipitor statin cholesterol'},
-  {name:'Rosuvastatin',type:'medication',dose:'10mg',aliases:'crestor statin'},
-  {name:'Simvastatin',type:'medication',dose:'20mg',aliases:'zocor statin'},
+  {name:'Atorvastatin',brand:'Lipitor',type:'medication',dose:'20mg',aliases:'lipitor statin cholesterol'},
+  {name:'Rosuvastatin',brand:'Crestor',type:'medication',dose:'10mg',aliases:'crestor statin'},
+  {name:'Simvastatin',brand:'Zocor',type:'medication',dose:'20mg',aliases:'zocor statin'},
   {name:'Lisinopril',type:'medication',dose:'10mg',aliases:'prinivil zestril ace blood pressure'},
-  {name:'Losartan',type:'medication',dose:'50mg',aliases:'cozaar arb blood pressure'},
-  {name:'Amlodipine',type:'medication',dose:'5mg',aliases:'norvasc calcium channel'},
-  {name:'Metoprolol',type:'medication',dose:'25mg',aliases:'toprol lopressor beta blocker heart'},
-  {name:'Nebivolol',type:'medication',dose:'5mg',aliases:'bystolic beta blocker blood pressure heart'},
+  {name:'Losartan',brand:'Cozaar',type:'medication',dose:'50mg',aliases:'cozaar arb blood pressure'},
+  {name:'Amlodipine',brand:'Norvasc',type:'medication',dose:'5mg',aliases:'norvasc calcium channel'},
+  {name:'Metoprolol',brand:'Toprol XL',type:'medication',dose:'25mg',aliases:'toprol lopressor beta blocker heart'},
+  {name:'Nebivolol',brand:'Bystolic',type:'medication',dose:'5mg',aliases:'bystolic beta blocker blood pressure heart'},
   {name:'Hydrochlorothiazide',type:'medication',dose:'25mg',aliases:'hctz diuretic water pill'},
-  {name:'Furosemide',type:'medication',dose:'20mg',aliases:'lasix diuretic'},
-  {name:'Warfarin',type:'medication',dose:'5mg',aliases:'coumadin blood thinner'},
-  {name:'Apixaban',type:'medication',dose:'5mg',aliases:'eliquis blood thinner'},
-  {name:'Clopidogrel',type:'medication',dose:'75mg',aliases:'plavix blood thinner'},
+  {name:'Furosemide',brand:'Lasix',type:'medication',dose:'20mg',aliases:'lasix diuretic'},
+  {name:'Warfarin',brand:'Coumadin',type:'medication',dose:'5mg',aliases:'coumadin blood thinner'},
+  {name:'Apixaban',brand:'Eliquis',type:'medication',dose:'5mg',aliases:'eliquis blood thinner'},
+  {name:'Clopidogrel',brand:'Plavix',type:'medication',dose:'75mg',aliases:'plavix blood thinner'},
   {name:'Aspirin',type:'medication',dose:'81mg',aliases:'asa baby aspirin bayer'},
-  {name:'Metformin',type:'medication',dose:'500mg',aliases:'glucophage diabetes blood sugar'},
-  {name:'Metformin ER',type:'medication',dose:'500mg',aliases:'glucophage xr diabetes'},
-  {name:'Empagliflozin',type:'medication',dose:'10mg',aliases:'jardiance diabetes sglt2'},
-  {name:'Semaglutide',type:'medication',dose:'7mg',aliases:'ozempic rybelsus diabetes glp1'},
-  {name:'Levothyroxine',type:'medication',dose:'50mcg',aliases:'synthroid thyroid t4 hypothyroid'},
-  {name:'Liothyronine',type:'medication',dose:'5mcg',aliases:'cytomel thyroid t3'},
+  {name:'Metformin',brand:'Glucophage',type:'medication',dose:'500mg',aliases:'glucophage diabetes blood sugar'},
+  {name:'Metformin ER',brand:'Glucophage XR',type:'medication',dose:'500mg',aliases:'glucophage xr diabetes'},
+  {name:'Empagliflozin',brand:'Jardiance',type:'medication',dose:'10mg',aliases:'jardiance diabetes sglt2'},
+  {name:'Semaglutide',brand:'Ozempic',type:'medication',dose:'7mg',aliases:'ozempic wegovy rybelsus diabetes glp1'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'50mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Liothyronine',brand:'Cytomel',type:'medication',dose:'5mcg',aliases:'cytomel thyroid t3'},
   {name:'Armour Thyroid',type:'medication',dose:'30mg',aliases:'ndt natural desiccated thyroid'},
-  {name:'Tibolone',type:'medication',dose:'2.5mg',aliases:'tibolona livial hormone hrt menopause postmenopause'},
-  {name:'Omeprazole',type:'medication',dose:'20mg',aliases:'prilosec ppi acid reflux gerd'},
-  {name:'Pantoprazole',type:'medication',dose:'40mg',aliases:'protonix ppi acid reflux'},
-  {name:'Esomeprazole',type:'medication',dose:'40mg',aliases:'nexium ppi acid'},
-  {name:'Famotidine',type:'medication',dose:'20mg',aliases:'pepcid h2 acid heartburn'},
-  {name:'Sertraline',type:'medication',dose:'50mg',aliases:'zoloft ssri antidepressant depression'},
-  {name:'Escitalopram',type:'medication',dose:'10mg',aliases:'lexapro ssri antidepressant anxiety'},
-  {name:'Fluoxetine',type:'medication',dose:'20mg',aliases:'prozac ssri antidepressant'},
-  {name:'Venlafaxine',type:'medication',dose:'75mg',aliases:'effexor snri antidepressant'},
-  {name:'Duloxetine',type:'medication',dose:'30mg',aliases:'cymbalta snri pain'},
-  {name:'Bupropion',type:'medication',dose:'150mg',aliases:'wellbutrin antidepressant'},
-  {name:'Alprazolam',type:'medication',dose:'0.5mg',aliases:'xanax benzo anxiety'},
-  {name:'Clonazepam',type:'medication',dose:'0.5mg',aliases:'klonopin benzo anxiety'},
-  {name:'Quetiapine',type:'medication',dose:'25mg',aliases:'seroquel antipsychotic sleep'},
-  {name:'Lamotrigine',type:'medication',dose:'25mg',aliases:'lamictal mood stabilizer bipolar'},
-  {name:'Amphetamine Salts',type:'medication',dose:'10mg',aliases:'adderall adhd stimulant'},
-  {name:'Methylphenidate',type:'medication',dose:'10mg',aliases:'ritalin concerta adhd'},
-  {name:'Ibuprofen',type:'medication',dose:'400mg',aliases:'advil motrin nsaid pain'},
-  {name:'Acetaminophen',type:'medication',dose:'500mg',aliases:'tylenol paracetamol pain fever'},
-  {name:'Gabapentin',type:'medication',dose:'300mg',aliases:'neurontin nerve pain'},
-  {name:'Pregabalin',type:'medication',dose:'75mg',aliases:'lyrica nerve pain fibromyalgia'},
+  {name:'Tibolone',brand:'Livial',type:'medication',dose:'2.5mg',aliases:'tibolona livial hormone hrt menopause postmenopause'},
+  {name:'Omeprazole',brand:'Prilosec',type:'medication',dose:'20mg',aliases:'prilosec ppi acid reflux gerd'},
+  {name:'Pantoprazole',brand:'Protonix',type:'medication',dose:'40mg',aliases:'protonix ppi acid reflux'},
+  {name:'Esomeprazole',brand:'Nexium',type:'medication',dose:'40mg',aliases:'nexium ppi acid'},
+  {name:'Famotidine',brand:'Pepcid',type:'medication',dose:'20mg',aliases:'pepcid h2 acid heartburn'},
+  {name:'Sertraline',brand:'Zoloft',type:'medication',dose:'50mg',aliases:'zoloft ssri antidepressant depression'},
+  {name:'Escitalopram',brand:'Lexapro',type:'medication',dose:'10mg',aliases:'lexapro ssri antidepressant anxiety'},
+  {name:'Fluoxetine',brand:'Prozac',type:'medication',dose:'20mg',aliases:'prozac ssri antidepressant'},
+  {name:'Venlafaxine',brand:'Effexor',type:'medication',dose:'75mg',aliases:'effexor snri antidepressant'},
+  {name:'Duloxetine',brand:'Cymbalta',type:'medication',dose:'30mg',aliases:'cymbalta snri pain'},
+  {name:'Bupropion',brand:'Wellbutrin',type:'medication',dose:'150mg',aliases:'wellbutrin antidepressant'},
+  {name:'Alprazolam',brand:'Xanax',type:'medication',dose:'0.5mg',aliases:'xanax benzo anxiety'},
+  {name:'Clonazepam',brand:'Klonopin',type:'medication',dose:'0.5mg',aliases:'klonopin benzo anxiety'},
+  {name:'Quetiapine',brand:'Seroquel',type:'medication',dose:'25mg',aliases:'seroquel antipsychotic sleep'},
+  {name:'Lamotrigine',brand:'Lamictal',type:'medication',dose:'25mg',aliases:'lamictal mood stabilizer bipolar'},
+  {name:'Amphetamine Salts',brand:'Adderall',type:'medication',dose:'10mg',aliases:'adderall adhd stimulant'},
+  {name:'Methylphenidate',brand:'Ritalin',type:'medication',dose:'10mg',aliases:'ritalin concerta adhd'},
+  {name:'Ibuprofen',brand:'Advil',type:'medication',dose:'400mg',aliases:'advil motrin nsaid pain'},
+  {name:'Acetaminophen',brand:'Tylenol',type:'medication',dose:'500mg',aliases:'tylenol paracetamol pain fever'},
+  {name:'Gabapentin',brand:'Neurontin',type:'medication',dose:'300mg',aliases:'neurontin nerve pain'},
+  {name:'Pregabalin',brand:'Lyrica',type:'medication',dose:'75mg',aliases:'lyrica nerve pain fibromyalgia'},
   {name:'Prednisone',type:'medication',dose:'10mg',aliases:'corticosteroid steroid inflammation'},
-  {name:'Cetirizine',type:'medication',dose:'10mg',aliases:'zyrtec antihistamine allergy'},
-  {name:'Loratadine',type:'medication',dose:'10mg',aliases:'claritin antihistamine allergy'},
-  {name:'Montelukast',type:'medication',dose:'10mg',aliases:'singulair asthma allergy'},
-  {name:'Estradiol',type:'medication',dose:'1mg',aliases:'estrace estrogen hrt menopause'},
-  {name:'Progesterone',type:'medication',dose:'100mg',aliases:'prometrium hrt menopause'},
-  {name:'Tamoxifen',type:'medication',dose:'20mg',aliases:'nolvadex breast cancer'},
-  {name:'Alendronate',type:'medication',dose:'70mg',aliases:'fosamax osteoporosis bone'},
-  {name:'Testosterone (TRT)',type:'medication',dose:'50mg',aliases:'androgel testosterone replacement'},
+  {name:'Cetirizine',brand:'Zyrtec',type:'medication',dose:'10mg',aliases:'zyrtec antihistamine allergy'},
+  {name:'Loratadine',brand:'Claritin',type:'medication',dose:'10mg',aliases:'claritin antihistamine allergy'},
+  {name:'Montelukast',brand:'Singulair',type:'medication',dose:'10mg',aliases:'singulair asthma allergy'},
+  {name:'Estradiol',brand:'Estrace',type:'medication',dose:'1mg',aliases:'estrace estrogen hrt menopause'},
+  {name:'Progesterone',brand:'Prometrium',type:'medication',dose:'100mg',aliases:'prometrium hrt menopause'},
+  {name:'Tamoxifen',brand:'Nolvadex',type:'medication',dose:'20mg',aliases:'nolvadex breast cancer'},
+  {name:'Alendronate',brand:'Fosamax',type:'medication',dose:'70mg',aliases:'fosamax osteoporosis bone'},
+  {name:'Testosterone (TRT)',brand:'Androgel',type:'medication',dose:'50mg',aliases:'androgel testosterone replacement'},
   {name:'Amoxicillin',type:'medication',dose:'500mg',aliases:'antibiotic infection'},
-  {name:'Doxycycline',type:'medication',dose:'100mg',aliases:'vibramycin antibiotic acne'},
-  {name:'Azithromycin',type:'medication',dose:'250mg',aliases:'zithromax z-pack antibiotic'},
-  {name:'Hydroxychloroquine',type:'medication',dose:'200mg',aliases:'plaquenil lupus arthritis'},
-  {name:'Zolpidem',type:'medication',dose:'5mg',aliases:'ambien sleep insomnia'},
-  {name:'Colchicine',type:'medication',dose:'0.6mg',aliases:'colcrys gout'},
+  {name:'Doxycycline',brand:'Vibramycin',type:'medication',dose:'100mg',aliases:'vibramycin antibiotic acne'},
+  {name:'Azithromycin',brand:'Zithromax',type:'medication',dose:'250mg',aliases:'zithromax z-pack antibiotic'},
+  {name:'Hydroxychloroquine',brand:'Plaquenil',type:'medication',dose:'200mg',aliases:'plaquenil lupus arthritis'},
+  {name:'Zolpidem',brand:'Ambien',type:'medication',dose:'5mg',aliases:'ambien sleep insomnia'},
+  {name:'Colchicine',brand:'Colcrys',type:'medication',dose:'0.6mg',aliases:'colcrys gout'},
   {name:'Allopurinol',type:'medication',dose:'100mg',aliases:'zyloprim gout uric acid'},
   {name:'Vitamin D3',type:'vitamin',dose:'2000 IU',aliases:'cholecalciferol sunshine vitamin d'},
   {name:'Vitamin D3 5000 IU',type:'vitamin',dose:'5000 IU',aliases:'cholecalciferol high dose d3'},
@@ -287,14 +287,17 @@ function NameField({value,onCommit,onSelect}){
         <div style={{marginTop:6}}>
           <div style={{fontSize:11,color:C.g400,marginBottom:4,fontWeight:600}}>Quick pick:</div>
           <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-            {hits.map(m=>(
-              <button key={m.name} type="button"
-                onMouseDown={e=>{e.preventDefault();setV(m.name);onSelect(m);}}
-                onTouchEnd={e=>{e.preventDefault();setV(m.name);onSelect(m);}}
-                style={{background:C.pale,color:C.primary,border:`1px solid ${C.light}`,borderRadius:20,padding:'5px 12px',fontSize:13,cursor:'pointer',fontWeight:600}}>
-                {m.name} <span style={{fontWeight:400,fontSize:11,color:C.teal}}>{m.dose}</span>
-              </button>
-            ))}
+            {hits.map(m=>{
+              const displayName=m.brand?`${m.name} (${m.brand})`:m.name;
+              return(
+                <button key={m.name} type="button"
+                  onMouseDown={e=>{e.preventDefault();setV(displayName);onSelect({...m,name:displayName,generic:m.name});}}
+                  onTouchEnd={e=>{e.preventDefault();setV(displayName);onSelect({...m,name:displayName,generic:m.name});}}
+                  style={{background:C.pale,color:C.primary,border:`1px solid ${C.light}`,borderRadius:20,padding:'5px 12px',fontSize:13,cursor:'pointer',fontWeight:600}}>
+                  {m.name}{m.brand&&<span style={{fontWeight:500,fontSize:11,color:C.g500}}> ({m.brand})</span>} <span style={{fontWeight:400,fontSize:11,color:C.teal}}>{m.dose}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -404,7 +407,7 @@ export default function App(){
 
   const pickDrug=async(itemId,drug)=>{
     setItems(p=>p.map(i=>i.id===itemId?{...i,name:drug.name,type:drug.type,dose:drug.dose,rxcui:null,fdaLabel:null,fetching:true}:i));
-    const{rxcui,label}=await lookupDrug(drug.name);
+    const{rxcui,label}=await lookupDrug(drug.generic||drug.name);
     setItems(p=>p.map(i=>i.id===itemId?{...i,rxcui,fdaLabel:label,fetching:false}:i));
   };
 
