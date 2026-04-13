@@ -406,12 +406,24 @@ export default function App(){
   const[reportVersion,setReportVersion]=useState(1);
   const[nearingLimitShown,setNearingLimitShown]=useState(false);
   const[sessionRestored,setSessionRestored]=useState(false);
+  const[largeText,setLargeText]=useState(()=>{try{return localStorage.getItem('absovexLargeText')==='1';}catch{return false;}});
+  const fs=n=>largeText?Math.round(n*1.2):n;
+  const toggleLargeText=()=>setLargeText(p=>{const next=!p;try{localStorage.setItem('absovexLargeText',next?'1':'0');}catch{}return next;});
 
   // STRIPE STATE
   const[paymentStatus,setPaymentStatus]=useState(null); // 'processing', 'paid', 'failed', 'cancelled'
   const[promoCode,setPromoCode]=useState(''); // User enters BETA or other promo code
   const[stripeLoading,setStripeLoading]=useState(false);
   const[stripeErr,setStripeErr]=useState('');
+
+  // ─── FORM FONT SCALE ────────────────────────────────────────────────────────
+  const FLABEL={fontSize:fs(16),fontWeight:600,color:C.g500,display:'block',marginBottom:4};
+  const FLABEL6={fontSize:fs(16),fontWeight:600,color:C.g500,marginBottom:6};
+  const FLABEL8={fontSize:fs(16),fontWeight:600,color:C.g500,marginBottom:8};
+  const FHELPER={margin:'5px 0 0',fontSize:fs(14),color:C.g400,lineHeight:1.5};
+  const FBODY={fontSize:fs(16),color:C.g600};
+  const FSS={...SS,fontSize:fs(16)};
+  const FTOGGLE={fontSize:fs(16),color:C.g600};
 
   const updItem=(id,f,v)=>setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i));
   const updR=(f,v)=>setRoutine(p=>({...p,[f]:v}));
@@ -707,8 +719,11 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
     <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',position:'relative',zIndex:1,overflowX:'hidden'}}>
       <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px'}}>
         <div style={{maxWidth:720,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div><LogoHeader/><div style={{color:C.g500,fontSize:12,marginTop:2}}>Step 1 of 3 - Enter Your Stack</div></div>
-          <button onClick={()=>setItems(SAMPLE)} style={{background:C.primary,color:'white',border:'none',borderRadius:8,padding:'7px 13px',fontSize:12,cursor:'pointer',fontWeight:700}}>Load Sample</button>
+          <div><LogoHeader/><div style={{color:C.g500,fontSize:fs(14),marginTop:2}}>Step 1 of 4 — Enter Your Stack</div></div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <button title="Adjust text size" onClick={toggleLargeText} style={{background:largeText?C.tealBg:'white',border:`1.5px solid ${largeText?C.teal:C.g300}`,borderRadius:8,padding:'5px 10px',fontSize:13,fontWeight:800,color:largeText?C.teal:C.g500,cursor:'pointer',letterSpacing:'0.03em'}}>AA</button>
+            <button onClick={()=>setItems(SAMPLE)} style={{background:C.primary,color:'white',border:'none',borderRadius:8,padding:'7px 13px',fontSize:fs(13),cursor:'pointer',fontWeight:700}}>Load Sample</button>
+          </div>
         </div>
       </div>
       <div style={{maxWidth:720,margin:'0 auto',padding:'20px 16px'}}>
@@ -744,13 +759,13 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                     {items.length>1&&<button onClick={()=>setItems(p=>p.filter(i=>i.id!==item.id))} style={{background:'none',border:'none',color:C.g400,cursor:'pointer',fontSize:22,padding:0,lineHeight:1}}>x</button>}
                   </div>
                   <div style={{marginBottom:10}}>
-                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Name</label>
+                    <label style={FLABEL}>Name</label>
                     <NameField
                       value={item.name}
                       onCommit={v=>updItem(item.id,'name',v)}
                       onSelect={m=>{updItem(item.id,'unrecognized',false);pickDrug(item.id,m);}}
                       onUnrecognized={flag=>updItem(item.id,'unrecognized',flag)}/>
-                    <p style={{margin:'4px 0 0',fontSize:12,color:C.g400,lineHeight:1.4}}>Enter brand name or generic name. Example: Eliquis or Apixaban.</p>
+                    <p style={{...FHELPER,margin:'4px 0 0'}}>Enter brand name or generic name. Example: Eliquis or Apixaban.</p>
                     {item.unrecognized&&!item.fetching&&!item.fdaLabel&&(
                       <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:8,padding:'9px 13px',marginTop:6,fontSize:12,color:'#92400E',lineHeight:1.5}}>
                         We didn't find an exact match. You can still add this and we'll include it in your report.
@@ -758,7 +773,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                     )}
                   </div>
                   <div style={{marginBottom:10}}>
-                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'flex',alignItems:'center',gap:5,marginBottom:4}}>
+                    <label style={{...FLABEL,display:'flex',alignItems:'center',gap:5}}>
                       Ingredients or active components <span style={{fontWeight:400,color:C.g400}}>(optional)</span>
                       <span style={{position:'relative',display:'inline-flex',alignItems:'center'}} onMouseEnter={e=>e.currentTarget.querySelector('.ing-tip').style.display='block'} onMouseLeave={e=>e.currentTarget.querySelector('.ing-tip').style.display='none'} onTouchStart={e=>{const t=e.currentTarget.querySelector('.ing-tip');t.style.display=t.style.display==='block'?'none':'block';}}>
                         <svg width={14} height={14} viewBox="0 0 24 24" fill="none" style={{cursor:'pointer',flexShrink:0}}><circle cx={12} cy={12} r={10} stroke={C.g400} strokeWidth={2}/><path d="M12 16v-4M12 8h.01" stroke={C.g400} strokeWidth={2} strokeLinecap="round"/></svg>
@@ -767,31 +782,31 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                         </span>
                       </span>
                     </label>
-                    <StableInput value={item.ingredients||''} onCommit={v=>updItem(item.id,'ingredients',v)} placeholder="e.g., Lutein 10mg, Zeaxanthin 2mg, Meso-zeaxanthin 10mg" style={{...SS,cursor:'text'}}/>
+                    <StableInput value={item.ingredients||''} onCommit={v=>updItem(item.id,'ingredients',v)} placeholder="e.g., Lutein 10mg, Zeaxanthin 2mg, Meso-zeaxanthin 10mg" style={{...FSS,cursor:'text'}}/>
                     {item.ingredients&&item.ingredients.trim()&&(
-                      <div style={{fontSize:11,color:C.primary,marginTop:4,fontWeight:500}}>Got it. We'll include the ingredients you listed in your report analysis.</div>
+                      <div style={{fontSize:fs(14),color:C.primary,marginTop:4,fontWeight:500}}>Got it. We'll include the ingredients you listed in your report analysis.</div>
                     )}
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:10}}>
                     <div>
-                      <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Type</label>
-                      <select value={item.type} onChange={e=>updItem(item.id,'type',e.target.value)} style={SS}>
+                      <label style={FLABEL}>Type</label>
+                      <select value={item.type} onChange={e=>updItem(item.id,'type',e.target.value)} style={FSS}>
                         {['medication','supplement','vitamin','mineral','herb'].map(o=><option key={o} value={o}>{o.charAt(0).toUpperCase()+o.slice(1)}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Dose</label>
-                      <StableInput value={item.dose} onCommit={v=>updItem(item.id,'dose',v)} placeholder="e.g., 500mg" style={{...SS,cursor:'text'}}/>
+                      <label style={FLABEL}>Dose</label>
+                      <StableInput value={item.dose} onCommit={v=>updItem(item.id,'dose',v)} placeholder="e.g., 500mg" style={{...FSS,cursor:'text'}}/>
                     </div>
                     <div>
-                      <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Frequency</label>
-                      <select value={item.frequency||'1x day'} onChange={e=>updItem(item.id,'frequency',e.target.value)} style={SS}>
+                      <label style={FLABEL}>Frequency</label>
+                      <select value={item.frequency||'1x day'} onChange={e=>updItem(item.id,'frequency',e.target.value)} style={FSS}>
                         {['1x day','2x day','3x day','Weekly','Monthly','As needed'].map(f=><option key={f} value={f}>{f}</option>)}
                       </select>
                     </div>
                   </div>
                   <div style={{marginBottom:10}}>
-                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:6}}>When do you currently take this? <span style={{fontWeight:400,color:C.g400}}>(optional — select all that apply)</span></label>
+                    <label style={{...FLABEL,marginBottom:6}}>When do you currently take this? <span style={{fontWeight:400,color:C.g400}}>(optional — select all that apply)</span></label>
                     <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:6}}>
                       {TIMING_OPTIONS.map(opt=>{
                         const selected=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean).includes(opt);
@@ -803,7 +818,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                             if(!next.includes(opt))delete newTimes[opt];
                             updItem(item.id,'timingTimes',newTimes);
                             updItem(item.id,'timing',next.join(', '));
-                          }} style={{padding:'7px 14px',borderRadius:20,border:`1.5px solid ${selected?C.teal:C.g200}`,background:selected?C.tealBg:'white',color:selected?C.teal:C.g600,fontSize:13,fontWeight:selected?700:400,cursor:'pointer'}}>
+                          }} style={{padding:'7px 14px',borderRadius:20,border:`1.5px solid ${selected?C.teal:C.g200}`,background:selected?C.tealBg:'white',color:selected?C.teal:C.g600,fontSize:fs(15),fontWeight:selected?700:400,cursor:'pointer'}}>
                             {opt}
                           </button>
                         );
@@ -813,7 +828,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                       <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
                         {(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean).map(opt=>(
                           <div key={opt} style={{display:'flex',alignItems:'center',gap:10}}>
-                            <label style={{fontSize:12,color:C.g600,fontWeight:600,minWidth:130}}>{opt} dose time</label>
+                            <label style={{fontSize:fs(15),color:C.g600,fontWeight:600,minWidth:140}}>{opt} dose time</label>
                             <input type="time" value={(item.timingTimes||{})[opt]||''} onChange={e=>{
                               updItem(item.id,'timingTimes',{...(item.timingTimes||{}),[opt]:e.target.value});
                             }} style={{border:`1.5px solid ${C.g200}`,borderRadius:8,padding:'6px 10px',fontSize:14,color:C.g800,background:'white',outline:'none',cursor:'pointer'}}/>
@@ -821,7 +836,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                         ))}
                       </div>
                     )}
-                    <p style={{margin:'6px 0 0',fontSize:12,color:C.g400,lineHeight:1.5}}>Telling us when you actually take this helps show a more accurate before/after comparison.</p>
+                    <p style={{...FHELPER,margin:'6px 0 0'}}>Telling us when you actually take this helps show a more accurate before/after comparison.</p>
                   </div>
                   {item.fetching&&<div style={{background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:8,padding:'9px 13px',marginBottom:10,fontSize:12,color:C.blue,fontWeight:600}}>Looking up in FDA database...</div>}
                   {!item.fetching&&item.fdaLabel&&(
@@ -845,8 +860,8 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                     </button>
                   )}
                   <div>
-                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Personal Notes (optional)</label>
-                    <StableInput value={item.notes} onCommit={v=>updItem(item.id,'notes',v)} placeholder="e.g., makes me nauseous, take with food..." style={{...SS,cursor:'text'}}/>
+                    <label style={FLABEL}>Personal Notes (optional)</label>
+                    <StableInput value={item.notes} onCommit={v=>updItem(item.id,'notes',v)} placeholder="e.g., makes me nauseous, take with food..." style={{...FSS,cursor:'text'}}/>
                   </div>
                 </div>
               );
@@ -868,16 +883,19 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
     <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',position:'relative',zIndex:1}}>
       <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px'}}>
         <div style={{maxWidth:600,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <div><LogoHeader/><div style={{color:C.g500,fontSize:12,marginTop:2}}>Step 2 of 3 - My Routine</div></div>
-          <button onClick={()=>setScreen('input')} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'6px 12px',fontSize:13,cursor:'pointer'}}>Back</button>
+          <div><LogoHeader/><div style={{color:C.g500,fontSize:fs(14),marginTop:2}}>Step 2 of 4 — My Routine</div></div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <button title="Adjust text size" onClick={toggleLargeText} style={{background:largeText?C.tealBg:'white',border:`1.5px solid ${largeText?C.teal:C.g300}`,borderRadius:8,padding:'5px 10px',fontSize:13,fontWeight:800,color:largeText?C.teal:C.g500,cursor:'pointer',letterSpacing:'0.03em'}}>AA</button>
+            <button onClick={()=>setScreen('input')} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'6px 12px',fontSize:fs(14),cursor:'pointer'}}>Back</button>
+          </div>
         </div>
       </div>
       <div style={{maxWidth:600,margin:'0 auto',padding:'20px 16px'}}>
-        <div style={{marginBottom:18}}><h2 style={{margin:'0 0 4px',fontSize:20,fontWeight:800,color:C.g900}}>My Routine</h2><p style={{margin:0,fontSize:14,color:C.g500}}>Set your daily schedule to perfectly time your medications.</p></div>
+        <div style={{marginBottom:18}}><h2 style={{margin:'0 0 4px',fontSize:fs(20),fontWeight:800,color:C.g900}}>My Routine</h2><p style={{margin:0,fontSize:fs(15),color:C.g500}}>Set your daily schedule to perfectly time your medications.</p></div>
         <RRow icon={Ic.person()} title="About You" sub="Helps personalize advice for hormonal health, absorption, and age-related patterns">
           <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:16,alignItems:'start'}}>
             <div>
-              <div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:8}}>Biological Sex</div>
+              <div style={FLABEL8}>Biological Sex</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:12}}>
                 {['female','male','other','prefer not to say'].map(s=>(
                   <button key={s} onClick={()=>updR('sex',s)} style={{padding:'10px 12px',borderRadius:10,border:`1.5px solid ${routine.sex===s?C.teal:C.g200}`,background:routine.sex===s?C.tealBg:'white',color:routine.sex===s?C.teal:C.g600,fontSize:14,fontWeight:routine.sex===s?700:400,cursor:'pointer',textTransform:'capitalize'}}>
@@ -887,27 +905,27 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
               </div>
               {(routine.sex==='female'||routine.sex==='male')&&(
                 <div>
-                  <div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:6}}>Hormonal Stage</div>
+                  <div style={FLABEL6}>Hormonal Stage</div>
                   <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
                     {HORMONAL.map(s=><button key={s} onClick={()=>updR('hormonalStage',s)} style={{padding:'7px 12px',borderRadius:20,border:`1.5px solid ${routine.hormonalStage===s?C.teal:C.g200}`,background:routine.hormonalStage===s?C.tealBg:'white',color:routine.hormonalStage===s?C.teal:C.g600,fontSize:13,fontWeight:routine.hormonalStage===s?700:400,cursor:'pointer'}}>{s}</button>)}
                   </div>
                 </div>
               )}
             </div>
-            <div><div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:8}}>Age</div><input type="number" value={routine.age} onChange={e=>updR('age',e.target.value)} placeholder="--" min="1" max="120" style={{border:`1.5px solid ${C.g200}`,borderRadius:10,padding:'10px 12px',fontSize:16,width:72,textAlign:'center',outline:'none',color:C.g800}}/></div>
+            <div><div style={FLABEL8}>Age</div><input type="number" value={routine.age} onChange={e=>updR('age',e.target.value)} placeholder="--" min="1" max="120" style={{border:`1.5px solid ${C.g200}`,borderRadius:10,padding:'10px 12px',fontSize:16,width:72,textAlign:'center',outline:'none',color:C.g800}}/></div>
           </div>
         </RRow>
         <RRow icon={Ic.sun()} title="Wake Time" sub="When do you typically wake up?"><TimeInput value={routine.wakeTime} onChange={v=>updR('wakeTime',v)}/></RRow>
         <RRow icon={Ic.coffee()} title="Morning Tea or Coffee" sub="Helps plan spacing for thyroid and other sensitive medications">
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.coffeeTea?12:0}}>
-            <span style={{fontSize:15,color:C.g600}}>I drink coffee or tea in the morning</span>
+            <span style={FTOGGLE}>I drink coffee or tea in the morning</span>
             <Toggle on={routine.coffeeTea} onChange={v=>updR('coffeeTea',v)}/>
           </div>
-          {routine.coffeeTea&&<div><div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:6}}>Usually around</div><TimeInput value={routine.coffeeTime} onChange={v=>updR('coffeeTime',v)}/></div>}
+          {routine.coffeeTea&&<div><div style={FLABEL6}>Usually around</div><TimeInput value={routine.coffeeTime} onChange={v=>updR('coffeeTime',v)}/></div>}
         </RRow>
         <RRow icon={Ic.fork()} title="Breakfast Window" sub="Set a range if your breakfast time varies">
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.hasBreakfast!==false?12:0}}>
-            <span style={{fontSize:15,color:C.g600}}>I eat this meal</span>
+            <span style={FTOGGLE}>I eat this meal</span>
             <Toggle on={routine.hasBreakfast!==false} onChange={v=>updR('hasBreakfast',v)}/>
           </div>
           {routine.hasBreakfast!==false&&<div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
@@ -918,7 +936,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         </RRow>
         <RRow icon={Ic.salad()} title="Lunch Window" sub="Your midday meal time range">
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.hasLunch!==false?12:0}}>
-            <span style={{fontSize:15,color:C.g600}}>I eat this meal</span>
+            <span style={FTOGGLE}>I eat this meal</span>
             <Toggle on={routine.hasLunch!==false} onChange={v=>updR('hasLunch',v)}/>
           </div>
           {routine.hasLunch!==false&&<div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
@@ -929,14 +947,14 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         </RRow>
         <RRow icon={Ic.plate()} title="Dinner" sub="Your evening meal time">
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.hasDinner!==false?12:0}}>
-            <span style={{fontSize:15,color:C.g600}}>I eat this meal</span>
+            <span style={FTOGGLE}>I eat this meal</span>
             <Toggle on={routine.hasDinner!==false} onChange={v=>updR('hasDinner',v)}/>
           </div>
           {routine.hasDinner!==false&&<TimeInput value={routine.dinnerTime} onChange={v=>updR('dinnerTime',v)}/>}
         </RRow>
         <RRow icon={Ic.moon()} title="Evening Snack" sub="Useful for planning around evening medications" optional>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.eveningSnack?12:0}}>
-            <span style={{fontSize:15,color:C.g600}}>I usually have an evening snack</span>
+            <span style={FTOGGLE}>I usually have an evening snack</span>
             <Toggle on={routine.eveningSnack} onChange={v=>updR('eveningSnack',v)}/>
           </div>
           {routine.eveningSnack&&<TimeInput value={routine.snackTime} onChange={v=>updR('snackTime',v)}/>}
@@ -945,7 +963,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         <RRow icon={Ic.drop()} title="Daily Water Intake" sub="Hydration affects how your body absorbs medications and supplements">
           <div>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-              <span style={{fontSize:15,color:C.g600}}>Glasses per day</span>
+              <span style={FTOGGLE}>Glasses per day</span>
               <span style={{fontSize:22,fontWeight:800,color:C.teal}}>{routine.waterGlasses}</span>
             </div>
             <input type="range" min={1} max={16} step={1} value={routine.waterGlasses} onChange={e=>updR('waterGlasses',Number(e.target.value))} style={{width:'100%',accentColor:C.teal,cursor:'pointer'}}/>
@@ -954,7 +972,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         </RRow>
         <RRow icon={Ic.wine()} title="Alcohol Consumption" sub="Alcohol interacts with many medications and affects absorption" optional>
           <div>
-            <div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:8}}>How often do you drink?</div>
+            <div style={FLABEL8}>How often do you drink?</div>
             <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:10}}>
               {['never','occasionally','1-2x week','3-4x week','daily'].map(f=>(
                 <button key={f} type="button" onClick={()=>updR('alcoholFrequency',f)} style={{padding:'8px 14px',borderRadius:20,border:`1.5px solid ${routine.alcoholFrequency===f?C.teal:C.g200}`,background:routine.alcoholFrequency===f?C.tealBg:'white',color:routine.alcoholFrequency===f?C.teal:C.g600,fontSize:13,fontWeight:routine.alcoholFrequency===f?700:400,cursor:'pointer'}}>
@@ -964,7 +982,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             </div>
             {routine.alcoholFrequency!=='never'&&(
               <div>
-                <div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:6}}>How many drinks per occasion?</div>
+                <div style={FLABEL6}>How many drinks per occasion?</div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
                   {['1','1-2','2-3','3+'].map(dr=>(
                     <button key={dr} onClick={()=>updR('alcoholDrinks',dr)} style={{padding:'8px 14px',borderRadius:20,border:`1.5px solid ${routine.alcoholDrinks===dr?C.teal:C.g200}`,background:routine.alcoholDrinks===dr?C.tealBg:'white',color:routine.alcoholDrinks===dr?C.teal:C.g600,fontSize:13,fontWeight:routine.alcoholDrinks===dr?700:400,cursor:'pointer'}}>{dr} {dr==='1'?'drink':'drinks'}</button>
@@ -974,13 +992,100 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             )}
           </div>
         </RRow>
-        <button onClick={analyze} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:15,fontSize:16,fontWeight:800,cursor:'pointer',marginTop:20}}>
-          Analyze My Stack
+        <button onClick={()=>setScreen('review')} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:15,fontSize:fs(16),fontWeight:800,cursor:'pointer',marginTop:20}}>
+          Review My Entries
         </button>
         {err&&<div style={{background:C.redBg,border:`1px solid ${C.red}`,borderRadius:8,padding:'10px 14px',color:C.red,fontSize:14,marginTop:12}}>{err}</div>}
       </div>
     </div>
   );
+
+  // ─── REVIEW ─────────────────────────────────────────────────────────────────
+  if(screen==='review'){
+    const fmtTime=t=>{if(!t)return null;const[h,m]=t.split(':');const hr=parseInt(h);return`${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;};
+    const filledItems=items.filter(i=>i.name.trim());
+    const meds=filledItems.filter(i=>i.type==='medication');
+    const supps=filledItems.filter(i=>i.type!=='medication');
+    const rv=routine;
+    const RSection=({title,onEdit,children})=>(
+      <div style={{background:'white',borderRadius:14,padding:'18px 20px',marginBottom:10,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:`1px solid ${C.g100}`}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+          <span style={{fontSize:fs(16),fontWeight:800,color:C.g900}}>{title}</span>
+          <button onClick={onEdit} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'5px 14px',fontSize:fs(14),fontWeight:600,cursor:'pointer'}}>Edit</button>
+        </div>
+        {children}
+      </div>
+    );
+    const ItemRow=({item})=>(
+      <div style={{borderBottom:`1px solid ${C.g100}`,paddingBottom:10,marginBottom:10}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+          <span style={{fontSize:fs(16),fontWeight:700,color:C.g900}}>{item.name}</span>
+          <span style={{fontSize:fs(13),color:C.g500,background:C.g100,borderRadius:12,padding:'2px 10px',whiteSpace:'nowrap',flexShrink:0,textTransform:'capitalize'}}>{item.type}</span>
+        </div>
+        {item.dose&&<div style={{fontSize:fs(14),color:C.g600,marginTop:3}}>Dose: {item.dose}</div>}
+        {item.frequency&&<div style={{fontSize:fs(14),color:C.g600}}>Frequency: {item.frequency}</div>}
+        {item.timing&&<div style={{fontSize:fs(14),color:C.g600}}>Timing: {item.timing}{item.timingTimes&&Object.keys(item.timingTimes).length>0?' ('+Object.entries(item.timingTimes).map(([k,v])=>`${k}: ${fmtTime(v)||v}`).join(', ')+')'  :''}</div>}
+        {item.ingredients&&<div style={{fontSize:fs(14),color:C.g600}}>Ingredients: {item.ingredients}</div>}
+        {item.notes&&<div style={{fontSize:fs(14),color:C.g600}}>Notes: {item.notes}</div>}
+      </div>
+    );
+    return(
+      <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif',position:'relative',zIndex:1}}>
+        <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px'}}>
+          <div style={{maxWidth:680,margin:'0 auto',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <div><LogoHeader/><div style={{color:C.g500,fontSize:fs(14),marginTop:2}}>Step 3 of 4 — Review</div></div>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <button title="Adjust text size" onClick={toggleLargeText} style={{background:largeText?C.tealBg:'white',border:`1.5px solid ${largeText?C.teal:C.g300}`,borderRadius:8,padding:'5px 10px',fontSize:13,fontWeight:800,color:largeText?C.teal:C.g500,cursor:'pointer',letterSpacing:'0.03em'}}>AA</button>
+              <button onClick={()=>setScreen('routine')} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'6px 12px',fontSize:fs(14),cursor:'pointer'}}>Back</button>
+            </div>
+          </div>
+        </div>
+        <div style={{maxWidth:680,margin:'0 auto',padding:'20px 16px'}}>
+          <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:10,padding:'12px 16px',marginBottom:18}}>
+            <p style={{margin:0,fontSize:fs(15),color:C.primary,fontWeight:600,lineHeight:1.5}}>Review your entries before we generate your report. Make any corrections now.</p>
+          </div>
+          {meds.length>0&&(
+            <RSection title="Medications" onEdit={()=>setScreen('input')}>
+              {meds.map(i=><ItemRow key={i.id} item={i}/>)}
+            </RSection>
+          )}
+          {supps.length>0&&(
+            <RSection title="Supplements, Vitamins & Herbs" onEdit={()=>setScreen('input')}>
+              {supps.map(i=><ItemRow key={i.id} item={i}/>)}
+            </RSection>
+          )}
+          <RSection title="Daily Routine" onEdit={()=>setScreen('routine')}>
+            <div style={{display:'flex',flexDirection:'column',gap:6}}>
+              {[
+                ['Wake time', fmtTime(rv.wakeTime)],
+                rv.coffeeTea&&['Coffee / Tea', fmtTime(rv.coffeeTime)],
+                rv.hasBreakfast!==false&&['Breakfast', `${fmtTime(rv.breakfastStart)} – ${fmtTime(rv.breakfastEnd)}`],
+                rv.hasLunch!==false&&['Lunch', `${fmtTime(rv.lunchStart)} – ${fmtTime(rv.lunchEnd)}`],
+                rv.hasDinner!==false&&['Dinner', fmtTime(rv.dinnerTime)],
+                rv.eveningSnack&&['Evening snack', fmtTime(rv.snackTime)],
+                ['Bedtime', fmtTime(rv.bedtime)],
+                ['Water intake', `${rv.waterGlasses} glasses/day`],
+                ['Alcohol', rv.alcoholFrequency==='never'?'None':`${rv.alcoholFrequency}${rv.alcoholFrequency!=='never'?', '+rv.alcoholDrinks+' drink(s)':''}`],
+                rv.sex&&['Sex', rv.sex],
+                rv.age&&['Age', rv.age],
+                rv.hormonalStage&&['Hormonal stage', rv.hormonalStage],
+              ].filter(Boolean).map(([label,val])=>(
+                <div key={label} style={{display:'flex',gap:8,fontSize:fs(15)}}>
+                  <span style={{color:C.g500,minWidth:160,flexShrink:0}}>{label}</span>
+                  <span style={{color:C.g800,fontWeight:600}}>{val}</span>
+                </div>
+              ))}
+            </div>
+          </RSection>
+          {err&&<div style={{background:C.redBg,border:`1px solid ${C.red}`,borderRadius:8,padding:'10px 14px',color:C.red,fontSize:fs(14),marginBottom:12}}>{err}</div>}
+          <button onClick={analyze} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:16,fontSize:fs(17),fontWeight:800,cursor:'pointer',marginTop:4}}>
+            This looks right. Generate my report.
+          </button>
+          <p style={{textAlign:'center',color:C.g500,fontSize:fs(13),marginTop:8}}>Your data is private and never stored.</p>
+        </div>
+      </div>
+    );
+  }
 
   // ─── LOADING ────────────────────────────────────────────────────────────────
   if(screen==='loading')return(
