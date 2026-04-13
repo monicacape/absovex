@@ -128,6 +128,7 @@ const MED_DB=[
   {name:'Simvastatin',brand:'Zocor',type:'medication',dose:'20mg',aliases:'zocor statin'},
   {name:'Lisinopril',type:'medication',dose:'10mg',aliases:'prinivil zestril ace blood pressure'},
   {name:'Losartan',brand:'Cozaar',type:'medication',dose:'50mg',aliases:'cozaar arb blood pressure'},
+  {name:'Valsartan',brand:'Diovan',type:'medication',dose:'80mg',aliases:'diovan arb blood pressure heart failure'},
   {name:'Amlodipine',brand:'Norvasc',type:'medication',dose:'5mg',aliases:'norvasc calcium channel'},
   {name:'Metoprolol',brand:'Toprol XL',type:'medication',dose:'25mg',aliases:'toprol lopressor beta blocker heart'},
   {name:'Nebivolol',brand:'Bystolic',type:'medication',dose:'5mg',aliases:'bystolic beta blocker blood pressure heart'},
@@ -141,7 +142,18 @@ const MED_DB=[
   {name:'Metformin ER',brand:'Glucophage XR',type:'medication',dose:'500mg',aliases:'glucophage xr diabetes'},
   {name:'Empagliflozin',brand:'Jardiance',type:'medication',dose:'10mg',aliases:'jardiance diabetes sglt2'},
   {name:'Semaglutide',brand:'Ozempic',type:'medication',dose:'7mg',aliases:'ozempic wegovy rybelsus diabetes glp1'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'25mcg',aliases:'synthroid thyroid t4 hypothyroid'},
   {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'50mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'75mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'88mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'100mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'112mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'125mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'137mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'150mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'175mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'200mcg',aliases:'synthroid thyroid t4 hypothyroid'},
+  {name:'Levothyroxine',brand:'Synthroid',type:'medication',dose:'300mcg',aliases:'synthroid thyroid t4 hypothyroid'},
   {name:'Liothyronine',brand:'Cytomel',type:'medication',dose:'5mcg',aliases:'cytomel thyroid t3'},
   {name:'Armour Thyroid',type:'medication',dose:'30mg',aliases:'ndt natural desiccated thyroid'},
   {name:'Tibolone',brand:'Livial',type:'medication',dose:'2.5mg',aliases:'tibolona livial hormone hrt menopause postmenopause'},
@@ -242,7 +254,7 @@ const MED_DB=[
   {name:'Milk Thistle',type:'herb',dose:'150mg',aliases:'liver detox silymarin hepatic'},
   {name:'Valerian Root',type:'herb',dose:'450mg',aliases:'sleep anxiety insomnia'},
   {name:'Elderberry',type:'herb',dose:'500mg',aliases:'immune cold flu sambucus'},
-  {name:'St. Johns Wort',type:'herb',dose:'300mg',aliases:'depression mood anxiety herb'},
+  {name:"St. John's Wort",type:'herb',dose:'300mg',aliases:"st johns wort depression mood anxiety herb hypericum"},
   {name:'Saw Palmetto',type:'herb',dose:'320mg',aliases:'prostate hair loss dht men'},
   {name:'Black Cohosh',type:'herb',dose:'40mg',aliases:'menopause hot flashes women hormone'},
   {name:'Vitex (Chasteberry)',type:'herb',dose:'400mg',aliases:'pms hormone progesterone cycle'},
@@ -767,7 +779,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                       onUnrecognized={flag=>updItem(item.id,'unrecognized',flag)}/>
                     <p style={{...FHELPER,margin:'4px 0 0'}}>Enter brand name or generic name. Example: Eliquis or Apixaban.</p>
                     {item.unrecognized&&!item.fetching&&!item.fdaLabel&&(
-                      <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:8,padding:'9px 13px',marginTop:6,fontSize:12,color:'#92400E',lineHeight:1.5}}>
+                      <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:8,padding:'9px 13px',marginTop:6,fontSize:fs(14),color:C.primary,lineHeight:1.5}}>
                         We didn't find an exact match. You can still add this and we'll include it in your report.
                       </div>
                     )}
@@ -1027,6 +1039,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         {item.timing&&<div style={{fontSize:fs(14),color:C.g600}}>Timing: {item.timing}{item.timingTimes&&Object.keys(item.timingTimes).length>0?' ('+Object.entries(item.timingTimes).map(([k,v])=>`${k}: ${fmtTime(v)||v}`).join(', ')+')'  :''}</div>}
         {item.ingredients&&<div style={{fontSize:fs(14),color:C.g600}}>Ingredients: {item.ingredients}</div>}
         {item.notes&&<div style={{fontSize:fs(14),color:C.g600}}>Notes: {item.notes}</div>}
+        {item.unrecognized&&<div style={{fontSize:fs(13),color:C.amber,fontWeight:600,marginTop:4}}>⚠ Added as entered. Verify spelling before generating your report.</div>}
       </div>
     );
     return(
