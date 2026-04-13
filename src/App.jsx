@@ -404,7 +404,8 @@ export default function App(){
   const[revisionPending,setRevisionPending]=useState(null);
   const[reportVersion,setReportVersion]=useState(1);
   const[nearingLimitShown,setNearingLimitShown]=useState(false);
-  
+  const[sessionRestored,setSessionRestored]=useState(false);
+
   // STRIPE STATE
   const[paymentStatus,setPaymentStatus]=useState(null); // 'processing', 'paid', 'failed', 'cancelled'
   const[promoCode,setPromoCode]=useState(''); // User enters BETA or other promo code
@@ -460,6 +461,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
       setPaymentStatus(null);
       setPromoCode('');
       setStripeErr('');
+      localStorage.removeItem('absovexSession');
       setScreen('preview');
     }catch(e){setErr('Analysis failed: '+e.message);setScreen('routine');}
   };
@@ -519,6 +521,23 @@ Return this JSON with SHORT values, maximum 10 words per text field:
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    if(!sessionId&&cancelled!=='true'){
+      try{
+        const saved=localStorage.getItem('absovexSession');
+        if(saved){
+          const parsed=JSON.parse(saved);
+          if(Array.isArray(parsed)&&parsed.some(i=>i.name&&i.name.trim())){
+            setItems(parsed.map(i=>({...NEW_ITEM(i.id||Date.now()),
+              name:i.name||'',type:i.type||'supplement',dose:i.dose||'',
+              timing:i.timing||'',frequency:i.frequency||'1x day',
+              notes:i.notes||'',ingredients:i.ingredients||'',unrecognized:!!i.unrecognized,
+              fetching:false,rxcui:null,fdaLabel:null})));
+            setSessionRestored(true);
+          }
+        }
+      }catch{}
+    }
+
     if(sessionId){
       const saved=localStorage.getItem('absovexReport');
       if(saved){
@@ -533,7 +552,15 @@ Return this JSON with SHORT values, maximum 10 words per text field:
       setScreen('results');
     }
 }, []);
-  
+
+  useEffect(()=>{
+    if(screen==='input'&&items.some(i=>i.name.trim())){
+      const toSave=items.map(({id,name,type,dose,timing,frequency,notes,ingredients,unrecognized})=>
+        ({id,name,type,dose,timing,frequency,notes:notes||'',ingredients:ingredients||'',unrecognized:!!unrecognized}));
+      localStorage.setItem('absovexSession',JSON.stringify(toSave));
+    }
+  },[items,screen]);
+
   const ADVISOR_SYSTEM=`You are the Absovex AI Advisor — a board-certified clinical pharmacist specializing in medication timing, supplement timing, food effects on absorption, nutrient interactions, and patient-friendly counseling.
 
 Your job: help users understand how to take their medications, supplements, vitamins, minerals, and herbs for best absorption, spacing, and effectiveness based on their daily routine.
@@ -681,6 +708,15 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         </div>
       </div>
       <div style={{maxWidth:720,margin:'0 auto',padding:'20px 16px'}}>
+        <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:10,padding:'10px 16px',marginBottom:12,display:'flex',gap:8,alignItems:'center'}}>
+          <span style={{fontSize:12,color:C.primary,fontWeight:600}}>Complete your entries in one sitting. If you leave or close this page, your progress will be saved and restored when you return.</span>
+        </div>
+        {sessionRestored&&(
+          <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:10,padding:'10px 16px',marginBottom:12,display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+            <span style={{fontSize:12,color:'#92400E',fontWeight:600}}>We restored your previous entries. Please review before continuing.</span>
+            <button onClick={()=>{setItems([NEW_ITEM(1)]);localStorage.removeItem('absovexSession');setSessionRestored(false);}} style={{background:'none',border:'1px solid #FDE68A',borderRadius:7,padding:'5px 12px',fontSize:12,color:'#92400E',cursor:'pointer',fontWeight:600,whiteSpace:'nowrap'}}>Start fresh</button>
+          </div>
+        )}
         <div style={{display:'flex',gap:10,marginBottom:14}}>
           <div style={{flex:1,background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:10,padding:'10px 16px',display:'flex',gap:10,alignItems:'center'}}>
             {Ic.signal()}
