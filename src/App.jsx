@@ -253,7 +253,8 @@ const MED_DB=[
   {name:'Black Seed Oil',type:'herb',dose:'1000mg',aliases:'black cumin seed immune nigella'},
 ];
 
-const NEW_ITEM=id=>({id,name:'',type:'supplement',dose:'',timing:'',frequency:'1x day',notes:'',ingredients:'',unrecognized:false,rxcui:null,fdaLabel:null,fetching:false});
+const TIMING_OPTIONS=['Morning','Noon','Afternoon','Evening','Bedtime'];
+const NEW_ITEM=id=>({id,name:'',type:'supplement',dose:'',timing:'',timingTimes:{},frequency:'1x day',notes:'',ingredients:'',unrecognized:false,rxcui:null,fdaLabel:null,fetching:false});
 
 const SAMPLE=[
   {id:1,name:'Metformin',type:'medication',dose:'500mg',timing:'Wake (before breakfast)',frequency:'2x day',notes:'',rxcui:null,fdaLabel:null,fetching:false},
@@ -266,7 +267,7 @@ const SAMPLE=[
   {id:8,name:'Vitamin B12 (Methylcobalamin)',type:'vitamin',dose:'1000mcg',timing:'With Breakfast',frequency:'1x day',notes:'',rxcui:null,fdaLabel:null,fetching:false},
 ];
 
-const DEF_R={sex:'female',age:'',hormonalStage:'',wakeTime:'07:00',coffeeTea:true,coffeeTime:'08:00',breakfastStart:'09:00',breakfastEnd:'10:00',lunchStart:'12:30',lunchEnd:'13:30',dinnerTime:'18:00',eveningSnack:false,snackTime:'21:00',bedtime:'23:00',waterGlasses:8,alcoholFrequency:'never',alcoholDrinks:'1-2'};
+const DEF_R={sex:'female',age:'',hormonalStage:'',wakeTime:'07:00',coffeeTea:true,coffeeTime:'08:00',hasBreakfast:true,breakfastStart:'09:00',breakfastEnd:'10:00',hasLunch:true,lunchStart:'12:30',lunchEnd:'13:30',hasDinner:true,dinnerTime:'18:00',eveningSnack:false,snackTime:'21:00',bedtime:'23:00',waterGlasses:8,alcoholFrequency:'never',alcoholDrinks:'1-2'};
 
 function StableInput({value,onCommit,placeholder,style}){
   const[v,setV]=useState(value||'');
@@ -427,7 +428,10 @@ export default function App(){
     if(filled.length<2){setErr('Please add at least 2 items.');return;}
     setErr('');setScreen('loading');
     const r=routine;
-    const stackLines=filled.map((i,n)=>`${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${i.timing||'unspecified'}${i.ingredients?', ingredients: '+i.ingredients:''}${i.notes?', '+i.notes:''}${i.unrecognized?', [user-submitted, not in database — include in analysis using clinical judgment]':''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,60):''})`).join('\n');
+    const stackLines=filled.map((i,n)=>{
+      const timingDetail=i.timing?i.timing+(i.timingTimes&&Object.keys(i.timingTimes).length>0?' ('+Object.entries(i.timingTimes).map(([k,v])=>`${k}: ${v}`).join(', ')+')'  :''):'unspecified';
+      return `${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${timingDetail}${i.ingredients?', ingredients: '+i.ingredients:''}${i.notes?', '+i.notes:''}${i.unrecognized?', [user-submitted, not in database — include in analysis using clinical judgment]':''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,60):''})`;}
+    ).join('\n');
     const routineStr=`${r.sex}${r.age?', age '+r.age:''}${r.hormonalStage?', '+r.hormonalStage:''}. Wake ${r.wakeTime}. ${r.coffeeTea?'Coffee at '+r.coffeeTime+'.':''} Breakfast ${r.breakfastStart}-${r.breakfastEnd}. Lunch ${r.lunchStart}-${r.lunchEnd}. Dinner ${r.dinnerTime}. Bedtime ${r.bedtime}. Water ${r.waterGlasses} glasses/day. Alcohol ${r.alcoholFrequency==='never'?'none':r.alcoholFrequency+', '+r.alcoholDrinks+' drinks'}.`;
     const prompt=`You are a clinical pharmacist. Return ONLY a JSON object. No text before or after. No markdown. No backticks. Keep ALL text fields under 10 words.
 
@@ -529,7 +533,7 @@ Return this JSON with SHORT values, maximum 10 words per text field:
           if(Array.isArray(parsed)&&parsed.some(i=>i.name&&i.name.trim())){
             setItems(parsed.map(i=>({...NEW_ITEM(i.id||Date.now()),
               name:i.name||'',type:i.type||'supplement',dose:i.dose||'',
-              timing:i.timing||'',frequency:i.frequency||'1x day',
+              timing:i.timing||'',timingTimes:i.timingTimes||{},frequency:i.frequency||'1x day',
               notes:i.notes||'',ingredients:i.ingredients||'',unrecognized:!!i.unrecognized,
               fetching:false,rxcui:null,fdaLabel:null})));
             setSessionRestored(true);
@@ -555,8 +559,8 @@ Return this JSON with SHORT values, maximum 10 words per text field:
 
   useEffect(()=>{
     if(screen==='input'&&items.some(i=>i.name.trim())){
-      const toSave=items.map(({id,name,type,dose,timing,frequency,notes,ingredients,unrecognized})=>
-        ({id,name,type,dose,timing,frequency,notes:notes||'',ingredients:ingredients||'',unrecognized:!!unrecognized}));
+      const toSave=items.map(({id,name,type,dose,timing,timingTimes,frequency,notes,ingredients,unrecognized})=>
+        ({id,name,type,dose,timing,timingTimes:timingTimes||{},frequency,notes:notes||'',ingredients:ingredients||'',unrecognized:!!unrecognized}));
       localStorage.setItem('absovexSession',JSON.stringify(toSave));
     }
   },[items,screen]);
@@ -746,6 +750,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                       onCommit={v=>updItem(item.id,'name',v)}
                       onSelect={m=>{updItem(item.id,'unrecognized',false);pickDrug(item.id,m);}}
                       onUnrecognized={flag=>updItem(item.id,'unrecognized',flag)}/>
+                    <p style={{margin:'4px 0 0',fontSize:12,color:C.g400,lineHeight:1.4}}>Enter brand name or generic name. Example: Eliquis or Apixaban.</p>
                     {item.unrecognized&&!item.fetching&&!item.fdaLabel&&(
                       <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:8,padding:'9px 13px',marginTop:6,fontSize:12,color:'#92400E',lineHeight:1.5}}>
                         We didn't find an exact match. You can still add this and we'll include it in your report.
@@ -753,7 +758,15 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                     )}
                   </div>
                   <div style={{marginBottom:10}}>
-                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>Ingredients or active components <span style={{fontWeight:400,color:C.g400}}>(optional)</span></label>
+                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'flex',alignItems:'center',gap:5,marginBottom:4}}>
+                      Ingredients or active components <span style={{fontWeight:400,color:C.g400}}>(optional)</span>
+                      <span style={{position:'relative',display:'inline-flex',alignItems:'center'}} onMouseEnter={e=>e.currentTarget.querySelector('.ing-tip').style.display='block'} onMouseLeave={e=>e.currentTarget.querySelector('.ing-tip').style.display='none'} onTouchStart={e=>{const t=e.currentTarget.querySelector('.ing-tip');t.style.display=t.style.display==='block'?'none':'block';}}>
+                        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" style={{cursor:'pointer',flexShrink:0}}><circle cx={12} cy={12} r={10} stroke={C.g400} strokeWidth={2}/><path d="M12 16v-4M12 8h.01" stroke={C.g400} strokeWidth={2} strokeLinecap="round"/></svg>
+                        <span className="ing-tip" style={{display:'none',position:'absolute',bottom:'calc(100% + 6px)',left:'50%',transform:'translateX(-50%)',background:C.g800,color:'white',fontSize:11,lineHeight:1.5,padding:'8px 12px',borderRadius:8,whiteSpace:'normal',width:240,zIndex:99,boxShadow:'0 4px 12px rgba(0,0,0,0.15)',fontWeight:400,pointerEvents:'none'}}>
+                          Optional. List key ingredients if your supplement has multiple active components. Example: Lutein 10mg, Zeaxanthin 2mg.
+                        </span>
+                      </span>
+                    </label>
                     <StableInput value={item.ingredients||''} onCommit={v=>updItem(item.id,'ingredients',v)} placeholder="e.g., Lutein 10mg, Zeaxanthin 2mg, Meso-zeaxanthin 10mg" style={{...SS,cursor:'text'}}/>
                     {item.ingredients&&item.ingredients.trim()&&(
                       <div style={{fontSize:11,color:C.primary,marginTop:4,fontWeight:500}}>Got it. We'll include the ingredients you listed in your report analysis.</div>
@@ -778,12 +791,37 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                     </div>
                   </div>
                   <div style={{marginBottom:10}}>
-                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:4}}>When do you currently take this? (optional)</label>
-                    <select value={item.timing} onChange={e=>updItem(item.id,'timing',e.target.value)} style={{...SS,color:item.timing?C.g800:C.g400}}>
-                      <option value="">Select timing...</option>
-                      {['Wake (before breakfast)','With Breakfast','With Lunch','Afternoon','With Dinner','Bedtime','As needed'].map(t=><option key={t} value={t}>{t}</option>)}
-                    </select>
-                    <p style={{margin:'5px 0 0',fontSize:12,color:C.g400,lineHeight:1.5}}>Telling us when you actually take this helps show a more accurate before/after comparison.</p>
+                    <label style={{fontSize:11,fontWeight:600,color:C.g500,display:'block',marginBottom:6}}>When do you currently take this? <span style={{fontWeight:400,color:C.g400}}>(optional — select all that apply)</span></label>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:6}}>
+                      {TIMING_OPTIONS.map(opt=>{
+                        const selected=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean).includes(opt);
+                        return(
+                          <button key={opt} type="button" onClick={()=>{
+                            const cur=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
+                            const next=selected?cur.filter(x=>x!==opt):[...cur,opt];
+                            const newTimes={...item.timingTimes};
+                            if(!next.includes(opt))delete newTimes[opt];
+                            updItem(item.id,'timingTimes',newTimes);
+                            updItem(item.id,'timing',next.join(', '));
+                          }} style={{padding:'7px 14px',borderRadius:20,border:`1.5px solid ${selected?C.teal:C.g200}`,background:selected?C.tealBg:'white',color:selected?C.teal:C.g600,fontSize:13,fontWeight:selected?700:400,cursor:'pointer'}}>
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean).length>0&&(
+                      <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+                        {(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean).map(opt=>(
+                          <div key={opt} style={{display:'flex',alignItems:'center',gap:10}}>
+                            <label style={{fontSize:12,color:C.g600,fontWeight:600,minWidth:130}}>{opt} dose time</label>
+                            <input type="time" value={(item.timingTimes||{})[opt]||''} onChange={e=>{
+                              updItem(item.id,'timingTimes',{...(item.timingTimes||{}),[opt]:e.target.value});
+                            }} style={{border:`1.5px solid ${C.g200}`,borderRadius:8,padding:'6px 10px',fontSize:14,color:C.g800,background:'white',outline:'none',cursor:'pointer'}}/>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p style={{margin:'6px 0 0',fontSize:12,color:C.g400,lineHeight:1.5}}>Telling us when you actually take this helps show a more accurate before/after comparison.</p>
                   </div>
                   {item.fetching&&<div style={{background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:8,padding:'9px 13px',marginBottom:10,fontSize:12,color:C.blue,fontWeight:600}}>Looking up in FDA database...</div>}
                   {!item.fetching&&item.fdaLabel&&(
@@ -868,20 +906,34 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
           {routine.coffeeTea&&<div><div style={{fontSize:12,fontWeight:600,color:C.g500,marginBottom:6}}>Usually around</div><TimeInput value={routine.coffeeTime} onChange={v=>updR('coffeeTime',v)}/></div>}
         </RRow>
         <RRow icon={Ic.fork()} title="Breakfast Window" sub="Set a range if your breakfast time varies">
-          <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.hasBreakfast!==false?12:0}}>
+            <span style={{fontSize:15,color:C.g600}}>I eat this meal</span>
+            <Toggle on={routine.hasBreakfast!==false} onChange={v=>updR('hasBreakfast',v)}/>
+          </div>
+          {routine.hasBreakfast!==false&&<div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
             <TimeInput value={routine.breakfastStart} onChange={v=>updR('breakfastStart',v)}/>
             <span style={{color:C.g400,fontSize:14}}>to</span>
             <TimeInput value={routine.breakfastEnd} onChange={v=>updR('breakfastEnd',v)}/>
-          </div>
+          </div>}
         </RRow>
         <RRow icon={Ic.salad()} title="Lunch Window" sub="Your midday meal time range">
-          <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.hasLunch!==false?12:0}}>
+            <span style={{fontSize:15,color:C.g600}}>I eat this meal</span>
+            <Toggle on={routine.hasLunch!==false} onChange={v=>updR('hasLunch',v)}/>
+          </div>
+          {routine.hasLunch!==false&&<div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
             <TimeInput value={routine.lunchStart} onChange={v=>updR('lunchStart',v)}/>
             <span style={{color:C.g400,fontSize:14}}>to</span>
             <TimeInput value={routine.lunchEnd} onChange={v=>updR('lunchEnd',v)}/>
-          </div>
+          </div>}
         </RRow>
-        <RRow icon={Ic.plate()} title="Dinner" sub="Your evening meal time"><TimeInput value={routine.dinnerTime} onChange={v=>updR('dinnerTime',v)}/></RRow>
+        <RRow icon={Ic.plate()} title="Dinner" sub="Your evening meal time">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.hasDinner!==false?12:0}}>
+            <span style={{fontSize:15,color:C.g600}}>I eat this meal</span>
+            <Toggle on={routine.hasDinner!==false} onChange={v=>updR('hasDinner',v)}/>
+          </div>
+          {routine.hasDinner!==false&&<TimeInput value={routine.dinnerTime} onChange={v=>updR('dinnerTime',v)}/>}
+        </RRow>
         <RRow icon={Ic.moon()} title="Evening Snack" sub="Useful for planning around evening medications" optional>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.eveningSnack?12:0}}>
             <span style={{fontSize:15,color:C.g600}}>I usually have an evening snack</span>
