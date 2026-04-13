@@ -705,9 +705,9 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             {Ic.molecule()}
           </div>
         </div>
-        <h1 style={{margin:'0 0 12px',fontSize:36,fontWeight:800,color:C.g900}}>Your Medication Optimizer</h1>
-        <p style={{margin:'0 0 28px',fontSize:16,color:C.g600,lineHeight:1.6}}>Get a personalized daily schedule that minimizes conflicts and maximizes absorption for all your medications, supplements, and vitamins.</p>
-        <button onClick={()=>setScreen('input')} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:14,padding:18,fontSize:18,fontWeight:800,cursor:'pointer',marginBottom:12,boxShadow:'0 4px 15px rgba(13,126,122,0.2)'}}>Start Your Optimization</button>
+        <h1 style={{margin:'0 0 12px',fontSize:36,fontWeight:800,color:C.g900}}>Absorption optimized. Executed properly.</h1>
+        <p style={{margin:'0 0 28px',fontSize:16,color:C.g600,lineHeight:1.6}}>Build a personalized health stack report that maximizes how your body absorbs each medication, supplement, and vitamin based on timing, food, and spacing.</p>
+        <button onClick={()=>setScreen('input')} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:14,padding:18,fontSize:18,fontWeight:800,cursor:'pointer',marginBottom:12,boxShadow:'0 4px 15px rgba(13,126,122,0.2)'}}>Build Your Optimization</button>
         <p style={{fontSize:13,color:C.g400,margin:'0 0 8px'}}>Takes about 3-5 minutes. No account needed.</p>
         <p style={{fontSize:13,color:C.g500,margin:0}}>Your data is private and never stored.</p>
       </div>
