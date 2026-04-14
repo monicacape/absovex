@@ -498,6 +498,372 @@ function LogoHeader(){
   );
 }
 
+// ─── COMPONENT 1: SCORE SUMMARY CARD ────────────────────────────────────────
+function ScoreSummaryCard({a}){
+  const delta=(a.optimizedScore||0)-(a.currentScore||0);
+  const wins=a.topWins||a.topBenefits||[];
+  return(
+    <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`,marginBottom:16}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:20,marginBottom:20}}>
+        <div style={{textAlign:'center'}}>
+          <div style={{fontSize:52,fontWeight:900,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
+          <div style={{fontSize:11,color:C.g400,fontWeight:700,marginTop:4,textTransform:'uppercase',letterSpacing:'0.06em'}}>Current</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+          <svg width={32} height={16} viewBox="0 0 32 16"><path d="M0 8 L24 8 M18 3 L24 8 L18 13" stroke={C.pink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          {delta>0&&<div style={{background:C.tealBg,color:C.teal,fontSize:13,fontWeight:800,padding:'3px 12px',borderRadius:20,border:`1px solid ${C.tealBorder}`}}>+{delta} pts</div>}
+        </div>
+        <div style={{textAlign:'center'}}>
+          <div style={{fontSize:52,fontWeight:900,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
+          <div style={{fontSize:11,color:C.primary,fontWeight:700,marginTop:4,textTransform:'uppercase',letterSpacing:'0.06em'}}>Optimized</div>
+        </div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        {wins.slice(0,3).length>0&&(
+          <div>
+            <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Top Gains</div>
+            {wins.slice(0,3).map((w,i)=>(
+              <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
+                <div style={{width:6,height:6,borderRadius:'50%',background:C.teal,marginTop:5,flexShrink:0}}/>
+                <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{typeof w==='string'?w:(w.title||w.item||w.win||'')}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {(a.conflicts||[]).slice(0,3).length>0&&(
+          <div>
+            <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Top Issues</div>
+            {(a.conflicts||[]).slice(0,3).map((c,i)=>(
+              <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
+                <div style={{width:6,height:6,borderRadius:'50%',background:C.orange,marginTop:5,flexShrink:0}}/>
+                <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{(c.items||[]).join(' + ')}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {(a.positives_already_working||[]).slice(0,3).length>0&&(
+          <div>
+            <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>What's Already Working</div>
+            {(a.positives_already_working||[]).slice(0,3).map((p,i)=>(
+              <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
+                <div style={{width:6,height:6,borderRadius:'50%',background:'#059669',marginTop:5,flexShrink:0}}/>
+                <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{p.strength}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── COMPONENT 2: SCHEDULE SECTION ──────────────────────────────────────────
+function ScheduleSection({a,expanded,setExpanded}){
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:16}}>
+      {Object.entries(a.schedule||{}).map(([k,items])=>{
+        if(!items||items.length===0)return null;
+        const b=TB[k];
+        if(!b)return null;
+        return(
+          <div key={k} style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',borderLeft:`4px solid ${b.color}`}}>
+            <div style={{fontSize:13,fontWeight:700,color:b.color,marginBottom:4,textTransform:'uppercase',letterSpacing:'0.08em'}}>{b.label}</div>
+            <div style={{fontSize:12,color:C.g500,marginBottom:14}}>{b.time}</div>
+            {items.map((it,i)=>{
+              const key=`${k}-${i}`;
+              const isOpen=expanded===key;
+              const abs=it.absorption_profile;
+              return(
+                <div key={i}>
+                  <div onClick={()=>setExpanded(prev=>prev===key?null:key)} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'12px 0',borderBottom:i<items.length-1&&!isOpen?`1px solid ${C.g100}`:'none',cursor:'pointer'}}>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{it.name}</div>
+                      <div style={{fontSize:12,color:C.g500,marginTop:2}}>{it.dose}</div>
+                      <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{it.instruction}</div>
+                    </div>
+                    <div style={{color:C.g400,fontSize:18,marginLeft:8,transition:'transform 0.2s',transform:isOpen?'rotate(180deg)':'none',flexShrink:0}}>▾</div>
+                  </div>
+                  {isOpen&&(
+                    <div style={{background:C.g50,borderRadius:10,padding:'14px',marginBottom:i<items.length-1?8:0,border:`1px solid ${C.g100}`}}>
+                      {abs&&(
+                        <div style={{marginBottom:12}}>
+                          <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>Absorption Profile</div>
+                          <div style={{fontSize:13,color:C.g700,marginBottom:4}}><strong>Best taken:</strong> {abs.bestTaken}</div>
+                          {abs.preferredSolvent&&<div style={{fontSize:13,color:C.g700,marginBottom:8}}><strong>Take with:</strong> {abs.preferredSolvent}</div>}
+                          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                            {abs.requiresFood&&<span style={{background:C.amberBg,color:C.amber,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.amberBorder}`}}>Requires food</span>}
+                            {abs.requiresFat&&<span style={{background:C.orangeBg,color:C.orange,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.orangeBorder}`}}>Requires dietary fat</span>}
+                            {abs.emptyStomachPreferred&&<span style={{background:C.skyBg,color:C.sky,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.skyBorder}`}}>Empty stomach preferred</span>}
+                          </div>
+                        </div>
+                      )}
+                      {(it.reason_for_move_explained||(it.reason?[it.reason]:[])).filter(Boolean).length>0&&(
+                        <div style={{marginBottom:12}}>
+                          <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>Why it's here</div>
+                          {(it.reason_for_move_explained||(it.reason?[it.reason]:[])).filter(Boolean).map((step,si)=>(
+                            <div key={si} style={{fontSize:13,color:C.g700,lineHeight:1.6,marginBottom:4,paddingLeft:10,borderLeft:`2px solid ${si===0?C.primary:C.g300}`}}>{step}</div>
+                          ))}
+                        </div>
+                      )}
+                      {(it.real_world_impact||[]).length>0&&(
+                        <div style={{marginBottom:12}}>
+                          <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>What you'll notice</div>
+                          {(it.real_world_impact||[]).map((imp,ii)=>(
+                            <div key={ii} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
+                              <div style={{color:'#059669',flexShrink:0}}>✓</div>
+                              <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{imp}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {(it.never_pair_with||[]).length>0&&(
+                        <div style={{background:'#FFF7ED',borderRadius:8,padding:'10px 12px',border:`1px solid ${C.orangeBorder}`}}>
+                          <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Don't pair with</div>
+                          <div style={{fontSize:13,color:C.g700}}>{(it.never_pair_with||[]).join(', ')}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isOpen&&i<items.length-1&&<div style={{borderBottom:`1px solid ${C.g100}`,margin:'8px 0'}}/>}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── COMPONENT 3: CONFLICT CARDS ────────────────────────────────────────────
+function ConflictCards({a,expanded,setExpanded}){
+  const conflicts=(a.conflicts||[]).slice(0,5);
+  if(conflicts.length===0)return(
+    <div style={{background:'white',borderRadius:16,padding:'24px',textAlign:'center',color:C.g500,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>No conflicts detected. Your routine is well-optimized!</div>
+  );
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:12}}>
+      {conflicts.map((c,i)=>{
+        const sev=SEV[c.severity]||SEV.medium;
+        const isOpen=expanded===i;
+        return(
+          <div key={i} style={{background:'white',borderRadius:16,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',overflow:'hidden'}}>
+            <div onClick={()=>setExpanded(prev=>prev===i?null:i)} style={{padding:'16px 20px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+              <div style={{flex:1}}>
+                <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:6,flexWrap:'wrap'}}>
+                  <span style={{fontSize:11,fontWeight:800,color:sev.color,background:sev.bg,padding:'3px 10px',borderRadius:20}}>{sev.label}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:C.red,background:C.redBg,padding:'3px 10px',borderRadius:20}}>-{c.penalty} pts</span>
+                </div>
+                <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{(c.items||[]).join(' + ')}</div>
+              </div>
+              <div style={{color:C.g400,fontSize:18,marginLeft:8,transition:'transform 0.2s',transform:isOpen?'rotate(180deg)':'none',flexShrink:0}}>▾</div>
+            </div>
+            {isOpen&&(
+              <div style={{padding:'0 20px 20px'}}>
+                <div style={{borderTop:`1px solid ${C.g100}`,paddingTop:14}}>
+                  {c.user_context&&<p style={{margin:'0 0 12px',fontSize:13,color:C.g500,fontStyle:'italic',lineHeight:1.6}}>{c.user_context}</p>}
+                  <p style={{margin:'0 0 12px',fontSize:14,color:C.g700,lineHeight:1.6}}>{c.issue}</p>
+                  {c.absorption_loss_percent&&(
+                    <div style={{background:C.redBg,borderRadius:10,padding:'12px 16px',marginBottom:12,border:'1px solid #FECACA'}}>
+                      <div style={{fontSize:28,fontWeight:900,color:C.red,lineHeight:1}}>~{c.absorption_loss_percent}%</div>
+                      <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>absorption loss</div>
+                      <div style={{fontSize:12,color:'#991B1B',marginTop:6,lineHeight:1.5}}>At {c.absorption_loss_percent}% loss, you may be absorbing significantly less than your intended dose.</div>
+                    </div>
+                  )}
+                  <div style={{background:C.tealBg,borderRadius:8,padding:'10px 14px',border:`1px solid ${C.tealBorder}`}}>
+                    <div style={{fontSize:11,fontWeight:700,color:C.teal,marginBottom:4}}>Recommended Fix</div>
+                    <div style={{fontSize:13,color:C.mid,lineHeight:1.5}}>{c.recommendation}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── COMPONENT 4: SCORE BREAKDOWN CHART ─────────────────────────────────────
+function ScoreBreakdownChart({a,expanded,setExpanded}){
+  const breakdown=a.scoreBreakdown||[];
+  if(breakdown.length===0)return(
+    <div style={{background:'white',borderRadius:16,padding:'24px',textAlign:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+      <div style={{fontSize:14,fontWeight:600,color:C.g700,marginBottom:8}}>Score breakdown not available for this report</div>
+      <div style={{fontSize:13,color:C.g500}}>Overall improvement: {a.currentScore} → {a.optimizedScore} (+{(a.optimizedScore||0)-(a.currentScore||0)} pts)</div>
+    </div>
+  );
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:12}}>
+      {breakdown.map((entry,i)=>{
+        const isOpen=expanded===i;
+        const before=entry.before??entry.currentScore??0;
+        const after=entry.after??entry.optimizedScore??0;
+        const delta=after-before;
+        const max=entry.maxPoints||20;
+        const beforePct=Math.min(100,(before/max)*100);
+        const afterPct=Math.min(100,(after/max)*100);
+        return(
+          <div key={i} style={{background:'white',borderRadius:16,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',overflow:'hidden'}}>
+            <div onClick={()=>setExpanded(prev=>prev===i?null:i)} style={{padding:'16px 20px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{flex:1}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                  <span style={{fontSize:14,fontWeight:700,color:C.g900}}>{entry.category}</span>
+                  {delta>0&&<span style={{fontSize:12,fontWeight:800,color:'#059669',background:'#F0FDF4',padding:'2px 8px',borderRadius:20,border:'1px solid #BBF7D0'}}>+{delta} pts</span>}
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:12,color:C.g500,fontWeight:600,minWidth:20}}>{before}</span>
+                  <div style={{flex:1,height:8,borderRadius:4,background:C.g100,overflow:'hidden',maxWidth:160,position:'relative'}}>
+                    <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${beforePct}%`,background:C.g300,borderRadius:4}}/>
+                    {delta>0&&<div style={{position:'absolute',left:`${beforePct}%`,top:0,height:'100%',width:`${afterPct-beforePct}%`,background:C.primary,borderRadius:4}}/>}
+                  </div>
+                  <span style={{fontSize:12,color:C.primary,fontWeight:700,minWidth:20}}>{after}</span>
+                  <span style={{fontSize:11,color:C.g400}}>/{max}</span>
+                </div>
+              </div>
+              <div style={{color:C.g400,fontSize:18,marginLeft:12,transition:'transform 0.2s',transform:isOpen?'rotate(180deg)':'none',flexShrink:0}}>▾</div>
+            </div>
+            {isOpen&&(
+              <div style={{padding:'0 20px 20px'}}>
+                <div style={{borderTop:`1px solid ${C.g100}`,paddingTop:14}}>
+                  {(entry.actions_that_improved_score||[]).length>0&&(
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>What improved this</div>
+                      {(entry.actions_that_improved_score||[]).map((act,ai)=>(
+                        <div key={ai} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:4}}>
+                          <div style={{color:C.teal,flexShrink:0}}>✓</div>
+                          <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{act}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {entry.why_not_perfect&&(
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Why not perfect</div>
+                      <div style={{fontSize:13,color:C.g500,fontStyle:'italic',lineHeight:1.6}}>{entry.why_not_perfect}</div>
+                    </div>
+                  )}
+                  {(entry.points_explanation||entry.explanation)&&(
+                    <div style={{fontSize:12,color:C.g400,lineHeight:1.5}}>{entry.points_explanation||entry.explanation}</div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── COMPONENT 5: ASSUMPTIONS CHECKLIST ─────────────────────────────────────
+function AssumptionsChecklist({a,checked,setChecked}){
+  const[expandedInfo,setExpandedInfo]=useState(null);
+  const assumptions=a.report_assumptions||[];
+  if(assumptions.length===0)return(
+    <div style={{background:'white',borderRadius:16,padding:'24px',textAlign:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+      <div style={{fontSize:14,fontWeight:600,color:C.g700,marginBottom:8}}>No special assumptions</div>
+      <div style={{fontSize:13,color:C.g500}}>All entries were recognized and no unusual timing assumptions were made.</div>
+    </div>
+  );
+  return(
+    <div>
+      <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
+        <div style={{fontSize:13,color:C.g600,lineHeight:1.6,marginBottom:16}}>Review the assumptions made in your report. Check each one after discussing with your pharmacist.</div>
+        {assumptions.map((item,i)=>{
+          const isChecked=!!checked[i];
+          const isInfoOpen=expandedInfo===i;
+          return(
+            <div key={i} style={{borderBottom:i<assumptions.length-1?`1px solid ${C.g100}`:'none',paddingBottom:i<assumptions.length-1?16:0,marginBottom:i<assumptions.length-1?16:0}}>
+              <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
+                <div onClick={()=>setChecked(prev=>({...prev,[i]:!prev[i]}))} style={{width:24,height:24,borderRadius:6,border:`2px solid ${isChecked?C.primary:C.g300}`,background:isChecked?C.primary:'white',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,marginTop:1,transition:'all 0.15s'}}>
+                  {isChecked&&<svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:isChecked?400:600,color:isChecked?C.g400:C.g900,textDecoration:isChecked?'line-through':'none',lineHeight:1.5,marginBottom:6}}>{item.assumption}</div>
+                  {item.pharmacistQuestion&&<div style={{fontSize:13,color:C.teal,fontStyle:'italic',lineHeight:1.5,marginBottom:6}}>Ask: "{item.pharmacistQuestion}"</div>}
+                  <button onClick={()=>setExpandedInfo(prev=>prev===i?null:i)} style={{background:'none',border:'none',color:C.g400,fontSize:12,cursor:'pointer',padding:0,textDecoration:'underline'}}>
+                    {isInfoOpen?'Hide info':'More info'}
+                  </button>
+                  {isInfoOpen&&(
+                    <div style={{background:C.g50,borderRadius:8,padding:'10px 12px',marginTop:8,border:`1px solid ${C.g200}`}}>
+                      <div style={{fontSize:13,color:C.g600,lineHeight:1.5,marginBottom:6}}>{item.whyItMatters}</div>
+                      {item.importance&&<span style={{fontSize:11,fontWeight:700,color:item.importance==='high'?C.red:C.amber,background:item.importance==='high'?C.redBg:C.amberBg,padding:'2px 8px',borderRadius:20}}>Importance: {item.importance}</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── COMPONENT 6: AI CHAT SECTION ───────────────────────────────────────────
+function AIChatSection({a,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
+  return(
+    <div style={{display:'flex',flexDirection:'column',gap:12}}>
+      <div style={{display:'flex',gap:8,justifyContent:'flex-end',flexWrap:'wrap'}}>
+        <span style={{fontSize:12,color:C.g500,background:'white',border:`1px solid ${C.g200}`,borderRadius:20,padding:'4px 12px'}}>Interactions: {interactionCount} of 15</span>
+        <span style={{fontSize:12,color:reportUpdateUsed?C.g300:C.teal,background:'white',border:`1px solid ${reportUpdateUsed?C.g200:C.tealBorder}`,borderRadius:20,padding:'4px 12px'}}>Report updates: {reportUpdateUsed?0:1} of 1</span>
+      </div>
+      {revisionPending&&(
+        <div style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:12,padding:'16px',boxShadow:'0 2px 12px rgba(0,0,0,0.08)'}}>
+          <p style={{margin:'0 0 12px',fontSize:14,color:C.g800,lineHeight:1.6}}>This will use <strong>your 1 included report update</strong>. Continue?</p>
+          <div style={{display:'flex',gap:10}}>
+            <button onClick={()=>setRevisionPending(null)} style={{flex:1,background:'white',border:`1px solid ${C.g200}`,borderRadius:8,padding:'9px',fontSize:13,fontWeight:600,color:C.g600,cursor:'pointer'}}>Cancel</button>
+            <button onClick={()=>{const m=revisionPending;setRevisionPending(null);runRevision(m);}} style={{flex:2,background:'#FF4DAD',border:'none',borderRadius:8,padding:'9px',fontSize:13,fontWeight:700,color:'white',cursor:'pointer'}}>Update My Report</button>
+          </div>
+        </div>
+      )}
+      <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',minHeight:360,maxHeight:460,overflowY:'auto',display:'flex',flexDirection:'column',gap:12}}>
+        {chat.map((m,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
+            <div style={{maxWidth:'80%',padding:'12px 16px',borderRadius:m.role==='user'?'16px 16px 4px 16px':'16px 16px 16px 4px',background:m.role==='user'?C.primary:'white',color:m.role==='user'?'white':C.g800,fontSize:14,lineHeight:1.6,border:m.role==='assistant'?`1px solid ${C.g200}`:undefined,boxShadow:m.role==='assistant'?'0 1px 4px rgba(0,0,0,0.06)':undefined}}>
+              {m.role==='assistant'?renderMd(m.content):m.content}
+            </div>
+          </div>
+        ))}
+        {chatLoad&&(
+          <div style={{display:'flex',justifyContent:'flex-start'}}>
+            <div style={{padding:'12px 16px',borderRadius:'16px 16px 16px 4px',background:'white',border:`1px solid ${C.g200}`,fontSize:14,color:C.g400}}>Thinking...</div>
+          </div>
+        )}
+        <div ref={chatEnd}/>
+      </div>
+      {advisorLocked?(
+        <div style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:12,padding:'14px 16px',textAlign:'center'}}>
+          <p style={{margin:'0 0 12px',fontSize:13,color:'#C0186A',fontWeight:600}}>You've completed the included AI review for this report. Your final version is ready to download.</p>
+          <button onClick={()=>downloadReport(a)} style={{background:'#FF4DAD',color:'white',border:'none',borderRadius:8,padding:'10px 20px',fontSize:14,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:8}}>
+            {Ic.download()} Download Final Report
+          </button>
+        </div>
+      ):(
+        <div style={{display:'flex',gap:10,background:'white',padding:12,borderRadius:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
+          <input value={chatIn} onChange={e=>setChatIn(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&sendChat()} placeholder="Ask about your medications, timing, or interactions..." style={{flex:1,border:'none',outline:'none',fontSize:14,color:C.g800,background:'transparent'}}/>
+          <button onClick={sendChat} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?C.primary:C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
+            {Ic.send(chatIn.trim()&&!chatLoad?'white':C.g400)}
+            Send
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── COMPONENT 7: DOWNLOAD BUTTON ───────────────────────────────────────────
+function DownloadButton({a,downloadReport}){
+  const[downloaded,setDownloaded]=useState(false);
+  const handleClick=()=>{downloadReport(a);setDownloaded(true);setTimeout(()=>setDownloaded(false),2500);};
+  return(
+    <button onClick={handleClick} style={{background:downloaded?'#059669':C.primary,color:'white',border:'none',borderRadius:8,padding:'8px 14px',fontSize:13,cursor:'pointer',fontWeight:700,display:'flex',alignItems:'center',gap:6,transition:'background 0.2s'}}>
+      {downloaded?'✓ Downloaded!':<>{Ic.download()}Download PDF</>}
+    </button>
+  );
+}
+
 const SS={border:`1px solid ${C.g300}`,borderRadius:6,padding:'10px 11px',fontSize:16,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none',cursor:'pointer'};
 
 function renderMd(text){
@@ -547,6 +913,10 @@ export default function App(){
   const[largeText,setLargeText]=useState(()=>{try{return localStorage.getItem('absovexLargeText')==='1';}catch{return false;}});
   const fs=n=>largeText?Math.round(n*1.2):n;
   const toggleLargeText=()=>setLargeText(p=>{const next=!p;try{localStorage.setItem('absovexLargeText',next?'1':'0');}catch{}return next;});
+  const[expandedScheduleItem,setExpandedScheduleItem]=useState(null);
+  const[expandedConflict,setExpandedConflict]=useState(null);
+  const[expandedScore,setExpandedScore]=useState(null);
+  const[checkedAssumptions,setCheckedAssumptions]=useState({});
 
   // STRIPE STATE
   const[paymentStatus,setPaymentStatus]=useState(null); // 'processing', 'paid', 'failed', 'cancelled'
@@ -1401,6 +1771,8 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
     const tabs=[
       {id:'schedule',label:'Schedule'},
       {id:'conflicts',label:`Conflicts (${(a.conflicts||[]).length})`},
+      {id:'score',label:'Score Breakdown'},
+      {id:'assumptions',label:'Assumptions'},
       {id:'recommendations',label:'Recommendations'},
       {id:'chat',label:'Absovex AI Advisor',pink:true},
     ];
@@ -1425,10 +1797,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
               </div>
             </div>
             <div style={{display:'flex',gap:8}}>
-              <button onClick={()=>downloadReport(a)} style={{background:C.primary,color:'white',border:'none',borderRadius:8,padding:'8px 14px',fontSize:13,cursor:'pointer',fontWeight:700,display:'flex',alignItems:'center',gap:6}}>
-                {Ic.download()}
-                Download PDF
-              </button>
+              <DownloadButton a={a} downloadReport={downloadReport}/>
               <button onClick={()=>{setScreen('routine');setPaymentStatus(null);}} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'8px 12px',fontSize:13,cursor:'pointer'}}>Edit</button>
             </div>
           </div>
@@ -1439,6 +1808,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             <span style={{fontSize:14}}>✨</span>
             <span style={{fontSize:13,color:'#C0186A',fontWeight:600}}>Optimize your plan with the Absovex AI Advisor before you download.</span>
           </div>
+          <ScoreSummaryCard a={a}/>
           <div style={{display:'flex',gap:8,marginBottom:20,background:'white',padding:'6px',borderRadius:12,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:`1px solid ${C.g200}`,overflowX:'auto'}}>
             {tabs.map(t=>{
               const isActive=tab===t.id;
@@ -1451,47 +1821,13 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             })}
           </div>
 
-          {tab==='schedule'&&(
-            <div style={{display:'flex',flexDirection:'column',gap:16}}>
-              {Object.entries(a.schedule||{}).map(([k,items])=>{
-                if(!items||items.length===0)return null;
-                const b=TB[k];
-                return(
-                  <div key={k} style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',borderLeft:`4px solid ${b.color}`}}>
-                    <div style={{fontSize:13,fontWeight:700,color:b.color,marginBottom:14,textTransform:'uppercase',letterSpacing:'0.08em'}}>{b.label}</div>
-                    <div style={{fontSize:12,color:C.g500,marginBottom:12}}>{b.time}</div>
-                    {items.map((it,i)=>(
-                      <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'10px 0',borderBottom:i<items.length-1?`1px solid ${C.g100}`:'none'}}>
-                        <div style={{flex:1}}>
-                          <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{it.name}</div>
-                          <div style={{fontSize:12,color:C.g500,marginTop:2}}>{it.dose}</div>
-                          <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{it.instruction}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {tab==='schedule'&&<ScheduleSection a={a} expanded={expandedScheduleItem} setExpanded={setExpandedScheduleItem}/>}
 
-          {tab==='conflicts'&&(
-            <div>
-              {(a.conflicts||[]).length>0?(a.conflicts||[]).map((c,i)=>(
-                <div key={i} style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',marginBottom:16}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
-                    <span style={{fontSize:14,fontWeight:700,color:C.g900}}>{c.items.join(' + ')}</span>
-                    <span style={{fontSize:11,fontWeight:700,color:C.red,background:C.redBg,padding:'3px 10px',borderRadius:20}}>-{c.penalty} pts</span>
-                  </div>
-                  <p style={{margin:'0 0 10px',fontSize:14,color:C.g700,lineHeight:1.6}}>{c.issue}</p>
-                  <div style={{background:C.tealBg,borderRadius:8,padding:'10px 14px'}}>
-                    <div style={{fontSize:11,fontWeight:700,color:C.teal,marginBottom:4}}>Recommended Fix</div>
-                    <div style={{fontSize:13,color:C.mid,lineHeight:1.5}}>{c.recommendation}</div>
-                  </div>
-                </div>
-              )):<div style={{background:'white',borderRadius:16,padding:'20px',textAlign:'center',color:C.g500}}>No conflicts detected. Your routine is well-optimized!</div>}
-            </div>
-          )}
+          {tab==='conflicts'&&<ConflictCards a={a} expanded={expandedConflict} setExpanded={setExpandedConflict}/>}
+
+          {tab==='score'&&<ScoreBreakdownChart a={a} expanded={expandedScore} setExpanded={setExpandedScore}/>}
+
+          {tab==='assumptions'&&<AssumptionsChecklist a={a} checked={checkedAssumptions} setChecked={setCheckedAssumptions}/>}
 
           {tab==='recommendations'&&(
             <div>
@@ -1523,60 +1859,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             </div>
           )}
 
-          {tab==='chat'&&(
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              {/* Revision confirmation modal */}
-              {revisionPending&&(
-                <div style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:12,padding:'16px',boxShadow:'0 2px 12px rgba(0,0,0,0.08)'}}>
-                  <p style={{margin:'0 0 12px',fontSize:14,color:C.g800,lineHeight:1.6}}>This will use <strong>your 1 included report update</strong>. Continue?</p>
-                  <div style={{display:'flex',gap:10}}>
-                    <button onClick={()=>setRevisionPending(null)} style={{flex:1,background:'white',border:`1px solid ${C.g200}`,borderRadius:8,padding:'9px',fontSize:13,fontWeight:600,color:C.g600,cursor:'pointer'}}>Cancel</button>
-                    <button onClick={()=>{const m=revisionPending;setRevisionPending(null);runRevision(m);}} style={{flex:2,background:'#FF4DAD',border:'none',borderRadius:8,padding:'9px',fontSize:13,fontWeight:700,color:'white',cursor:'pointer'}}>Update My Report</button>
-                  </div>
-                </div>
-              )}
-
-              {/* Chat messages */}
-              <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',minHeight:360,maxHeight:460,overflowY:'auto',display:'flex',flexDirection:'column',gap:12}}>
-                {chat.map((m,i)=>(
-                  <div key={i} style={{display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start'}}>
-                    <div style={{maxWidth:'80%',padding:'12px 16px',borderRadius:m.role==='user'?'16px 16px 4px 16px':'16px 16px 16px 4px',background:m.role==='user'?C.primary:'white',color:m.role==='user'?'white':C.g800,fontSize:14,lineHeight:1.6,border:m.role==='assistant'?`1px solid ${C.g200}`:undefined,boxShadow:m.role==='assistant'?'0 1px 4px rgba(0,0,0,0.06)':undefined}}>
-                      {m.role==='assistant'?renderMd(m.content):m.content}
-                    </div>
-                  </div>
-                ))}
-                {chatLoad&&(
-                  <div style={{display:'flex',justifyContent:'flex-start'}}>
-                    <div style={{padding:'12px 16px',borderRadius:'16px 16px 16px 4px',background:'white',border:`1px solid ${C.g200}`,fontSize:14,color:C.g400}}>Thinking...</div>
-                  </div>
-                )}
-                <div ref={chatEnd}/>
-              </div>
-
-              {/* Input area */}
-              {advisorLocked?(
-                <div style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:12,padding:'14px 16px',textAlign:'center'}}>
-                  <p style={{margin:'0 0 12px',fontSize:13,color:'#C0186A',fontWeight:600}}>You've completed the included AI review for this report. Your final version is ready to download.</p>
-                  <button onClick={()=>downloadReport(a)} style={{background:'#FF4DAD',color:'white',border:'none',borderRadius:8,padding:'10px 20px',fontSize:14,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:8}}>
-                    {Ic.download()} Download Final Report
-                  </button>
-                </div>
-              ):(
-                <div style={{display:'flex',gap:10,background:'white',padding:12,borderRadius:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
-                  <input
-                    value={chatIn}
-                    onChange={e=>setChatIn(e.target.value)}
-                    onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&sendChat()}
-                    placeholder="Ask about your medications, timing, or interactions..."
-                    style={{flex:1,border:'none',outline:'none',fontSize:14,color:C.g800,background:'transparent'}}/>
-                  <button onClick={sendChat} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?C.primary:C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
-                    {Ic.send(chatIn.trim()&&!chatLoad?'white':C.g400)}
-                    Send
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+          {tab==='chat'&&<AIChatSection a={a} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>}
 
         </div>
       </div>
