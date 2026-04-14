@@ -500,310 +500,7 @@ function LogoHeader(){
   );
 }
 
-// ─── COMPONENT 1: SCORE SUMMARY CARD ────────────────────────────────────────
-function ScoreSummaryCard({a}){
-  const delta=(a.optimizedScore||0)-(a.currentScore||0);
-  const wins=a.topWins||a.topBenefits||[];
-  return(
-    <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`,marginBottom:16}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:20,marginBottom:20}}>
-        <div style={{textAlign:'center'}}>
-          <div style={{fontSize:52,fontWeight:900,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
-          <div style={{fontSize:11,color:C.g400,fontWeight:700,marginTop:4,textTransform:'uppercase',letterSpacing:'0.06em'}}>Current</div>
-        </div>
-        <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-          <svg width={32} height={16} viewBox="0 0 32 16"><path d="M0 8 L24 8 M18 3 L24 8 L18 13" stroke={C.pink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          {delta>0&&<div style={{background:C.tealBg,color:C.teal,fontSize:13,fontWeight:800,padding:'3px 12px',borderRadius:20,border:`1px solid ${C.tealBorder}`}}>+{delta} pts</div>}
-        </div>
-        <div style={{textAlign:'center'}}>
-          <div style={{fontSize:52,fontWeight:900,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
-          <div style={{fontSize:11,color:C.primary,fontWeight:700,marginTop:4,textTransform:'uppercase',letterSpacing:'0.06em'}}>Optimized</div>
-        </div>
-      </div>
-      <div style={{display:'flex',flexDirection:'column',gap:14}}>
-        {wins.slice(0,3).length>0&&(
-          <div>
-            <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Top Gains</div>
-            {wins.slice(0,3).map((w,i)=>(
-              <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
-                <div style={{width:6,height:6,borderRadius:'50%',background:C.teal,marginTop:5,flexShrink:0}}/>
-                <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{typeof w==='string'?w:(w.title||w.item||w.win||'')}</div>
-              </div>
-            ))}
-          </div>
-        )}
-        {(a.conflicts||[]).slice(0,3).length>0&&(
-          <div>
-            <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Top Issues</div>
-            {(a.conflicts||[]).slice(0,3).map((c,i)=>(
-              <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
-                <div style={{width:6,height:6,borderRadius:'50%',background:C.orange,marginTop:5,flexShrink:0}}/>
-                <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{(c.items||[]).join(' + ')}</div>
-              </div>
-            ))}
-          </div>
-        )}
-        {(a.positives_already_working||[]).slice(0,3).length>0&&(
-          <div>
-            <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>What's Already Working</div>
-            {(a.positives_already_working||[]).slice(0,3).map((p,i)=>(
-              <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
-                <div style={{width:6,height:6,borderRadius:'50%',background:'#059669',marginTop:5,flexShrink:0}}/>
-                <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{p.strength}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── COMPONENT 2: SCHEDULE SECTION ──────────────────────────────────────────
-function ScheduleSection({a,expanded,setExpanded}){
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:16}}>
-      {Object.entries(a.schedule||{}).map(([k,items])=>{
-        if(!items||items.length===0)return null;
-        const b=TB[k];
-        if(!b)return null;
-        return(
-          <div key={k} style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',borderLeft:`4px solid ${b.color}`}}>
-            <div style={{fontSize:13,fontWeight:700,color:b.color,marginBottom:4,textTransform:'uppercase',letterSpacing:'0.08em'}}>{b.label}</div>
-            <div style={{fontSize:12,color:C.g500,marginBottom:14}}>{b.time}</div>
-            {items.map((it,i)=>{
-              const key=`${k}-${i}`;
-              const isOpen=expanded===key;
-              const abs=it.absorption_profile;
-              return(
-                <div key={i}>
-                  <div onClick={()=>setExpanded(prev=>prev===key?null:key)} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',padding:'12px 0',borderBottom:i<items.length-1&&!isOpen?`1px solid ${C.g100}`:'none',cursor:'pointer'}}>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{it.name}</div>
-                      <div style={{fontSize:12,color:C.g500,marginTop:2}}>{it.dose}</div>
-                      <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{it.instruction}</div>
-                    </div>
-                    <div style={{color:C.g400,fontSize:18,marginLeft:8,transition:'transform 0.2s',transform:isOpen?'rotate(180deg)':'none',flexShrink:0}}>▾</div>
-                  </div>
-                  {isOpen&&(
-                    <div style={{background:C.g50,borderRadius:10,padding:'14px',marginBottom:i<items.length-1?8:0,border:`1px solid ${C.g100}`}}>
-                      {abs&&(
-                        <div style={{marginBottom:12}}>
-                          <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>Absorption Profile</div>
-                          <div style={{fontSize:13,color:C.g700,marginBottom:4}}><strong>Best taken:</strong> {abs.bestTaken}</div>
-                          {abs.preferredSolvent&&<div style={{fontSize:13,color:C.g700,marginBottom:8}}><strong>Take with:</strong> {abs.preferredSolvent}</div>}
-                          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                            {abs.requiresFood&&<span style={{background:C.amberBg,color:C.amber,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.amberBorder}`}}>Requires food</span>}
-                            {abs.requiresFat&&<span style={{background:C.orangeBg,color:C.orange,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.orangeBorder}`}}>Requires dietary fat</span>}
-                            {abs.emptyStomachPreferred&&<span style={{background:C.skyBg,color:C.sky,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.skyBorder}`}}>Empty stomach preferred</span>}
-                          </div>
-                        </div>
-                      )}
-                      {(it.reason_for_move_explained||(it.reason?[it.reason]:[])).filter(Boolean).length>0&&(
-                        <div style={{marginBottom:12}}>
-                          <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>Why it's here</div>
-                          {(it.reason_for_move_explained||(it.reason?[it.reason]:[])).filter(Boolean).map((step,si)=>(
-                            <div key={si} style={{fontSize:13,color:C.g700,lineHeight:1.6,marginBottom:4,paddingLeft:10,borderLeft:`2px solid ${si===0?C.primary:C.g300}`}}>{step}</div>
-                          ))}
-                        </div>
-                      )}
-                      {(it.real_world_impact||[]).length>0&&(
-                        <div style={{marginBottom:12}}>
-                          <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>What you'll notice</div>
-                          {(it.real_world_impact||[]).map((imp,ii)=>(
-                            <div key={ii} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
-                              <div style={{color:'#059669',flexShrink:0}}>✓</div>
-                              <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{imp}</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {(it.never_pair_with||[]).length>0&&(
-                        <div style={{background:'#FFF7ED',borderRadius:8,padding:'10px 12px',border:`1px solid ${C.orangeBorder}`}}>
-                          <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Don't pair with</div>
-                          <div style={{fontSize:13,color:C.g700}}>{(it.never_pair_with||[]).join(', ')}</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {isOpen&&i<items.length-1&&<div style={{borderBottom:`1px solid ${C.g100}`,margin:'8px 0'}}/>}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── COMPONENT 3: CONFLICT CARDS ────────────────────────────────────────────
-function ConflictCards({a,expanded,setExpanded}){
-  const conflicts=(a.conflicts||[]).slice(0,5);
-  if(conflicts.length===0)return(
-    <div style={{background:'white',borderRadius:16,padding:'24px',textAlign:'center',color:C.g500,boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>No conflicts detected. Your routine is well-optimized!</div>
-  );
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:12}}>
-      {conflicts.map((c,i)=>{
-        const sev=SEV[c.severity]||SEV.medium;
-        const isOpen=expanded===i;
-        return(
-          <div key={i} style={{background:'white',borderRadius:16,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',overflow:'hidden'}}>
-            <div onClick={()=>setExpanded(prev=>prev===i?null:i)} style={{padding:'16px 20px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-              <div style={{flex:1}}>
-                <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:6,flexWrap:'wrap'}}>
-                  <span style={{fontSize:11,fontWeight:800,color:sev.color,background:sev.bg,padding:'3px 10px',borderRadius:20}}>{sev.label}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:C.red,background:C.redBg,padding:'3px 10px',borderRadius:20}}>-{c.penalty} pts</span>
-                </div>
-                <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{(c.items||[]).join(' + ')}</div>
-              </div>
-              <div style={{color:C.g400,fontSize:18,marginLeft:8,transition:'transform 0.2s',transform:isOpen?'rotate(180deg)':'none',flexShrink:0}}>▾</div>
-            </div>
-            {isOpen&&(
-              <div style={{padding:'0 20px 20px'}}>
-                <div style={{borderTop:`1px solid ${C.g100}`,paddingTop:14}}>
-                  {c.user_context&&<p style={{margin:'0 0 12px',fontSize:13,color:C.g500,fontStyle:'italic',lineHeight:1.6}}>{c.user_context}</p>}
-                  <p style={{margin:'0 0 12px',fontSize:14,color:C.g700,lineHeight:1.6}}>{c.issue}</p>
-                  {c.absorption_loss_percent&&(
-                    <div style={{background:C.redBg,borderRadius:10,padding:'12px 16px',marginBottom:12,border:'1px solid #FECACA'}}>
-                      <div style={{fontSize:28,fontWeight:900,color:C.red,lineHeight:1}}>~{c.absorption_loss_percent}%</div>
-                      <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>absorption loss</div>
-                      <div style={{fontSize:12,color:'#991B1B',marginTop:6,lineHeight:1.5}}>At {c.absorption_loss_percent}% loss, you may be absorbing significantly less than your intended dose.</div>
-                    </div>
-                  )}
-                  <div style={{background:C.tealBg,borderRadius:8,padding:'10px 14px',border:`1px solid ${C.tealBorder}`}}>
-                    <div style={{fontSize:11,fontWeight:700,color:C.teal,marginBottom:4}}>Recommended Fix</div>
-                    <div style={{fontSize:13,color:C.mid,lineHeight:1.5}}>{c.recommendation}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── COMPONENT 4: SCORE BREAKDOWN CHART ─────────────────────────────────────
-function ScoreBreakdownChart({a,expanded,setExpanded}){
-  const breakdown=a.scoreBreakdown||[];
-  if(breakdown.length===0)return(
-    <div style={{background:'white',borderRadius:16,padding:'24px',textAlign:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-      <div style={{fontSize:14,fontWeight:600,color:C.g700,marginBottom:8}}>Score breakdown not available for this report</div>
-      <div style={{fontSize:13,color:C.g500}}>Overall improvement: {a.currentScore} → {a.optimizedScore} (+{(a.optimizedScore||0)-(a.currentScore||0)} pts)</div>
-    </div>
-  );
-  return(
-    <div style={{display:'flex',flexDirection:'column',gap:12}}>
-      {breakdown.map((entry,i)=>{
-        const isOpen=expanded===i;
-        const before=entry.before??entry.currentScore??0;
-        const after=entry.after??entry.optimizedScore??0;
-        const delta=after-before;
-        const max=entry.maxPoints||20;
-        const beforePct=Math.min(100,(before/max)*100);
-        const afterPct=Math.min(100,(after/max)*100);
-        return(
-          <div key={i} style={{background:'white',borderRadius:16,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',overflow:'hidden'}}>
-            <div onClick={()=>setExpanded(prev=>prev===i?null:i)} style={{padding:'16px 20px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={{flex:1}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                  <span style={{fontSize:14,fontWeight:700,color:C.g900}}>{entry.category}</span>
-                  {delta>0&&<span style={{fontSize:12,fontWeight:800,color:'#059669',background:'#F0FDF4',padding:'2px 8px',borderRadius:20,border:'1px solid #BBF7D0'}}>+{delta} pts</span>}
-                </div>
-                <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <span style={{fontSize:12,color:C.g500,fontWeight:600,minWidth:20}}>{before}</span>
-                  <div style={{flex:1,height:8,borderRadius:4,background:C.g100,overflow:'hidden',maxWidth:160,position:'relative'}}>
-                    <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${beforePct}%`,background:C.g300,borderRadius:4}}/>
-                    {delta>0&&<div style={{position:'absolute',left:`${beforePct}%`,top:0,height:'100%',width:`${afterPct-beforePct}%`,background:C.primary,borderRadius:4}}/>}
-                  </div>
-                  <span style={{fontSize:12,color:C.primary,fontWeight:700,minWidth:20}}>{after}</span>
-                  <span style={{fontSize:11,color:C.g400}}>/{max}</span>
-                </div>
-              </div>
-              <div style={{color:C.g400,fontSize:18,marginLeft:12,transition:'transform 0.2s',transform:isOpen?'rotate(180deg)':'none',flexShrink:0}}>▾</div>
-            </div>
-            {isOpen&&(
-              <div style={{padding:'0 20px 20px'}}>
-                <div style={{borderTop:`1px solid ${C.g100}`,paddingTop:14}}>
-                  {(entry.actions_that_improved_score||[]).length>0&&(
-                    <div style={{marginBottom:12}}>
-                      <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>What improved this</div>
-                      {(entry.actions_that_improved_score||[]).map((act,ai)=>(
-                        <div key={ai} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:4}}>
-                          <div style={{color:C.teal,flexShrink:0}}>✓</div>
-                          <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{act}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {entry.why_not_perfect&&(
-                    <div style={{marginBottom:12}}>
-                      <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Why not perfect</div>
-                      <div style={{fontSize:13,color:C.g500,fontStyle:'italic',lineHeight:1.6}}>{entry.why_not_perfect}</div>
-                    </div>
-                  )}
-                  {(entry.points_explanation||entry.explanation)&&(
-                    <div style={{fontSize:12,color:C.g400,lineHeight:1.5}}>{entry.points_explanation||entry.explanation}</div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ─── COMPONENT 5: ASSUMPTIONS CHECKLIST ─────────────────────────────────────
-function AssumptionsChecklist({a,checked,setChecked}){
-  const[expandedInfo,setExpandedInfo]=useState(null);
-  const assumptions=a.report_assumptions||[];
-  if(assumptions.length===0)return(
-    <div style={{background:'white',borderRadius:16,padding:'24px',textAlign:'center',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-      <div style={{fontSize:14,fontWeight:600,color:C.g700,marginBottom:8}}>No special assumptions</div>
-      <div style={{fontSize:13,color:C.g500}}>All entries were recognized and no unusual timing assumptions were made.</div>
-    </div>
-  );
-  return(
-    <div>
-      <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-        <div style={{fontSize:13,color:C.g600,lineHeight:1.6,marginBottom:16}}>Review the assumptions made in your report. Check each one after discussing with your pharmacist.</div>
-        {assumptions.map((item,i)=>{
-          const isChecked=!!checked[i];
-          const isInfoOpen=expandedInfo===i;
-          return(
-            <div key={i} style={{borderBottom:i<assumptions.length-1?`1px solid ${C.g100}`:'none',paddingBottom:i<assumptions.length-1?16:0,marginBottom:i<assumptions.length-1?16:0}}>
-              <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
-                <div onClick={()=>setChecked(prev=>({...prev,[i]:!prev[i]}))} style={{width:24,height:24,borderRadius:6,border:`2px solid ${isChecked?C.primary:C.g300}`,background:isChecked?C.primary:'white',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0,marginTop:1,transition:'all 0.15s'}}>
-                  {isChecked&&<svg width={14} height={14} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:isChecked?400:600,color:isChecked?C.g400:C.g900,textDecoration:isChecked?'line-through':'none',lineHeight:1.5,marginBottom:6}}>{item.assumption}</div>
-                  {item.pharmacistQuestion&&<div style={{fontSize:13,color:C.teal,fontStyle:'italic',lineHeight:1.5,marginBottom:6}}>Ask: "{item.pharmacistQuestion}"</div>}
-                  <button onClick={()=>setExpandedInfo(prev=>prev===i?null:i)} style={{background:'none',border:'none',color:C.g400,fontSize:12,cursor:'pointer',padding:0,textDecoration:'underline'}}>
-                    {isInfoOpen?'Hide info':'More info'}
-                  </button>
-                  {isInfoOpen&&(
-                    <div style={{background:C.g50,borderRadius:8,padding:'10px 12px',marginTop:8,border:`1px solid ${C.g200}`}}>
-                      <div style={{fontSize:13,color:C.g600,lineHeight:1.5,marginBottom:6}}>{item.whyItMatters}</div>
-                      {item.importance&&<span style={{fontSize:11,fontWeight:700,color:item.importance==='high'?C.red:C.amber,background:item.importance==='high'?C.redBg:C.amberBg,padding:'2px 8px',borderRadius:20}}>Importance: {item.importance}</span>}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── COMPONENT 6: AI CHAT SECTION ───────────────────────────────────────────
+// ─── COMPONENT: AI CHAT SECTION ─────────────────────────────────────────────
 function AIChatSection({a,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
   return(
     <div style={{display:'flex',flexDirection:'column',gap:12}}>
@@ -866,6 +563,458 @@ function DownloadButton({a,downloadReport}){
   );
 }
 
+// ─── FULL REPORT: SINGLE SCROLL ─────────────────────────────────────────────
+function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConflict,setExpandedConflict,expandedScore,setExpandedScore,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
+  const[expandedAudit,setExpandedAudit]=useState(null);
+  const delta=(a.optimizedScore||0)-(a.currentScore||0);
+  const wins=a.topWins||a.topBenefits||[];
+  const IcTarget=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><circle cx={12} cy={12} r={9} stroke="white" strokeWidth={2}/><circle cx={12} cy={12} r={5} stroke="white" strokeWidth={2}/><circle cx={12} cy={12} r={1} fill="white"/></svg>;
+  const IcArrows=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><path d="M5 12h14M15 8l4 4-4 4M9 8l-4 4 4 4" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  const IcClock=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><circle cx={12} cy={12} r={9} stroke="white" strokeWidth={2}/><path d="M12 7v5l3 3" stroke="white" strokeWidth={2} strokeLinecap="round"/></svg>;
+  const IcClipboard=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><rect x={8} y={2} width={8} height={4} rx={1} stroke="white" strokeWidth={2}/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" stroke="white" strokeWidth={2}/><path d="M9 12h6M9 16h4" stroke="white" strokeWidth={2} strokeLinecap="round"/></svg>;
+  const IcAlert=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  const IcBulb=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><path d="M9 21h6M12 3a6 6 0 016 6c0 2.4-1.4 4.5-3.5 5.5L14 17h-4l-.5-2.5C7.4 13.5 6 11.4 6 9a6 6 0 016-6z" stroke="white" strokeWidth={2} strokeLinecap="round"/></svg>;
+  const IcChart=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18" stroke="white" strokeWidth={2} strokeLinecap="round"/><path d="M7 16l4-4 4 4 5-5" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  const IcStar=<svg width={28} height={28} viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  const Chevron=({open})=><svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={{transform:open?'rotate(180deg)':'none',transition:'transform 0.2s',flexShrink:0}}><path d="M6 9l6 6 6-6" stroke={C.g400} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  const PageHdr=({num,title,sub,icon,magenta})=>(
+    <div style={{display:'flex',gap:16,alignItems:'center',marginBottom:20}}>
+      <div style={{width:52,height:52,borderRadius:14,background:magenta?C.pink:C.primary,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:`0 4px 12px ${magenta?'rgba(236,0,139,0.3)':'rgba(13,126,122,0.3)'}`}}>{icon}</div>
+      <div>
+        <div style={{fontSize:10,fontWeight:700,color:C.g400,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:2}}>Section {num}</div>
+        <div style={{fontSize:19,fontWeight:800,color:C.g900,lineHeight:1.2}}>{title}</div>
+        {sub&&<div style={{fontSize:13,color:C.g500,marginTop:3}}>{sub}</div>}
+      </div>
+    </div>
+  );
+  const Card=({children,style={}})=><div style={{background:'white',borderRadius:20,padding:'24px',boxShadow:'0 2px 16px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`,marginBottom:24,...style}}>{children}</div>;
+  const scheduleItems=[];
+  Object.entries(a.schedule||{}).forEach(([k,arr])=>{(arr||[]).forEach(it=>scheduleItems.push({...it,block:k}));});
+  const changedNames=new Set((a.optimizationLogic||[]).map(o=>(o.item||'').toLowerCase()));
+  const unchanged=scheduleItems.filter(it=>!changedNames.has((it.name||'').toLowerCase()));
+  const changed=scheduleItems.filter(it=>changedNames.has((it.name||'').toLowerCase()));
+  return(
+    <div>
+      {/* ── PAGE 1: Summary & Score Snapshot ── */}
+      <Card>
+        <PageHdr num={1} title="Summary & Score Snapshot" sub="Your personalized health stack analysis" icon={IcTarget}/>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:16,padding:'24px 0',borderTop:`1px solid ${C.g100}`,borderBottom:`1px solid ${C.g100}`,marginBottom:20}}>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontSize:62,fontWeight:900,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
+            <div style={{fontSize:11,color:C.g400,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Current</div>
+          </div>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
+            <svg width={36} height={18} viewBox="0 0 36 18"><path d="M0 9 L28 9 M22 3 L28 9 L22 15" stroke={C.pink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <div style={{background:C.tealBg,color:C.teal,fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:20,border:`1px solid ${C.tealBorder}`}}>+{delta} pts</div>
+          </div>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontSize:62,fontWeight:900,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
+            <div style={{fontSize:11,color:C.primary,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Optimized</div>
+          </div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {wins.slice(0,3).length>0&&(
+            <div style={{background:C.tealBg,borderRadius:12,padding:'14px 16px',border:`1px solid ${C.tealBorder}`}}>
+              <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Top Gains</div>
+              {wins.slice(0,3).map((w,i)=>(
+                <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:i<2?6:0}}>
+                  <div style={{width:18,height:18,borderRadius:'50%',background:C.primary,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{Ic.check()}</div>
+                  <div style={{fontSize:13,color:C.dark,lineHeight:1.5}}>{typeof w==='string'?w:(w.title||w.item||w.win||'')}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {(a.conflicts||[]).slice(0,3).length>0&&(
+            <div style={{background:C.orangeBg,borderRadius:12,padding:'14px 16px',border:`1px solid ${C.orangeBorder}`}}>
+              <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Top Issues Found</div>
+              {(a.conflicts||[]).slice(0,3).map((c,i)=>(
+                <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:i<2?6:0}}>
+                  <div style={{width:6,height:6,borderRadius:'50%',background:C.orange,marginTop:5,flexShrink:0}}/>
+                  <div style={{fontSize:13,color:C.dark,lineHeight:1.5}}>{(c.items||[]).join(' + ')}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {(a.positives_already_working||[]).slice(0,3).length>0&&(
+            <div style={{background:'#F0FDF4',borderRadius:12,padding:'14px 16px',border:'1px solid #BBF7D0'}}>
+              <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>What's Already Working</div>
+              {(a.positives_already_working||[]).slice(0,3).map((p,i)=>(
+                <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:i<2?6:0}}>
+                  <div style={{width:18,height:18,borderRadius:'50%',background:'#059669',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{Ic.check()}</div>
+                  <div style={{fontSize:13,color:C.dark,lineHeight:1.5}}>{typeof p==='string'?p:(p.strength||p.item||p)}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{marginTop:20,padding:'10px 16px',background:C.g50,borderRadius:10,border:`1px solid ${C.g200}`,textAlign:'center'}}>
+          <div style={{fontSize:13,color:C.g500}}>Ready to see how we got here? Keep scrolling ↓</div>
+        </div>
+      </Card>
+
+      {/* ── PAGE 2: Before vs After ── */}
+      <Card>
+        <PageHdr num={2} title="Before vs After Breakdown" sub="What changed in your routine and why" icon={IcArrows}/>
+        {(a.optimizationLogic||[]).length===0?(
+          <div style={{textAlign:'center',color:C.g500,fontSize:14,padding:'20px 0'}}>No timing changes were required — your routine was already well-optimized.</div>
+        ):(a.optimizationLogic||[]).map((o,i)=>(
+          <div key={i} style={{borderBottom:i<(a.optimizationLogic.length-1)?`1px solid ${C.g100}`:'none',paddingBottom:i<(a.optimizationLogic.length-1)?20:0,marginBottom:i<(a.optimizationLogic.length-1)?20:0}}>
+            <div style={{fontSize:14,fontWeight:800,color:C.g900,marginBottom:10}}>Change {i+1}: {o.item}</div>
+            <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
+              <div style={{background:C.g100,borderRadius:8,padding:'8px 14px',flex:1,minWidth:120}}>
+                <div style={{fontSize:10,color:C.g500,fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Before</div>
+                <div style={{fontSize:13,color:C.g700,fontWeight:600}}>{o.oldTiming||'Previous timing'}</div>
+              </div>
+              <svg width={24} height={14} viewBox="0 0 24 14"><path d="M0 7 L18 7 M12 2 L18 7 L12 12" stroke={C.pink} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <div style={{background:C.tealBg,borderRadius:8,padding:'8px 14px',flex:1,minWidth:120,border:`1px solid ${C.tealBorder}`}}>
+                <div style={{fontSize:10,color:C.teal,fontWeight:700,textTransform:'uppercase',marginBottom:4}}>After</div>
+                <div style={{fontSize:13,color:C.primary,fontWeight:600}}>{o.newTiming||'Optimized timing'}</div>
+              </div>
+            </div>
+            {o.reason&&(
+              <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+                <div style={{width:4,borderRadius:2,background:C.primary,alignSelf:'stretch',flexShrink:0}}/>
+                <div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Why this changed</div>
+                  <div style={{fontSize:13,color:C.g700,lineHeight:1.6}}>{o.reason}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </Card>
+
+      {/* ── PAGE 3: Optimized Daily Schedule ── */}
+      <Card>
+        <PageHdr num={3} title="Your Optimized Daily Schedule" sub="Follow this plan starting tomorrow" icon={IcClock}/>
+        <div style={{display:'flex',flexDirection:'column',gap:14}}>
+          {Object.entries(a.schedule||{}).map(([k,sitems])=>{
+            if(!sitems||sitems.length===0)return null;
+            const b=TB[k];if(!b)return null;
+            return(
+              <div key={k} style={{borderRadius:14,overflow:'hidden',border:`1px solid ${b.border}`}}>
+                <div style={{background:b.bg,padding:'12px 16px',borderBottom:`1px solid ${b.border}`,display:'flex',alignItems:'center',gap:10}}>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:b.color,flexShrink:0}}/>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:800,color:b.color}}>{b.label}</div>
+                    <div style={{fontSize:11,color:b.color,opacity:0.7}}>{b.time}</div>
+                  </div>
+                </div>
+                {sitems.map((it,i)=>{
+                  const key=`${k}-${i}`;
+                  const isOpen=expandedScheduleItem===key;
+                  const abs=it.absorption_profile;
+                  return(
+                    <div key={i} style={{background:'white',borderBottom:i<sitems.length-1?`1px solid ${C.g100}`:'none'}}>
+                      <div onClick={()=>setExpandedScheduleItem(prev=>prev===key?null:key)} style={{padding:'14px 16px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{it.name}</div>
+                          {it.dose&&<div style={{fontSize:12,color:C.g500,marginTop:1}}>{it.dose}</div>}
+                          <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{it.instruction}</div>
+                          {!isOpen&&<div style={{fontSize:11,color:C.g400,marginTop:4}}>Tap for absorption tips →</div>}
+                        </div>
+                        <Chevron open={isOpen}/>
+                      </div>
+                      {isOpen&&(
+                        <div style={{background:C.g50,padding:'14px 16px',borderTop:`1px solid ${C.g100}`}}>
+                          {abs&&(
+                            <div style={{marginBottom:12}}>
+                              <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Absorption Profile</div>
+                              {abs.bestTaken&&<div style={{fontSize:13,color:C.g700,marginBottom:4}}><strong>Best taken:</strong> {abs.bestTaken}</div>}
+                              {abs.preferredSolvent&&<div style={{fontSize:13,color:C.g700,marginBottom:8}}><strong>Take with:</strong> {abs.preferredSolvent}</div>}
+                              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                                {abs.requiresFood&&<span style={{background:C.amberBg,color:C.amber,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.amberBorder}`}}>Requires food</span>}
+                                {abs.requiresFat&&<span style={{background:C.orangeBg,color:C.orange,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.orangeBorder}`}}>Requires dietary fat</span>}
+                                {abs.emptyStomachPreferred&&<span style={{background:C.skyBg,color:C.sky,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.skyBorder}`}}>Empty stomach preferred</span>}
+                              </div>
+                            </div>
+                          )}
+                          {(it.reason_for_move_explained||(it.reason?[it.reason]:[])).filter(Boolean).length>0&&(
+                            <div style={{marginBottom:12}}>
+                              <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Why it's here</div>
+                              {(it.reason_for_move_explained||(it.reason?[it.reason]:[])).filter(Boolean).map((step,si)=>(
+                                <div key={si} style={{fontSize:13,color:C.g700,lineHeight:1.6,marginBottom:4,paddingLeft:10,borderLeft:`2px solid ${si===0?C.primary:C.g300}`}}>{step}</div>
+                              ))}
+                            </div>
+                          )}
+                          {(it.real_world_impact||[]).length>0&&(
+                            <div style={{marginBottom:12}}>
+                              <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>What you'll notice</div>
+                              {(it.real_world_impact||[]).map((imp,ii)=>(
+                                <div key={ii} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:3}}>
+                                  <div style={{color:'#059669',fontWeight:700,flexShrink:0}}>✓</div>
+                                  <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{imp}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {(it.never_pair_with||[]).length>0&&(
+                            <div style={{background:'#FFF7ED',borderRadius:8,padding:'10px 12px',border:`1px solid ${C.orangeBorder}`}}>
+                              <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Don't pair with</div>
+                              <div style={{fontSize:13,color:C.g700}}>{(it.never_pair_with||[]).join(', ')}</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* ── PAGE 4: Full Stack Timing Audit ── */}
+      <Card>
+        <PageHdr num={4} title="Full Stack Timing Audit" sub="Every item reviewed for absorption, spacing, and conflicts" icon={IcClipboard}/>
+        <div style={{background:C.tealBg,borderRadius:10,padding:'12px 16px',border:`1px solid ${C.tealBorder}`,marginBottom:20,fontSize:13,color:C.mid,lineHeight:1.6}}>
+          Every item in your stack was reviewed for absorption requirements, drug-nutrient spacing, interaction potential, and fit with your daily routine.
+        </div>
+        {unchanged.length>0&&(
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:12,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>✓ No Changes Needed ({unchanged.length} items)</div>
+            {unchanged.map((it,i)=>(
+              <div key={i} style={{display:'flex',gap:10,alignItems:'center',padding:'10px 0',borderBottom:i<unchanged.length-1?`1px solid ${C.g100}`:'none'}}>
+                <div style={{width:24,height:24,borderRadius:'50%',background:'#F0FDF4',border:'1px solid #BBF7D0',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <svg width={12} height={12} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
+                <div>
+                  <div style={{fontSize:13,fontWeight:700,color:C.g800}}>{it.name}</div>
+                  <div style={{fontSize:12,color:C.g500}}>{it.instruction}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {changed.length>0&&(
+          <div>
+            <div style={{fontSize:12,fontWeight:800,color:C.amber,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>⟳ Timing Adjusted ({changed.length} items)</div>
+            {changed.map((it,i)=>{
+              const logic=(a.optimizationLogic||[]).find(o=>(o.item||'').toLowerCase()===(it.name||'').toLowerCase());
+              const isOpen=expandedAudit===i;
+              return(
+                <div key={i} style={{borderBottom:i<changed.length-1?`1px solid ${C.g100}`:'none'}}>
+                  <div onClick={()=>setExpandedAudit(p=>p===i?null:i)} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',cursor:'pointer'}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:700,color:C.g800}}>{it.name}</div>
+                      {logic&&<div style={{fontSize:12,color:C.amber,marginTop:2}}>{logic.oldTiming} → {logic.newTiming}</div>}
+                    </div>
+                    <Chevron open={isOpen}/>
+                  </div>
+                  {isOpen&&logic&&(
+                    <div style={{background:C.amberBg,borderRadius:8,padding:'10px 12px',marginBottom:8,fontSize:13,color:C.dark,lineHeight:1.6,border:`1px solid ${C.amberBorder}`}}>{logic.reason}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div style={{marginTop:20,background:C.g50,borderRadius:10,padding:'14px 16px',border:`1px solid ${C.g200}`}}>
+          <div style={{display:'flex',gap:20,flexWrap:'wrap',justifyContent:'space-around'}}>
+            <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:C.primary}}>{scheduleItems.length}</div><div style={{fontSize:11,color:C.g500}}>items reviewed</div></div>
+            <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:C.red}}>{(a.conflicts||[]).length}</div><div style={{fontSize:11,color:C.g500}}>conflicts found</div></div>
+            <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:C.amber}}>{changed.length}</div><div style={{fontSize:11,color:C.g500}}>adjustments made</div></div>
+            <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:'#059669'}}>+{delta}</div><div style={{fontSize:11,color:C.g500}}>score improvement</div></div>
+          </div>
+        </div>
+      </Card>
+
+      {/* ── PAGE 5: Top Conflicts ── */}
+      <Card>
+        <PageHdr num={5} title="Top Conflicts & Why They Matter" sub="Understanding what was found and how we fixed it" icon={IcAlert} magenta/>
+        {(a.conflicts||[]).length===0?(
+          <div style={{textAlign:'center',padding:'20px 0'}}>
+            <div style={{width:52,height:52,borderRadius:'50%',background:'#F0FDF4',border:'2px solid #BBF7D0',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}><svg width={24} height={24} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+            <div style={{fontSize:15,fontWeight:700,color:'#059669',marginBottom:4}}>No conflicts detected</div>
+            <div style={{fontSize:13,color:C.g500}}>Your routine is already well-optimized.</div>
+          </div>
+        ):(a.conflicts||[]).slice(0,5).map((c,i)=>{
+          const sev=SEV[c.severity]||SEV.medium;
+          const isOpen=expandedConflict===i;
+          return(
+            <div key={i} style={{border:`1px solid ${sev.color}40`,borderRadius:14,overflow:'hidden',marginBottom:i<Math.min((a.conflicts||[]).length,5)-1?16:0}}>
+              <div onClick={()=>setExpandedConflict(prev=>prev===i?null:i)} style={{padding:'16px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'flex-start',background:sev.bg,gap:8}}>
+                <div style={{flex:1}}>
+                  <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8,flexWrap:'wrap'}}>
+                    <div style={{width:8,height:8,borderRadius:'50%',background:sev.color,flexShrink:0}}/>
+                    <span style={{fontSize:11,fontWeight:800,color:sev.color,textTransform:'uppercase',letterSpacing:'0.06em'}}>{sev.label}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:C.red,background:'white',padding:'2px 8px',borderRadius:20,border:'1px solid #FECACA'}}>-{c.penalty} pts</span>
+                  </div>
+                  <div style={{fontSize:15,fontWeight:700,color:C.g900,marginBottom:4}}>{(c.items||[]).join(' + ')}</div>
+                  {!isOpen&&c.user_context&&<div style={{fontSize:12,color:C.g500,fontStyle:'italic',lineHeight:1.5}}>{c.user_context}</div>}
+                </div>
+                <Chevron open={isOpen}/>
+              </div>
+              {isOpen&&(
+                <div style={{padding:'16px',background:'white',borderTop:`1px solid ${sev.color}30`}}>
+                  {c.user_context&&<p style={{margin:'0 0 12px',fontSize:13,color:C.g500,fontStyle:'italic',lineHeight:1.6}}>{c.user_context}</p>}
+                  <div style={{fontSize:10,fontWeight:800,color:C.g600,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>What's happening</div>
+                  <p style={{margin:'0 0 14px',fontSize:14,color:C.g700,lineHeight:1.6}}>{c.issue}</p>
+                  {c.absorption_loss_percent&&(
+                    <div style={{background:C.redBg,borderRadius:10,padding:'14px 16px',marginBottom:14,border:'1px solid #FECACA'}}>
+                      <div style={{fontSize:32,fontWeight:900,color:C.red,lineHeight:1}}>~{c.absorption_loss_percent}%</div>
+                      <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>estimated absorption loss</div>
+                      <div style={{fontSize:12,color:'#991B1B',marginTop:8,lineHeight:1.5}}>At {c.absorption_loss_percent}% loss, you may be absorbing significantly less than your intended dose — meaning you're paying for a dose your body isn't fully receiving.</div>
+                    </div>
+                  )}
+                  <div style={{background:C.tealBg,borderRadius:10,padding:'12px 14px',border:`1px solid ${C.tealBorder}`}}>
+                    <div style={{fontSize:10,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>The Fix</div>
+                    <div style={{fontSize:13,color:C.mid,lineHeight:1.5,fontWeight:500}}>{c.recommendation}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </Card>
+
+      {/* ── PAGE 6: Optimization Logic ── */}
+      <Card>
+        <PageHdr num={6} title="How Absovex Built Your Plan" sub="The decision logic behind your optimized schedule" icon={IcBulb}/>
+        {a.scoreSummary&&(
+          <div style={{background:C.tealBg,borderRadius:10,padding:'14px 16px',marginBottom:20,border:`1px solid ${C.tealBorder}`,fontSize:14,color:C.mid,lineHeight:1.7,fontStyle:'italic'}}>{a.scoreSummary}</div>
+        )}
+        <div style={{display:'flex',flexDirection:'column',gap:0}}>
+          {[
+            {label:'Absorption Requirements',value:`${scheduleItems.length} items assessed for food, fat, and timing requirements`,color:C.teal},
+            {label:'Conflict Detection',value:`${(a.conflicts||[]).length} interaction${(a.conflicts||[]).length!==1?'s':''} identified across your stack`,color:C.orange},
+            {label:'Spacing Windows',value:'Minimum spacing rules applied between interacting items',color:C.sky},
+            {label:'Routine Fit',value:'Schedule mapped to your wake time, meals, and bedtime',color:C.violet},
+          ].map((row,i)=>(
+            <div key={i} style={{display:'flex',gap:12,alignItems:'flex-start',padding:'14px 0',borderBottom:i<3?`1px solid ${C.g100}`:'none'}}>
+              <div style={{width:10,height:10,borderRadius:'50%',background:row.color,marginTop:4,flexShrink:0}}/>
+              <div>
+                <div style={{fontSize:13,fontWeight:700,color:C.g800,marginBottom:2}}>{row.label}</div>
+                <div style={{fontSize:13,color:C.g500,lineHeight:1.5}}>{row.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {(a.routineInsights||[]).length>0&&(
+          <div style={{marginTop:16}}>
+            <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Routine Insights</div>
+            {(a.routineInsights||[]).map((insight,i)=>(
+              <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:8}}>
+                <div style={{color:C.teal,fontWeight:700,flexShrink:0}}>•</div>
+                <div style={{fontSize:13,color:C.g600,lineHeight:1.5}}>{typeof insight==='string'?insight:(insight.insight||insight)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* ── PAGE 7: Score Breakdown ── */}
+      <Card>
+        <PageHdr num={7} title="Health Stack Score Breakdown" sub={`Your score improved from ${a.currentScore} to ${a.optimizedScore}`} icon={IcChart}/>
+        {(a.scoreBreakdown||[]).length===0?(
+          <div style={{textAlign:'center',color:C.g500,fontSize:14,padding:'20px 0'}}>Score breakdown not available — overall improvement: {a.currentScore} → {a.optimizedScore} (+{delta} pts)</div>
+        ):(a.scoreBreakdown||[]).map((entry,i)=>{
+          const isOpen=expandedScore===i;
+          const before=entry.before??entry.currentScore??0;
+          const after=entry.after??entry.optimizedScore??0;
+          const d2=after-before;
+          const max=entry.maxPoints||20;
+          const beforePct=Math.min(100,(before/max)*100);
+          const gainPct=Math.min(100-beforePct,Math.max(0,((after-before)/max)*100));
+          return(
+            <div key={i} style={{border:`1px solid ${C.g200}`,borderRadius:14,overflow:'hidden',marginBottom:i<(a.scoreBreakdown.length-1)?12:0}}>
+              <div onClick={()=>setExpandedScore(prev=>prev===i?null:i)} style={{padding:'14px 16px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',gap:8}}>
+                <div style={{flex:1}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                    <span style={{fontSize:14,fontWeight:700,color:C.g900}}>{entry.category}</span>
+                    {d2>0&&<span style={{fontSize:12,fontWeight:800,color:'#059669',background:'#F0FDF4',padding:'2px 8px',borderRadius:20,border:'1px solid #BBF7D0'}}>+{d2} pts</span>}
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{fontSize:12,color:C.g500,fontWeight:600,minWidth:20}}>{before}</span>
+                    <div style={{flex:1,height:8,borderRadius:4,background:C.g100,overflow:'hidden',maxWidth:160,position:'relative'}}>
+                      <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${beforePct}%`,background:C.g300,borderRadius:4}}/>
+                      {d2>0&&<div style={{position:'absolute',left:`${beforePct}%`,top:0,height:'100%',width:`${gainPct}%`,background:C.primary,borderRadius:4}}/>}
+                    </div>
+                    <span style={{fontSize:12,color:C.primary,fontWeight:700,minWidth:20}}>{after}</span>
+                    <span style={{fontSize:11,color:C.g400}}>/{max}</span>
+                  </div>
+                </div>
+                <Chevron open={isOpen}/>
+              </div>
+              {isOpen&&(
+                <div style={{padding:'0 16px 16px',background:C.g50,borderTop:`1px solid ${C.g100}`}}>
+                  <div style={{paddingTop:14}}>
+                    {(entry.actions_that_improved_score||[]).length>0&&(
+                      <div style={{marginBottom:12}}>
+                        <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8}}>What improved this</div>
+                        {(entry.actions_that_improved_score||[]).map((act,ai)=>(
+                          <div key={ai} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:4}}>
+                            <div style={{color:C.teal,fontWeight:700,flexShrink:0}}>✓</div>
+                            <div style={{fontSize:13,color:C.g700,lineHeight:1.5}}>{act}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {entry.why_not_perfect&&(
+                      <div>
+                        <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Why not perfect</div>
+                        <div style={{fontSize:13,color:C.g500,fontStyle:'italic',lineHeight:1.6}}>{entry.why_not_perfect}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </Card>
+
+      {/* ── PAGE 8: Recommendations & Next Steps ── */}
+      <Card>
+        <PageHdr num={8} title="Recommendations & Next Steps" sub="How to make this plan work in real life" icon={IcStar}/>
+        {(a.recommendations||[]).length>0&&(
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Personalized Tips</div>
+            {(a.recommendations||[]).map((r,i)=>(
+              <div key={i} style={{display:'flex',gap:12,padding:'10px 0',borderBottom:i<(a.recommendations.length-1)?`1px solid ${C.g100}`:'none'}}>
+                <span style={{background:C.tealBg,color:C.teal,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,whiteSpace:'nowrap',alignSelf:'flex-start',flexShrink:0}}>{r.category}</span>
+                <span style={{fontSize:13,color:C.g700,lineHeight:1.6}}>{r.tip}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {(a.doctorPrompts||[]).length>0&&(
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:11,fontWeight:800,color:C.blue,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Verify with Your Pharmacist</div>
+            <div style={{background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:14,padding:'16px'}}>
+              {(a.doctorPrompts||[]).map((q,i)=>(
+                <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<(a.doctorPrompts.length-1)?`1px solid ${C.blueBorder}`:'none'}}>
+                  <div style={{width:20,height:20,borderRadius:'50%',background:C.blue,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
+                  <div style={{fontSize:13,color:'#1E3A8A',lineHeight:1.6}}>{q}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:12,padding:'12px 16px'}}>
+          <div style={{fontSize:12,color:'#92400E',lineHeight:1.6}}><strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice. Consult a physician, licensed pharmacist, or qualified healthcare professional before making any changes to your medication or supplement routine.</div>
+        </div>
+      </Card>
+
+      {/* ── AI ADVISOR ── */}
+      <Card style={{border:`1px solid ${C.pink}40`}}>
+        <div style={{display:'flex',gap:16,alignItems:'center',marginBottom:20}}>
+          <div style={{width:52,height:52,borderRadius:14,background:`linear-gradient(135deg,${C.pink},${C.pinkLight})`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 4px 12px rgba(236,0,139,0.3)'}}>
+            <svg width={28} height={28} viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+          <div>
+            <div style={{fontSize:10,fontWeight:700,color:C.g400,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:2}}>Always Available</div>
+            <div style={{fontSize:19,fontWeight:800,color:C.g900,lineHeight:1.2}}>Absovex AI Advisor</div>
+            <div style={{fontSize:13,color:C.g500,marginTop:3}}>Ask questions, get clarity, refine your plan</div>
+          </div>
+        </div>
+        <AIChatSection a={a} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
+      </Card>
+    </div>
+  );
+}
+
 const SS={border:`1px solid ${C.g300}`,borderRadius:6,padding:'10px 11px',fontSize:16,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none',cursor:'pointer'};
 
 function renderMd(text){
@@ -918,7 +1067,6 @@ export default function App(){
   const[expandedScheduleItem,setExpandedScheduleItem]=useState(null);
   const[expandedConflict,setExpandedConflict]=useState(null);
   const[expandedScore,setExpandedScore]=useState(null);
-  const[checkedAssumptions,setCheckedAssumptions]=useState({});
 
   // STRIPE STATE
   const[paymentStatus,setPaymentStatus]=useState(null); // 'processing', 'paid', 'failed', 'cancelled'
@@ -1770,14 +1918,6 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
   if(screen==='results'&&result){
     const a=result;
     const advisorLocked=interactionCount>=15;
-    const tabs=[
-      {id:'schedule',label:'Schedule'},
-      {id:'conflicts',label:`Conflicts (${(a.conflicts||[]).length})`},
-      {id:'score',label:'Score Breakdown'},
-      {id:'assumptions',label:'Assumptions'},
-      {id:'recommendations',label:'Recommendations'},
-      {id:'chat',label:'Absovex AI Advisor',pink:true},
-    ];
     return(
       <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
         <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px',position:'sticky',top:0,zIndex:10}}>
@@ -1804,65 +1944,8 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             </div>
           </div>
         </div>
-
         <div style={{maxWidth:700,margin:'0 auto',padding:'20px'}}>
-          <div onClick={()=>setTab('chat')} style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:10,padding:'10px 16px',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:8}}>
-            <span style={{fontSize:14}}>✨</span>
-            <span style={{fontSize:13,color:'#C0186A',fontWeight:600}}>Optimize your plan with the Absovex AI Advisor before you download.</span>
-          </div>
-          <ScoreSummaryCard a={a}/>
-          <div style={{display:'flex',gap:8,marginBottom:20,background:'white',padding:'6px',borderRadius:12,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:`1px solid ${C.g200}`,overflowX:'auto'}}>
-            {tabs.map(t=>{
-              const isActive=tab===t.id;
-              const isPink=t.pink;
-              return(
-                <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,minWidth:100,padding:'10px 14px',borderRadius:10,background:isActive?(isPink?'#FF4DAD':C.primary):'transparent',color:isActive?'white':(isPink?'#FF4DAD':C.g600),border:isActive?'none':(isPink?'1px solid #FF4DAD':'none'),cursor:'pointer',fontSize:13,fontWeight:isActive?700:500,whiteSpace:'nowrap'}}>
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {tab==='schedule'&&<ScheduleSection a={a} expanded={expandedScheduleItem} setExpanded={setExpandedScheduleItem}/>}
-
-          {tab==='conflicts'&&<ConflictCards a={a} expanded={expandedConflict} setExpanded={setExpandedConflict}/>}
-
-          {tab==='score'&&<ScoreBreakdownChart a={a} expanded={expandedScore} setExpanded={setExpandedScore}/>}
-
-          {tab==='assumptions'&&<AssumptionsChecklist a={a} checked={checkedAssumptions} setChecked={setCheckedAssumptions}/>}
-
-          {tab==='recommendations'&&(
-            <div>
-              {(a.recommendations||[]).length>0&&(
-                <div style={{background:'white',borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)',marginBottom:16}}>
-                  <div style={{fontSize:13,fontWeight:700,color:C.g700,marginBottom:14,textTransform:'uppercase',letterSpacing:'0.08em'}}>Personalized Recommendations</div>
-                  {(a.recommendations||[]).map((r,i)=>(
-                    <div key={i} style={{display:'flex',gap:12,padding:'10px 0',borderBottom:i<(a.recommendations.length-1)?`1px solid ${C.g100}`:'none'}}>
-                      <span style={{background:C.tealBg,color:C.teal,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,whiteSpace:'nowrap',alignSelf:'flex-start'}}>{r.category}</span>
-                      <span style={{fontSize:14,color:C.g700,lineHeight:1.6}}>{r.tip}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {(a.doctorPrompts||[]).length>0&&(
-                <div style={{background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:16,padding:'20px',boxShadow:'0 2px 12px rgba(0,0,0,0.06)'}}>
-                  <div style={{fontSize:13,fontWeight:700,color:C.blue,marginBottom:14,textTransform:'uppercase',letterSpacing:'0.08em'}}>Questions for Your Doctor</div>
-                  {(a.doctorPrompts||[]).map((q,i)=>(
-                    <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<(a.doctorPrompts.length-1)?`1px solid ${C.blueBorder}`:'none'}}>
-                      <div style={{width:20,height:20,borderRadius:'50%',background:C.blue,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
-                      <div style={{fontSize:14,color:'#1E3A8A',lineHeight:1.6}}>{q}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:12,padding:'12px 16px',marginTop:16}}>
-                <div style={{fontSize:12,color:'#92400E',lineHeight:1.6}}><strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice. Consult a physician, licensed pharmacist, or qualified healthcare professional before making any changes to your medication or supplement routine.</div>
-              </div>
-            </div>
-          )}
-
-          {tab==='chat'&&<AIChatSection a={a} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>}
-
+          <FullReport a={a} expandedScheduleItem={expandedScheduleItem} setExpandedScheduleItem={setExpandedScheduleItem} expandedConflict={expandedConflict} setExpandedConflict={setExpandedConflict} expandedScore={expandedScore} setExpandedScore={setExpandedScore} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
         </div>
       </div>
     );
