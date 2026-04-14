@@ -415,11 +415,13 @@ function StableInput({value,onCommit,placeholder,style}){
 
 function NameField({value,onCommit,onSelect,onUnrecognized}){
   const[v,setV]=useState(value||'');
+  const pickedFromDB=useRef(false);
   useEffect(()=>setV(value||''),[value]);
   const q=v.trim().toLowerCase();
   const hits=q.length>1?MED_DB.filter(m=>m.name.toLowerCase().includes(q)||(m.aliases||'').toLowerCase().includes(q)).slice(0,7):[];
   const handleBlur=()=>{
     onCommit(v);
+    if(pickedFromDB.current){pickedFromDB.current=false;return;}
     if(onUnrecognized&&v.trim().length>2){
       const t=v.trim().toLowerCase();
       const matched=MED_DB.some(m=>m.name.toLowerCase().includes(t)||(m.aliases||'').toLowerCase().includes(t));
@@ -440,8 +442,8 @@ function NameField({value,onCommit,onSelect,onUnrecognized}){
               const displayName=m.brand?`${m.name} (${m.brand})`:m.name;
               return(
                 <button key={m.name} type="button"
-                  onMouseDown={e=>{e.preventDefault();setV(displayName);onSelect({...m,name:displayName,generic:m.name});}}
-                  onTouchEnd={e=>{e.preventDefault();setV(displayName);onSelect({...m,name:displayName,generic:m.name});}}
+                  onMouseDown={e=>{e.preventDefault();pickedFromDB.current=true;setV(displayName);onSelect({...m,name:displayName,generic:m.name});}}
+                  onTouchEnd={e=>{e.preventDefault();pickedFromDB.current=true;setV(displayName);onSelect({...m,name:displayName,generic:m.name});}}
                   style={{background:C.pale,color:C.primary,border:`1px solid ${C.light}`,borderRadius:20,padding:'5px 12px',fontSize:13,cursor:'pointer',fontWeight:600}}>
                   {m.name}{m.brand&&<span style={{fontWeight:500,fontSize:11,color:C.g500}}> ({m.brand})</span>} <span style={{fontWeight:400,fontSize:11,color:C.teal}}>{m.dose}</span>
                 </button>
