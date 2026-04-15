@@ -424,7 +424,7 @@ function NameField({value,onCommit,onSelect,onUnrecognized}){
     if(pickedFromDB.current){pickedFromDB.current=false;return;}
     if(onUnrecognized&&v.trim().length>2){
       const t=v.trim().toLowerCase();
-      const matched=MED_DB.some(m=>m.name.toLowerCase().includes(t)||(m.aliases||'').toLowerCase().includes(t));
+      const matched=MED_DB.some(m=>{const name=m.name.toLowerCase();const brand=(m.brand||'').toLowerCase();const aliases=(m.aliases||'').toLowerCase();return name.includes(t)||aliases.includes(t)||t.includes(name)||(brand&&t.includes(brand));});
       onUnrecognized(!matched);
     }
   };
@@ -663,12 +663,12 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
             <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
               <div style={{background:C.g100,borderRadius:8,padding:'8px 14px',flex:1,minWidth:120}}>
                 <div style={{fontSize:10,color:C.g500,fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Before</div>
-                <div style={{fontSize:13,color:C.g700,fontWeight:600}}>{o.oldTiming||'Previous timing'}</div>
+                <div style={{fontSize:13,color:C.g700,fontWeight:600}}>{fmtTime(o.oldTiming)||'Previous timing'}</div>
               </div>
               <svg width={24} height={14} viewBox="0 0 24 14"><path d="M0 7 L18 7 M12 2 L18 7 L12 12" stroke={C.pink} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
               <div style={{background:C.tealBg,borderRadius:8,padding:'8px 14px',flex:1,minWidth:120,border:`1px solid ${C.tealBorder}`}}>
                 <div style={{fontSize:10,color:C.teal,fontWeight:700,textTransform:'uppercase',marginBottom:4}}>After</div>
-                <div style={{fontSize:13,color:C.primary,fontWeight:600}}>{o.newTiming||'Optimized timing'}</div>
+                <div style={{fontSize:13,color:C.primary,fontWeight:600}}>{fmtTime(o.newTiming)||'Optimized timing'}</div>
               </div>
             </div>
             {o.reason&&(
@@ -710,7 +710,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{it.name}</div>
                           {it.dose&&<div style={{fontSize:12,color:C.g500,marginTop:1}}>{it.dose}</div>}
-                          <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{it.instruction}</div>
+                          <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{fmtTime(it.instruction)}</div>
                           {!isOpen&&<div style={{fontSize:11,color:C.g400,marginTop:4}}>Tap for absorption tips →</div>}
                         </div>
                         <Chevron open={isOpen}/>
@@ -720,7 +720,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
                           {abs&&(
                             <div style={{marginBottom:12}}>
                               <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Absorption Profile</div>
-                              {abs.bestTaken&&<div style={{fontSize:13,color:C.g700,marginBottom:4}}><strong>Best taken:</strong> {abs.bestTaken}</div>}
+                              {abs.bestTaken&&<div style={{fontSize:13,color:C.g700,marginBottom:4}}><strong>Best taken:</strong> {fmtTime(abs.bestTaken)}</div>}
                               {abs.preferredSolvent&&<div style={{fontSize:13,color:C.g700,marginBottom:8}}><strong>Take with:</strong> {abs.preferredSolvent}</div>}
                               <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
                                 {abs.requiresFood&&<span style={{background:C.amberBg,color:C.amber,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:`1px solid ${C.amberBorder}`}}>Requires food</span>}
@@ -798,7 +798,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
                   <div onClick={()=>setExpandedAudit(p=>p===i?null:i)} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',cursor:'pointer'}}>
                     <div>
                       <div style={{fontSize:13,fontWeight:700,color:C.g800}}>{it.name}</div>
-                      {logic&&<div style={{fontSize:12,color:C.amber,marginTop:2}}>{logic.oldTiming} → {logic.newTiming}</div>}
+                      {logic&&<div style={{fontSize:12,color:C.amber,marginTop:2}}>{fmtTime(logic.oldTiming)} → {fmtTime(logic.newTiming)}</div>}
                     </div>
                     <Chevron open={isOpen}/>
                   </div>
@@ -1789,29 +1789,21 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         <div style={{maxWidth:700,margin:'0 auto',padding:'24px 20px'}}>
           {/* Score cards */}
           {(()=>{
-            const scoreLabel=s=>s>=85?'Optimized':s>=70?'Good':s>=50?'Fair':'Needs Attention';
             const delta=(a.optimizedScore||0)-(a.currentScore||0);
             return(
               <>
-                <div style={{display:'flex',alignItems:'stretch',gap:0,marginBottom:16,borderRadius:20,overflow:'hidden',boxShadow:'0 4px 24px rgba(13,126,122,0.08)',border:`1px solid ${C.g200}`}}>
-                  {/* Current score card */}
-                  <div style={{flex:1,background:'#EFF6FF',padding:'28px 24px',textAlign:'center'}}>
-                    <div style={{fontSize:13,fontWeight:700,color:'#1D4ED8',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Current</div>
-                    <div style={{fontSize:56,fontWeight:800,color:'#1D4ED8',lineHeight:1}}>{a.currentScore}</div>
-                    <div style={{fontSize:13,color:'#1D4ED8',marginTop:8,fontWeight:600}}>{scoreLabel(a.currentScore)}</div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:16,padding:'28px 0',marginBottom:16,background:'white',borderRadius:20,boxShadow:'0 2px 16px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
+                  <div style={{textAlign:'center'}}>
+                    <div style={{fontSize:62,fontWeight:900,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
+                    <div style={{fontSize:11,color:C.g400,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Current</div>
                   </div>
-                  {/* Delta circle */}
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'center',background:'white',padding:'0 16px',flexShrink:0}}>
-                    <div style={{width:56,height:56,borderRadius:'50%',background:C.tealBg,border:`2px solid ${C.tealBorder}`,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-                      <span style={{fontSize:15,fontWeight:800,color:C.primary,lineHeight:1}}>+{delta}</span>
-                      <svg width={14} height={10} viewBox="0 0 14 10" style={{marginTop:2}}><path d="M0 5 L10 5 M7 1 L10 5 L7 9" stroke={C.primary} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </div>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
+                    <svg width={36} height={18} viewBox="0 0 36 18"><path d="M0 9 L28 9 M22 3 L28 9 L22 15" stroke={C.pink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <div style={{background:C.tealBg,color:C.teal,fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:20,border:`1px solid ${C.tealBorder}`}}>+{delta} pts</div>
                   </div>
-                  {/* Optimized score card */}
-                  <div style={{flex:1,background:C.tealBg,padding:'28px 24px',textAlign:'center'}}>
-                    <div style={{fontSize:13,fontWeight:700,color:C.primary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Optimized</div>
-                    <div style={{fontSize:56,fontWeight:800,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
-                    <div style={{fontSize:13,color:C.primary,marginTop:8,fontWeight:600}}>{scoreLabel(a.optimizedScore)}</div>
+                  <div style={{textAlign:'center'}}>
+                    <div style={{fontSize:62,fontWeight:900,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
+                    <div style={{fontSize:11,color:C.primary,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Optimized</div>
                   </div>
                 </div>
                 {/* Score explanation */}
