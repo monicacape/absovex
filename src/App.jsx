@@ -505,8 +505,8 @@ function AIChatSection({a,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPendin
   return(
     <div style={{display:'flex',flexDirection:'column',gap:12}}>
       <div style={{display:'flex',gap:8,justifyContent:'flex-end',flexWrap:'wrap'}}>
-        <span style={{fontSize:12,color:C.g500,background:'white',border:`1px solid ${C.g200}`,borderRadius:20,padding:'4px 12px'}}>Interactions: {interactionCount} of 15</span>
-        <span style={{fontSize:12,color:reportUpdateUsed?C.g300:C.teal,background:'white',border:`1px solid ${reportUpdateUsed?C.g200:C.tealBorder}`,borderRadius:20,padding:'4px 12px'}}>Report updates: {reportUpdateUsed?0:1} of 1</span>
+        <span style={{fontSize:12,color:C.g500,background:'white',border:`1px solid ${C.g200}`,borderRadius:20,padding:'4px 12px'}}>Questions left: {Math.max(0,15-interactionCount)}</span>
+        <span style={{fontSize:12,color:reportUpdateUsed?C.g300:C.teal,background:'white',border:`1px solid ${reportUpdateUsed?C.g200:C.tealBorder}`,borderRadius:20,padding:'4px 12px'}}>Plan updates left: {reportUpdateUsed?0:1}</span>
       </div>
       {revisionPending&&(
         <div style={{background:'#FFF0F8',border:'1px solid #FFADD8',borderRadius:12,padding:'16px',boxShadow:'0 2px 12px rgba(0,0,0,0.08)'}}>
@@ -540,13 +540,20 @@ function AIChatSection({a,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPendin
           </button>
         </div>
       ):(
-        <div style={{display:'flex',gap:10,background:'white',padding:12,borderRadius:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
-          <input value={chatIn} onChange={e=>setChatIn(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&sendChat()} placeholder="Ask about your medications, timing, or interactions..." style={{flex:1,border:'none',outline:'none',fontSize:14,color:C.g800,background:'transparent'}}/>
-          <button onClick={sendChat} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?C.primary:C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
-            {Ic.send(chatIn.trim()&&!chatLoad?'white':C.g400)}
-            Send
-          </button>
-        </div>
+        <>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+            {['Can I take more of these together?','What should stay separated?','What if my breakfast time changes?','How can I simplify this plan?'].map(chip=>(
+              <button key={chip} onClick={()=>setChatIn(chip)} style={{background:C.g50,border:`1px solid ${C.g200}`,borderRadius:20,padding:'6px 12px',fontSize:12,color:C.g600,cursor:'pointer',fontWeight:600,transition:'all 0.15s'}}>{chip}</button>
+            ))}
+          </div>
+          <div style={{display:'flex',gap:10,background:'white',padding:12,borderRadius:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
+            <input value={chatIn} onChange={e=>setChatIn(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&sendChat()} placeholder="Ask about timing, spacing, or what to combine..." style={{flex:1,border:'none',outline:'none',fontSize:14,color:C.g800,background:'transparent'}}/>
+            <button onClick={sendChat} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?C.primary:C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
+              {Ic.send(chatIn.trim()&&!chatLoad?'white':C.g400)}
+              Send
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
@@ -564,7 +571,7 @@ function DownloadButton({a,downloadReport}){
 }
 
 // ─── FULL REPORT: SINGLE SCROLL ─────────────────────────────────────────────
-function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConflict,setExpandedConflict,expandedScore,setExpandedScore,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
+function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expandedConflict,setExpandedConflict,expandedScore,setExpandedScore,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
   const[expandedAudit,setExpandedAudit]=useState(null);
   const delta=(a.optimizedScore||0)-(a.currentScore||0);
   const wins=a.topWins||a.topBenefits||[];
@@ -597,8 +604,8 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
     <div>
       {/* ── PAGE 1: Summary & Score Snapshot ── */}
       <Card>
-        <PageHdr num={1} title="Summary & Score Snapshot" sub="Your personalized health stack analysis" icon={IcTarget}/>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:16,padding:'24px 0',borderTop:`1px solid ${C.g100}`,borderBottom:`1px solid ${C.g100}`,marginBottom:20}}>
+        <PageHdr num={1} title="Summary & Score Snapshot" sub="Your personalized timing and absorption analysis" icon={IcTarget}/>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:16,padding:'24px 0',borderTop:`1px solid ${C.g100}`,borderBottom:`1px solid ${C.g100}`,marginBottom:a.scoreSummary?12:20}}>
           <div style={{textAlign:'center'}}>
             <div style={{fontSize:62,fontWeight:900,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
             <div style={{fontSize:11,color:C.g400,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Current</div>
@@ -612,10 +619,13 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
             <div style={{fontSize:11,color:C.primary,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Optimized</div>
           </div>
         </div>
+        {a.scoreSummary&&(
+          <div style={{fontSize:13,color:C.g600,lineHeight:1.6,marginBottom:20,paddingTop:4,textAlign:'center',fontStyle:'italic'}}>{a.scoreSummary}</div>
+        )}
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
           {wins.slice(0,3).length>0&&(
             <div style={{background:C.tealBg,borderRadius:12,padding:'14px 16px',border:`1px solid ${C.tealBorder}`}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Top Gains</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Biggest Improvements</div>
               {wins.slice(0,3).map((w,i)=>(
                 <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:i<2?6:0}}>
                   <div style={{width:18,height:18,borderRadius:'50%',background:C.primary,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{Ic.check()}</div>
@@ -626,7 +636,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
           )}
           {(a.conflicts||[]).slice(0,3).length>0&&(
             <div style={{background:C.orangeBg,borderRadius:12,padding:'14px 16px',border:`1px solid ${C.orangeBorder}`}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Top Issues Found</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Key Issues Found</div>
               {(a.conflicts||[]).slice(0,3).map((c,i)=>(
                 <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:i<2?6:0}}>
                   <div style={{width:6,height:6,borderRadius:'50%',background:C.orange,marginTop:5,flexShrink:0}}/>
@@ -637,7 +647,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
           )}
           {(a.positives_already_working||[]).slice(0,3).length>0&&(
             <div style={{background:'#F0FDF4',borderRadius:12,padding:'14px 16px',border:'1px solid #BBF7D0'}}>
-              <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>What's Already Working</div>
+              <div style={{fontSize:11,fontWeight:800,color:'#059669',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>What Checked Out Well</div>
               {(a.positives_already_working||[]).slice(0,3).map((p,i)=>(
                 <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:i<2?6:0}}>
                   <div style={{width:18,height:18,borderRadius:'50%',background:'#059669',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{Ic.check()}</div>
@@ -647,19 +657,24 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
             </div>
           )}
         </div>
-        <div style={{marginTop:20,padding:'10px 16px',background:C.g50,borderRadius:10,border:`1px solid ${C.g200}`,textAlign:'center'}}>
-          <div style={{fontSize:13,color:C.g500}}>Ready to see how we got here? Keep scrolling ↓</div>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'center',marginTop:20,marginBottom:12}}>
+          {['Timing','Food pairing','Spacing conflicts','Routine fit'].map(chip=>(
+            <span key={chip} style={{background:C.tealBg,color:C.teal,fontSize:12,fontWeight:700,padding:'4px 12px',borderRadius:20,border:`1px solid ${C.tealBorder}`}}>{chip}</span>
+          ))}
+        </div>
+        <div style={{padding:'10px 16px',background:C.g50,borderRadius:10,border:`1px solid ${C.g200}`,textAlign:'center'}}>
+          <div style={{fontSize:13,color:C.g500}}>See what changed and why ↓</div>
         </div>
       </Card>
 
       {/* ── PAGE 2: Before vs After ── */}
       <Card>
-        <PageHdr num={2} title="Before vs After Breakdown" sub="What changed in your routine and why" icon={IcArrows}/>
+        <PageHdr num={2} title="Before vs After Breakdown" sub="Our suggested changes to your routine, and why they matter" icon={IcArrows}/>
         {(a.optimizationLogic||[]).length===0?(
           <div style={{textAlign:'center',color:C.g500,fontSize:14,padding:'20px 0'}}>No timing changes were required — your routine was already well-optimized.</div>
         ):(a.optimizationLogic||[]).map((o,i)=>(
           <div key={i} style={{borderBottom:i<(a.optimizationLogic.length-1)?`1px solid ${C.g100}`:'none',paddingBottom:i<(a.optimizationLogic.length-1)?20:0,marginBottom:i<(a.optimizationLogic.length-1)?20:0}}>
-            <div style={{fontSize:14,fontWeight:800,color:C.g900,marginBottom:10}}>Change {i+1}: {o.item}</div>
+            <div style={{fontSize:14,fontWeight:800,color:C.g900,marginBottom:10}}>{o.item}</div>
             <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
               <div style={{background:C.g100,borderRadius:8,padding:'8px 14px',flex:1,minWidth:120}}>
                 <div style={{fontSize:10,color:C.g500,fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Before</div>
@@ -675,7 +690,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
               <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
                 <div style={{width:4,borderRadius:2,background:C.primary,alignSelf:'stretch',flexShrink:0}}/>
                 <div>
-                  <div style={{fontSize:11,fontWeight:700,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Why this changed</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.g500,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:3}}>Why we changed it</div>
                   <div style={{fontSize:13,color:C.g700,lineHeight:1.6}}>{o.reason}</div>
                 </div>
               </div>
@@ -686,7 +701,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
 
       {/* ── PAGE 3: Optimized Daily Schedule ── */}
       <Card>
-        <PageHdr num={3} title="Your Optimized Daily Schedule" sub="Follow this plan starting tomorrow" icon={IcClock}/>
+        <PageHdr num={3} title="Your Optimized Daily Schedule" sub="Your personalized daily timing plan" icon={IcClock}/>
         <div style={{display:'flex',flexDirection:'column',gap:14}}>
           {Object.entries(a.schedule||{}).map(([k,sitems])=>{
             if(!sitems||sitems.length===0)return null;
@@ -711,7 +726,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
                           <div style={{fontSize:14,fontWeight:700,color:C.g900}}>{it.name}</div>
                           {it.dose&&<div style={{fontSize:12,color:C.g500,marginTop:1}}>{it.dose}</div>}
                           <div style={{fontSize:12,color:C.g600,marginTop:4,lineHeight:1.5}}>{fmtTime(it.instruction)}</div>
-                          {!isOpen&&<div style={{fontSize:11,color:C.g400,marginTop:4}}>Tap for absorption tips →</div>}
+                          {!isOpen&&<div style={{fontSize:11,color:C.g400,marginTop:4}}>Tap for timing details</div>}
                         </div>
                         <Chevron open={isOpen}/>
                       </div>
@@ -767,9 +782,9 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
 
       {/* ── PAGE 4: Full Stack Timing Audit ── */}
       <Card>
-        <PageHdr num={4} title="Full Stack Timing Audit" sub="Every item reviewed for absorption, spacing, and conflicts" icon={IcClipboard}/>
+        <PageHdr num={4} title="Full Stack Timing Audit" sub="Every item reviewed for timing, spacing, and routine fit" icon={IcClipboard}/>
         <div style={{background:C.tealBg,borderRadius:10,padding:'12px 16px',border:`1px solid ${C.tealBorder}`,marginBottom:20,fontSize:13,color:C.mid,lineHeight:1.6}}>
-          Every item in your stack was reviewed for absorption requirements, drug-nutrient spacing, interaction potential, and fit with your daily routine.
+          Every item in your stack was reviewed for timing fit, food needs, spacing, and common blockers.
         </div>
         {unchanged.length>0&&(
           <div style={{marginBottom:20}}>
@@ -803,7 +818,10 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
                     <Chevron open={isOpen}/>
                   </div>
                   {isOpen&&logic&&(
-                    <div style={{background:C.amberBg,borderRadius:8,padding:'10px 12px',marginBottom:8,fontSize:13,color:C.dark,lineHeight:1.6,border:`1px solid ${C.amberBorder}`}}>{logic.reason}</div>
+                    <div style={{background:C.amberBg,borderRadius:8,padding:'10px 12px',marginBottom:8,border:`1px solid ${C.amberBorder}`}}>
+                      <div style={{fontSize:10,fontWeight:800,color:C.amber,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Timing Tip</div>
+                      <div style={{fontSize:13,color:C.dark,lineHeight:1.6}}>{logic.reason}</div>
+                    </div>
                   )}
                 </div>
               );
@@ -813,7 +831,6 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
         <div style={{marginTop:20,background:C.g50,borderRadius:10,padding:'14px 16px',border:`1px solid ${C.g200}`}}>
           <div style={{display:'flex',gap:20,flexWrap:'wrap',justifyContent:'space-around'}}>
             <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:C.primary}}>{scheduleItems.length}</div><div style={{fontSize:11,color:C.g500}}>items reviewed</div></div>
-            <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:C.red}}>{(a.conflicts||[]).length}</div><div style={{fontSize:11,color:C.g500}}>conflicts found</div></div>
             <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:C.amber}}>{changed.length}</div><div style={{fontSize:11,color:C.g500}}>adjustments made</div></div>
             <div style={{textAlign:'center'}}><div style={{fontSize:22,fontWeight:800,color:'#059669'}}>+{delta}</div><div style={{fontSize:11,color:C.g500}}>score improvement</div></div>
           </div>
@@ -822,7 +839,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
 
       {/* ── PAGE 5: Top Conflicts ── */}
       <Card>
-        <PageHdr num={5} title="Top Conflicts & Why They Matter" sub="Understanding what was found and how we fixed it" icon={IcAlert} magenta/>
+        <PageHdr num={5} title="Top Conflicts & Why They Matter" sub="The biggest timing conflicts we found, and how to fix them" icon={IcAlert} magenta/>
         {(a.conflicts||[]).length===0?(
           <div style={{textAlign:'center',padding:'20px 0'}}>
             <div style={{width:52,height:52,borderRadius:'50%',background:'#F0FDF4',border:'2px solid #BBF7D0',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 12px'}}><svg width={24} height={24} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg></div>
@@ -854,8 +871,8 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
                   {c.absorption_loss_percent&&(
                     <div style={{background:C.redBg,borderRadius:10,padding:'14px 16px',marginBottom:14,border:'1px solid #FECACA'}}>
                       <div style={{fontSize:32,fontWeight:900,color:C.red,lineHeight:1}}>~{c.absorption_loss_percent}%</div>
-                      <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>estimated absorption loss</div>
-                      <div style={{fontSize:12,color:'#991B1B',marginTop:8,lineHeight:1.5}}>At {c.absorption_loss_percent}% loss, you may be absorbing significantly less than your intended dose — meaning you're paying for a dose your body isn't fully receiving.</div>
+                      <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>Estimated impact</div>
+                      <div style={{fontSize:12,color:'#991B1B',marginTop:8,lineHeight:1.5}}>This timing may reduce how much of the dose your body is able to use, which can make the medication less effective than intended.</div>
                     </div>
                   )}
                   <div style={{background:C.tealBg,borderRadius:10,padding:'12px 14px',border:`1px solid ${C.tealBorder}`}}>
@@ -869,20 +886,26 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
         })}
       </Card>
 
-      {/* ── PAGE 6: Optimization Logic ── */}
+      {/* ── PAGE 6: What Shaped Your Plan ── */}
       <Card>
-        <PageHdr num={6} title="How Absovex Built Your Plan" sub="The decision logic behind your optimized schedule" icon={IcBulb}/>
-        {a.scoreSummary&&(
-          <div style={{background:C.tealBg,borderRadius:10,padding:'14px 16px',marginBottom:20,border:`1px solid ${C.tealBorder}`,fontSize:14,color:C.mid,lineHeight:1.7,fontStyle:'italic'}}>{a.scoreSummary}</div>
-        )}
+        <PageHdr num={6} title="What Shaped Your Plan" sub="Here's what Absovex looked at when building your schedule" icon={IcBulb}/>
+        <div style={{background:C.tealBg,borderRadius:10,padding:'14px 16px',marginBottom:20,border:`1px solid ${C.tealBorder}`,fontSize:14,color:C.mid,lineHeight:1.7}}>
+          {routine&&routine.coffeeTea&&routine.coffeeTime
+            ? `Your plan was shaped most by your ${fmtTime(routine.coffeeTime)} coffee, your breakfast timing, and the spacing needed between interacting items.`
+            : routine&&(routine.breakfastStart||routine.wakeTime)
+            ? 'Your plan was shaped most by your morning routine, meal timing, and the spacing needed between interacting items.'
+            : 'Your plan was shaped by your daily routine, meal timing, and the spacing needed between items in your stack.'
+          }
+        </div>
         <div style={{display:'flex',flexDirection:'column',gap:0}}>
           {[
-            {label:'Absorption Requirements',value:`${scheduleItems.length} items assessed for food, fat, and timing requirements`,color:C.teal},
-            {label:'Conflict Detection',value:`${(a.conflicts||[]).length} interaction${(a.conflicts||[]).length!==1?'s':''} identified across your stack`,color:C.orange},
-            {label:'Spacing Windows',value:'Minimum spacing rules applied between interacting items',color:C.sky},
-            {label:'Routine Fit',value:'Schedule mapped to your wake time, meals, and bedtime',color:C.violet},
-          ].map((row,i)=>(
-            <div key={i} style={{display:'flex',gap:12,alignItems:'flex-start',padding:'14px 0',borderBottom:i<3?`1px solid ${C.g100}`:'none'}}>
+            ...(routine&&routine.coffeeTea?[{label:'Coffee timing',value:'Your coffee window made it important to protect timing-sensitive items first thing in the morning.',color:C.amber}]:[]),
+            {label:'Meal timing',value:'Your breakfast and lunch schedule helped place vitamins and minerals more effectively.',color:C.teal},
+            ...((a.conflicts||[]).length>0?[{label:'Spacing rules',value:'Some items needed more space between them to reduce interference.',color:C.orange}]:[]),
+            ...(scheduleItems.some(it=>it.absorption_profile?.requiresFat)?[{label:'Food pairing',value:'Fat-soluble items were moved to meals that include fat to support better absorption.',color:C.sky}]:[]),
+            {label:'Routine fit',value:'Your wake time and meal timing were used to build a plan that is easier to follow each day.',color:C.violet},
+          ].map((row,i,arr)=>(
+            <div key={i} style={{display:'flex',gap:12,alignItems:'flex-start',padding:'14px 0',borderBottom:i<arr.length-1?`1px solid ${C.g100}`:'none'}}>
               <div style={{width:10,height:10,borderRadius:'50%',background:row.color,marginTop:4,flexShrink:0}}/>
               <div>
                 <div style={{fontSize:13,fontWeight:700,color:C.g800,marginBottom:2}}>{row.label}</div>
@@ -893,7 +916,7 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
         </div>
         {(a.routineInsights||[]).length>0&&(
           <div style={{marginTop:16}}>
-            <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Routine Insights</div>
+            <div style={{fontSize:11,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>What helped this plan work well</div>
             {(a.routineInsights||[]).map((insight,i)=>(
               <div key={i} style={{display:'flex',gap:8,alignItems:'flex-start',marginBottom:8}}>
                 <div style={{color:C.teal,fontWeight:700,flexShrink:0}}>•</div>
@@ -906,9 +929,31 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
 
       {/* ── PAGE 7: Score Breakdown ── */}
       <Card>
-        <PageHdr num={7} title="Health Stack Score Breakdown" sub={`Your score improved from ${a.currentScore} to ${a.optimizedScore}`} icon={IcChart}/>
+        <PageHdr num={7} title="Health Stack Score Breakdown" sub="See what your score reflects" icon={IcChart}/>
+        <div style={{background:C.tealBg,borderRadius:10,padding:'12px 16px',border:`1px solid ${C.tealBorder}`,marginBottom:20,fontSize:13,color:C.mid,lineHeight:1.6}}>
+          Your Health Stack Score reflects how well your routine supports timing, spacing, food pairing, and fit with your daily routine.
+        </div>
         {(a.scoreBreakdown||[]).length===0?(
-          <div style={{textAlign:'center',color:C.g500,fontSize:14,padding:'20px 0'}}>Score breakdown not available — overall improvement: {a.currentScore} → {a.optimizedScore} (+{delta} pts)</div>
+          <div>
+            {[
+              {label:'Timing',desc:(a.optimizationLogic||[]).length>0?`Improved by adjusting timing for ${(a.optimizationLogic||[]).map(o=>o.item).slice(0,2).join(' and ')} to better fit your morning routine`:'Improved by adjusting item timing to better fit your routine'},
+              {label:'Spacing',desc:(a.conflicts||[]).length>0?`Improved by creating more distance between items that were too close together`:'Improved by applying spacing rules between interacting items'},
+              {label:'Food pairing',desc:'Improved by pairing fat-soluble items with meals that include fat'},
+              {label:'Routine fit',desc:'Improved by aligning the plan with your meal and coffee timing'},
+            ].map((row,i)=>(
+              <div key={i} style={{display:'flex',gap:12,alignItems:'flex-start',padding:'14px 0',borderBottom:i<3?`1px solid ${C.g100}`:'none'}}>
+                <div style={{width:10,height:10,borderRadius:'50%',background:C.primary,marginTop:4,flexShrink:0}}/>
+                <div style={{flex:1}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4}}>
+                    <span style={{fontSize:13,fontWeight:700,color:C.g800}}>{row.label}</span>
+                    {i===0&&delta>0&&<span style={{fontSize:12,fontWeight:800,color:'#059669',background:'#F0FDF4',padding:'2px 8px',borderRadius:20,border:'1px solid #BBF7D0'}}>+{delta} pts total</span>}
+                  </div>
+                  <div style={{fontSize:13,color:C.g500,lineHeight:1.5}}>{row.desc}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{marginTop:16,background:C.g50,borderRadius:10,padding:'12px 16px',border:`1px solid ${C.g200}`,fontSize:13,color:C.g600,lineHeight:1.6}}>Your score improved most in spacing and food pairing.</div>
+          </div>
         ):(a.scoreBreakdown||[]).map((entry,i)=>{
           const isOpen=expandedScore===i;
           const before=entry.before??entry.currentScore??0;
@@ -965,35 +1010,102 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
         })}
       </Card>
 
-      {/* ── PAGE 8: Recommendations & Next Steps ── */}
+      {/* ── PAGE 8: Questions for Doctor / Pharmacist ── */}
       <Card>
-        <PageHdr num={8} title="Recommendations & Next Steps" sub="How to make this plan work in real life" icon={IcStar}/>
-        {(a.recommendations||[]).length>0&&(
-          <div style={{marginBottom:20}}>
-            <div style={{fontSize:11,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Personalized Tips</div>
-            {(a.recommendations||[]).map((r,i)=>(
-              <div key={i} style={{display:'flex',gap:12,padding:'10px 0',borderBottom:i<(a.recommendations.length-1)?`1px solid ${C.g100}`:'none'}}>
-                <span style={{background:C.tealBg,color:C.teal,fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,whiteSpace:'nowrap',alignSelf:'flex-start',flexShrink:0}}>{r.category}</span>
-                <span style={{fontSize:13,color:C.g700,lineHeight:1.6}}>{r.tip}</span>
+        <PageHdr num={8} title="Questions to Bring to Your Doctor or Pharmacist" sub="Use these prompts to make your next conversation more useful" icon={IcStar}/>
+        {/* Ask Your Pharmacist */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Ask Your Pharmacist</div>
+          <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:14,padding:'16px'}}>
+            {[
+              'Is this timing plan a good fit for my current medications, supplements, and daily routine?',
+              'Are there any food, coffee, or mineral interactions in my stack I should be extra careful about?',
+              'Are any of my supplements better taken at a different time of day based on what else I take?',
+              'Is there anything in this plan that would interact with medications I might add in the future?',
+            ].map((q,i)=>(
+              <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<3?`1px solid ${C.tealBorder}`:'none'}}>
+                <div style={{width:20,height:20,borderRadius:'50%',background:C.primary,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
+                <div style={{fontSize:13,color:C.mid,lineHeight:1.6}}>{q}</div>
               </div>
             ))}
           </div>
-        )}
+        </div>
+        {/* Ask Your Doctor */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:12,fontWeight:800,color:C.sky,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Ask Your Doctor</div>
+          <div style={{background:C.skyBg,border:`1px solid ${C.skyBorder}`,borderRadius:14,padding:'16px'}}>
+            {[
+              'Now that my timing is more consistent, should I watch for any changes in symptoms or how I feel?',
+              'Should I recheck any labs after improving the timing of my routine?',
+              'Would any medication or formulation changes make this plan easier to follow?',
+              'Is my current dosing still the right fit if my absorption improves?',
+            ].map((q,i)=>(
+              <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<3?`1px solid ${C.skyBorder}`:'none'}}>
+                <div style={{width:20,height:20,borderRadius:'50%',background:C.sky,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
+                <div style={{fontSize:13,color:'#0C4A6E',lineHeight:1.6}}>{q}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Conditional: Life Stage Questions */}
+        {(()=>{
+          const stage=(routine?.hormonalStage||'').toLowerCase();
+          let qs=[];
+          if(stage.includes('peri')){qs=[
+            'Are there nutrients or supplements I should review based on my current symptoms and stage?',
+            'Could any part of my routine be making sleep, mood, or energy swings worse?',
+            'Are there timing changes that would better support symptom management?',
+            'Are any of my current supplements overlapping or working against each other?',
+          ];}
+          else if(stage.includes('post')){qs=[
+            'Are there nutrients I should be paying closer attention to at this stage, such as bone or muscle support?',
+            'Should I review calcium, vitamin D, magnesium, or protein support with my doctor?',
+            'Does my current stack reflect my age, symptoms, and health goals?',
+            'Are any parts of this routine worth adjusting for long-term bone or heart health?',
+          ];}
+          else if(stage.includes('hrt')){qs=[
+            'Are there any timing considerations I should know about with HRT and the rest of my stack?',
+            'Are any of my supplements worth rechecking now that I am on HRT?',
+            'Does anything in my current routine overlap with the goals of HRT?',
+            'Should any of my symptoms or labs be reviewed differently because I am on HRT?',
+          ];}
+          else if(stage.includes('pre')){qs=[
+            'Are there any parts of my routine I should review based on my cycle, symptoms, or energy patterns?',
+            'Are there nutrients or supplements I should review before adding anything new?',
+            'Does my current stack support my goals without unnecessary overlap?',
+          ];}
+          if(qs.length===0)return null;
+          return(
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:12,fontWeight:800,color:C.violet,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:8}}>Ask Based on Your Life Stage</div>
+              <div style={{fontSize:13,color:C.g500,marginBottom:12,lineHeight:1.5}}>Because you shared your hormonal stage, here are a few extra questions you may want to bring into your next appointment.</div>
+              <div style={{background:C.violetBg,border:`1px solid ${C.violetBorder}`,borderRadius:14,padding:'16px'}}>
+                {qs.map((q,i)=>(
+                  <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<qs.length-1?`1px solid ${C.violetBorder}`:'none'}}>
+                    <div style={{width:20,height:20,borderRadius:'50%',background:C.violet,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
+                    <div style={{fontSize:13,color:'#4C1D95',lineHeight:1.6}}>{q}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+        {/* AI-generated prompts if available */}
         {(a.doctorPrompts||[]).length>0&&(
           <div style={{marginBottom:20}}>
-            <div style={{fontSize:11,fontWeight:800,color:C.blue,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Verify with Your Pharmacist</div>
-            <div style={{background:C.blueBg,border:`1px solid ${C.blueBorder}`,borderRadius:14,padding:'16px'}}>
+            <div style={{fontSize:12,fontWeight:800,color:C.g500,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Additional Questions from Your Analysis</div>
+            <div style={{background:C.g50,border:`1px solid ${C.g200}`,borderRadius:14,padding:'16px'}}>
               {(a.doctorPrompts||[]).map((q,i)=>(
-                <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<(a.doctorPrompts.length-1)?`1px solid ${C.blueBorder}`:'none'}}>
-                  <div style={{width:20,height:20,borderRadius:'50%',background:C.blue,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
-                  <div style={{fontSize:13,color:'#1E3A8A',lineHeight:1.6}}>{q}</div>
+                <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<(a.doctorPrompts.length-1)?`1px solid ${C.g200}`:'none'}}>
+                  <div style={{width:20,height:20,borderRadius:'50%',background:C.g400,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
+                  <div style={{fontSize:13,color:C.g700,lineHeight:1.6}}>{q}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
         <div style={{background:'#FFF7ED',border:'1px solid #FED7AA',borderRadius:12,padding:'12px 16px'}}>
-          <div style={{fontSize:12,color:'#92400E',lineHeight:1.6}}><strong>Disclaimer:</strong> This report is for informational and educational purposes only and does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice. Consult a physician, licensed pharmacist, or qualified healthcare professional before making any changes to your medication or supplement routine.</div>
+          <div style={{fontSize:12,color:'#92400E',lineHeight:1.6}}>This report is for educational purposes only and is not medical advice. Review any medication or supplement changes with your doctor, pharmacist, or other qualified healthcare professional.</div>
         </div>
       </Card>
 
@@ -1005,8 +1117,8 @@ function FullReport({a,expandedScheduleItem,setExpandedScheduleItem,expandedConf
           </div>
           <div>
             <div style={{fontSize:10,fontWeight:700,color:C.g400,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:2}}>Always Available</div>
-            <div style={{fontSize:19,fontWeight:800,color:C.g900,lineHeight:1.2}}>Absovex AI Advisor</div>
-            <div style={{fontSize:13,color:C.g500,marginTop:3}}>Ask questions, get clarity, refine your plan</div>
+            <div style={{fontSize:19,fontWeight:800,color:C.g900,lineHeight:1.2}}>Refine Your Plan with the Absovex AI Advisor</div>
+            <div style={{fontSize:13,color:C.g500,marginTop:3}}>Ask real-life questions about timing, spacing, and what feels hard to follow</div>
           </div>
         </div>
         <AIChatSection a={a} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
@@ -1051,7 +1163,7 @@ export default function App(){
   const[result,setResult]=useState(null);
   const[err,setErr]=useState('');
   const[tab,setTab]=useState('schedule');
-  const[chat,setChat]=useState([{role:'assistant',content:"Hi, I'm your Absovex AI Advisor.\n\nI'm here to help you understand and refine your plan before you download.\n\nAsk about:\n• timing and spacing\n• interactions or conflicts\n• how to take something for better absorption\n\nIf something looks off or missing, I can help improve your schedule."}]);
+  const[chat,setChat]=useState([{role:'assistant',content:"Before you download, use the advisor to pressure test your plan.\n\nGood things to ask:\n• Can I group any of these together to make the schedule easier?\n• What should stay separated, and why?\n• What do I do if my meal or coffee timing changes?\n• Can this plan work if I want fewer pill times each day?\n• Is there a simpler version of this schedule that still protects absorption?\n\nIf something feels unrealistic, confusing, or too spread out, ask here before you lock in your report."}]);
   const[chatIn,setChatIn]=useState('');
   const[chatLoad,setChatLoad]=useState(false);
   const chatEnd=useRef(null);
@@ -1285,7 +1397,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
       setChat(prev=>[...prev,{role:'assistant',content:"Something went wrong while updating your report. Your current version is still available, and no update was used."}]);
     }
     setChatLoad(false);
-    setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth'}),100);
+    setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
   };
 
   const sendChat=async()=>{
@@ -1324,7 +1436,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
       setChat([...msgs,{role:'assistant',content:"I could not complete that response right now. Please try again."}]);
     }
     setChatLoad(false);
-    setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth'}),100);
+    setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
   };
 
   const downloadReport=d=>{
@@ -1937,7 +2049,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
           </div>
         </div>
         <div style={{maxWidth:700,margin:'0 auto',padding:'20px'}}>
-          <FullReport a={a} expandedScheduleItem={expandedScheduleItem} setExpandedScheduleItem={setExpandedScheduleItem} expandedConflict={expandedConflict} setExpandedConflict={setExpandedConflict} expandedScore={expandedScore} setExpandedScore={setExpandedScore} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
+          <FullReport a={a} routine={routine} expandedScheduleItem={expandedScheduleItem} setExpandedScheduleItem={setExpandedScheduleItem} expandedConflict={expandedConflict} setExpandedConflict={setExpandedConflict} expandedScore={expandedScore} setExpandedScore={setExpandedScore} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
         </div>
       </div>
     );
