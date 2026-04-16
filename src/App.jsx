@@ -389,6 +389,85 @@ function enrichReportData(result,items,routine){
   allItems.filter(i=>i.unrecognized).forEach(i=>assumptions.push({assumption:`"${i.name}" was entered manually and could not be verified in the drug database.`,whyItMatters:'Unverified entries are included using clinical judgment, but interactions may not be fully captured.',importance:'medium',pharmacistQuestion:`Is "${i.name}" the correct name and dose for this item?`}));
   r.report_assumptions=assumptions;
 
+  // 6. Compute real currentScore and optimizedScore from actual stack data.
+  // The AI prompt anchors to example values so its scores are unreliable.
+  // We derive scores here from the conflict penalties and timing adjustments
+  // already present in the parsed data — these are the same numbers driving
+  // the report content, so scores and content stay consistent.
+  (()=>{
+    const conflicts=r.conflicts||[];
+    const logic=r.optimizationLogic||[];
+
+    // Total penalty from all conflicts (each conflict has a penalty field)
+    const conflictPenalty=conflicts.reduce((s,c)=>s+Math.min(c.penalty||0,20),0);
+    // Each item that needed timing adjusted represents a pre-optimization problem
+    const timingPenalty=Math.min(logic.length*3,15);
+
+    // Before: start at 88 (a "baseline neutral" well-intentioned but unoptimized stack)
+    // and deduct for each real problem found
+    const before=Math.max(30,Math.round(88-conflictPenalty-timingPenalty));
+
+    // After: recover 75% of conflict penalties (conflicts are resolved but some
+    // interaction risk remains if not followed) plus 3 pts per timing fix
+    const after=Math.min(97,Math.max(before+5,Math.round(before+conflictPenalty*0.75+logic.length*3)));
+
+    r.currentScore=before;
+    r.optimizedScore=after;
+
+    // 7. Generate scoreBreakdown from real data so Section 7 always has content.
+    // Only generate if the AI didn't return a real breakdown.
+    if(!(r.scoreBreakdown||[]).length){
+      const allScheduled=Object.values(r.schedule||{}).flat();
+      const needsFoodPairing=allScheduled.filter(it=>it.absorption_profile?.requiresFat||it.absorption_profile?.requiresFood).length;
+      const conflictCap=Math.min(conflictPenalty,30);
+
+      const tBefore=Math.max(8,25-timingPenalty);
+      const tAfter=Math.min(25,tBefore+Math.round(timingPenalty*0.9));
+
+      const cBefore=Math.max(5,30-conflictCap);
+      const cAfter=Math.min(30,cBefore+Math.round(conflictCap*0.8));
+
+      const fBefore=Math.max(8,20-Math.min(needsFoodPairing*3,12));
+      const fAfter=Math.min(20,fBefore+Math.min(needsFoodPairing*2,10));
+
+      const rBefore=Math.max(8,15-Math.min(logic.length*2,7));
+      const rAfter=Math.min(15,rBefore+Math.min(logic.length*2,6));
+
+      r.scoreBreakdown=[
+        {
+          category:'Timing consistency',
+          before:tBefore,after:tAfter,maxPoints:25,
+          actions_that_improved_score:logic.length>0
+            ?logic.slice(0,3).map(l=>`Adjusted timing for ${l.item} to better fit your day`)
+            :['Your item timing was already well aligned'],
+          why_not_perfect:logic.length>0?'Some timing constraints depend on staying consistent with your routine.':null,
+        },
+        {
+          category:'Conflict spacing',
+          before:cBefore,after:cAfter,maxPoints:30,
+          actions_that_improved_score:conflicts.length>0
+            ?conflicts.slice(0,2).map(c=>`Added spacing between ${(c.items||[]).join(' and ')}`)
+            :['No significant spacing conflicts found in your stack'],
+          why_not_perfect:conflicts.length>0?'Spacing improvements require following the schedule consistently.':null,
+        },
+        {
+          category:'Food pairing',
+          before:fBefore,after:fAfter,maxPoints:20,
+          actions_that_improved_score:needsFoodPairing>0
+            ?['Placed fat-soluble and food-sensitive items with appropriate meals']
+            :['No specific food pairing adjustments needed'],
+          why_not_perfect:null,
+        },
+        {
+          category:'Routine fit',
+          before:rBefore,after:rAfter,maxPoints:15,
+          actions_that_improved_score:['Schedule aligned to your meal times, coffee window, and wake time'],
+          why_not_perfect:null,
+        },
+      ];
+    }
+  })();
+
   return r;
 }
 
