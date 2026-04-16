@@ -60,6 +60,19 @@ const fmtTime=str=>{
   });
 };
 
+// Formats AI timing strings that concatenate time+daypart without separator,
+// e.g. "8:00 AMmorning" or "08:00fasting" → "8:00 AM · Morning"
+const fmtTiming=str=>{
+  if(!str)return str;
+  // Insert spaces where digit/AM/PM tokens touch letters directly
+  let s=str.replace(/(\d)(AM|PM)([a-zA-Z])/gi,'$1 $2 $3')
+           .replace(/(\d)([a-zA-Z])/g,'$1 $2');
+  s=fmtTime(s)||s;
+  // Insert " · " separator between time and daypart label, capitalize first letter
+  s=s.replace(/(\d{1,2}:\d{2}\s*(?:AM|PM))\s*([a-zA-Z])/gi,(_,time,char)=>`${time.trim()} · ${char.toUpperCase()}`);
+  return s;
+};
+
 const lookupDrug=async(name)=>{
   try{
     const r=await fetch(`https://rxnav.nlm.nih.gov/REST/rxcui.json?name=${encodeURIComponent(name)}&search=1`);
@@ -764,12 +777,12 @@ function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expa
             <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:12,flexWrap:'wrap'}}>
               <div style={{background:C.g100,borderRadius:8,padding:'8px 14px',flex:1,minWidth:120}}>
                 <div style={{fontSize:10,color:C.g500,fontWeight:700,textTransform:'uppercase',marginBottom:4}}>Before</div>
-                <div style={{fontSize:13,color:C.g700,fontWeight:600}}>{fmtTime(o.oldTiming)||'Previous timing'}</div>
+                <div style={{fontSize:13,color:C.g700,fontWeight:600}}>{fmtTiming(o.oldTiming)||'Previous timing'}</div>
               </div>
               <svg width={24} height={14} viewBox="0 0 24 14"><path d="M0 7 L18 7 M12 2 L18 7 L12 12" stroke={C.pink} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
               <div style={{background:C.tealBg,borderRadius:8,padding:'8px 14px',flex:1,minWidth:120,border:`1px solid ${C.tealBorder}`}}>
                 <div style={{fontSize:10,color:C.teal,fontWeight:700,textTransform:'uppercase',marginBottom:4}}>After</div>
-                <div style={{fontSize:13,color:C.primary,fontWeight:600}}>{fmtTime(o.newTiming)||'Optimized timing'}</div>
+                <div style={{fontSize:13,color:C.primary,fontWeight:600}}>{fmtTiming(o.newTiming)||'Optimized timing'}</div>
               </div>
             </div>
             {o.reason&&(
@@ -899,7 +912,7 @@ function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expa
                   <div onClick={()=>setExpandedAudit(p=>p===i?null:i)} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',cursor:'pointer'}}>
                     <div>
                       <div style={{fontSize:13,fontWeight:700,color:C.g800}}>{it.name}</div>
-                      {logic&&<div style={{fontSize:12,color:C.amber,marginTop:2}}>{fmtTime(logic.oldTiming)} → {fmtTime(logic.newTiming)}</div>}
+                      {logic&&<div style={{fontSize:12,color:C.amber,marginTop:2}}>{fmtTiming(logic.oldTiming)} → {fmtTiming(logic.newTiming)}</div>}
                     </div>
                     <Chevron open={isOpen}/>
                   </div>
