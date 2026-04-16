@@ -501,7 +501,14 @@ function LogoHeader(){
 }
 
 // ─── COMPONENT: AI CHAT SECTION ─────────────────────────────────────────────
-function AIChatSection({a,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
+function AIChatSection({a,chat,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
+  const[chatIn,setChatIn]=useState('');
+  const handleSend=()=>{
+    if(!chatIn.trim()||chatLoad)return;
+    const msg=chatIn.trim();
+    setChatIn('');
+    sendChat(msg);
+  };
   return(
     <div style={{display:'flex',flexDirection:'column',gap:12}}>
       <div style={{display:'flex',gap:8,justifyContent:'flex-end',flexWrap:'wrap'}}>
@@ -547,8 +554,8 @@ function AIChatSection({a,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPendin
             ))}
           </div>
           <div style={{display:'flex',gap:10,background:'white',padding:12,borderRadius:14,boxShadow:'0 2px 12px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
-            <input value={chatIn} onChange={e=>setChatIn(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&sendChat()} placeholder="Ask about timing, spacing, or what to combine..." style={{flex:1,border:'none',outline:'none',fontSize:14,color:C.g800,background:'transparent'}}/>
-            <button onClick={sendChat} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?C.primary:C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
+            <input value={chatIn} onChange={e=>setChatIn(e.target.value)} onKeyDown={e=>e.key==='Enter'&&!e.shiftKey&&handleSend()} placeholder="Ask about timing, spacing, or what to combine..." style={{flex:1,border:'none',outline:'none',fontSize:14,color:C.g800,background:'transparent'}}/>
+            <button onClick={handleSend} disabled={chatLoad||!chatIn.trim()} style={{background:chatIn.trim()&&!chatLoad?C.primary:C.g200,color:chatIn.trim()&&!chatLoad?'white':C.g400,border:'none',borderRadius:10,padding:'10px 14px',cursor:chatIn.trim()&&!chatLoad?'pointer':'default',display:'flex',alignItems:'center',gap:6,fontSize:13,fontWeight:700,transition:'all 0.15s'}}>
               {Ic.send(chatIn.trim()&&!chatLoad?'white':C.g400)}
               Send
             </button>
@@ -571,7 +578,7 @@ function DownloadButton({a,downloadReport}){
 }
 
 // ─── FULL REPORT: SINGLE SCROLL ─────────────────────────────────────────────
-function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expandedConflict,setExpandedConflict,expandedScore,setExpandedScore,chat,chatIn,setChatIn,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
+function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expandedConflict,setExpandedConflict,expandedScore,setExpandedScore,chat,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
   const[expandedAudit,setExpandedAudit]=useState(null);
   const delta=(a.optimizedScore||0)-(a.currentScore||0);
   const wins=a.topWins||a.topBenefits||[];
@@ -1121,7 +1128,7 @@ function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expa
             <div style={{fontSize:13,color:C.g500,marginTop:3}}>Ask real-life questions about timing, spacing, and what feels hard to follow</div>
           </div>
         </div>
-        <AIChatSection a={a} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
+        <AIChatSection a={a} chat={chat} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
       </Card>
     </div>
   );
@@ -1164,7 +1171,6 @@ export default function App(){
   const[err,setErr]=useState('');
   const[tab,setTab]=useState('schedule');
   const[chat,setChat]=useState([{role:'assistant',content:"Before you download, use the advisor to pressure test your plan.\n\nGood things to ask:\n• Can I group any of these together to make the schedule easier?\n• What should stay separated, and why?\n• What do I do if my meal or coffee timing changes?\n• Can this plan work if I want fewer pill times each day?\n• Is there a simpler version of this schedule that still protects absorption?\n\nIf something feels unrealistic, confusing, or too spread out, ask here before you lock in your report."}]);
-  const[chatIn,setChatIn]=useState('');
   const[chatLoad,setChatLoad]=useState(false);
   const chatEnd=useRef(null);
   const[interactionCount,setInteractionCount]=useState(0);
@@ -1400,11 +1406,10 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
     setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
   };
 
-  const sendChat=async()=>{
-    if(!chatIn.trim()||chatLoad)return;
+  const sendChat=async(rawMsg)=>{
+    if(!rawMsg||!rawMsg.trim()||chatLoad)return;
     if(interactionCount>=15)return;
-    const msg=chatIn.trim();
-    setChatIn('');
+    const msg=rawMsg.trim();
     const msgs=[...chat,{role:'user',content:msg}];
     setChat(msgs);
     setChatLoad(true);
@@ -2049,7 +2054,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
           </div>
         </div>
         <div style={{maxWidth:700,margin:'0 auto',padding:'20px'}}>
-          <FullReport a={a} routine={routine} expandedScheduleItem={expandedScheduleItem} setExpandedScheduleItem={setExpandedScheduleItem} expandedConflict={expandedConflict} setExpandedConflict={setExpandedConflict} expandedScore={expandedScore} setExpandedScore={setExpandedScore} chat={chat} chatIn={chatIn} setChatIn={setChatIn} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
+          <FullReport a={a} routine={routine} expandedScheduleItem={expandedScheduleItem} setExpandedScheduleItem={setExpandedScheduleItem} expandedConflict={expandedConflict} setExpandedConflict={setExpandedConflict} expandedScore={expandedScore} setExpandedScore={setExpandedScore} chat={chat} chatLoad={chatLoad} sendChat={sendChat} revisionPending={revisionPending} setRevisionPending={setRevisionPending} runRevision={runRevision} advisorLocked={advisorLocked} interactionCount={interactionCount} reportUpdateUsed={reportUpdateUsed} downloadReport={downloadReport} chatEnd={chatEnd}/>
         </div>
       </div>
     );
