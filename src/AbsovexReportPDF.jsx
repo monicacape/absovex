@@ -4,9 +4,9 @@ import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/rendere
 Font.register({
   family: 'Plus Jakarta Sans',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yygg.woff2', fontWeight: 400, fontStyle: 'normal' },
-    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yygg.woff2', fontWeight: 600, fontStyle: 'normal' },
-    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yygg.woff2', fontWeight: 700, fontStyle: 'normal' },
+    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v12/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_qU7NSg.ttf', fontWeight: 400, fontStyle: 'normal' },
+    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v12/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_d0nNSg.ttf', fontWeight: 600, fontStyle: 'normal' },
+    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v12/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_TknNSg.ttf', fontWeight: 700, fontStyle: 'normal' },
   ],
 });
 
