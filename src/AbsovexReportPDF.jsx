@@ -10,6 +10,9 @@ Font.register({
   ],
 });
 
+// Issue 5: prevent mid-word hyphenation throughout the PDF
+Font.registerHyphenationCallback(word => [word]);
+
 const COLORS = {
   teal: '#0D6B67',
   magenta: '#EC008B',
@@ -31,6 +34,9 @@ const COLORS = {
   purple: '#A78BFA',
   darkBlue: '#1E40AF',
   gold: '#FCD34D',
+  // Issue 2: muted audit indicator colors
+  auditTeal: '#0D5B57',
+  auditOrange: '#D97706',
 };
 
 const DAYPART_LABELS = {
@@ -88,7 +94,7 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     backgroundColor: COLORS.cream,
     paddingTop: 40,
-    paddingBottom: 32,
+    paddingBottom: 40,
     paddingHorizontal: 48,
   },
   sectionHeader: {
@@ -219,18 +225,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightGray,
     borderRadius: 6,
     padding: 16,
-    marginVertical: 12,
-  },
-  progressBarTrack: {
-    height: 8,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 2,
     marginVertical: 10,
-  },
-  progressBarFill: {
-    height: 8,
-    backgroundColor: COLORS.teal,
-    borderRadius: 2,
   },
   coloredSection: {
     borderRadius: 6,
@@ -250,6 +245,7 @@ const styles = StyleSheet.create({
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
+// Issue 3: fmtT converts 24-hour times to 12-hour in any string
 const fmtT = str => {
   if (!str) return str;
   let s = str
@@ -297,7 +293,7 @@ const PageFooter = () => (
 );
 
 const DisclaimerBlock = () => (
-  <View style={[styles.calloutBox, { borderLeftWidth: 3, borderLeftColor: COLORS.magenta, marginTop: 16 }]}>
+  <View style={[styles.calloutBox, { borderLeftWidth: 3, borderLeftColor: COLORS.magenta, marginTop: 12 }]}>
     <Text style={[styles.smallText, { fontWeight: 700, marginBottom: 4, color: COLORS.black, fontSize: 9 }]}>MEDICAL DISCLAIMER</Text>
     <Text style={[styles.smallText, { fontSize: 9 }]}>
       This report is for informational and educational purposes only and does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice. It is based solely on user-submitted information and may be incomplete or inaccurate. Always consult a physician, licensed pharmacist, or other qualified healthcare professional before making any changes to your medication, supplement, or health routine. Do not use this report for emergency medical decisions.
@@ -320,9 +316,9 @@ const CalloutBox = ({ children, bg, borderColor }) => (
 
 const Divider = () => <View style={styles.divider} />;
 
-// Colored question section for DoctorQsPage
+// Issue 6: wrap={false} keeps each colored question section together
 const QuestionSection = ({ title, questions, color, bg, intro }) => (
-  <View style={[styles.coloredSection, { backgroundColor: bg }]}>
+  <View style={[styles.coloredSection, { backgroundColor: bg }]} wrap={false}>
     <Text style={{ fontSize: 12, fontWeight: 700, color, marginBottom: intro ? 6 : 10 }}>{title}</Text>
     {intro ? (
       <Text style={{ fontSize: 10, color: COLORS.gray, marginBottom: 10, lineHeight: 1.6 }}>{intro}</Text>
@@ -338,24 +334,31 @@ const QuestionSection = ({ title, questions, color, bg, intro }) => (
   </View>
 );
 
-// ─── PAGE 1 — Cover ──────────────────────────────────────────────────────────
+// ─── PAGE 1 — Cover (Issue 1: includes summary snapshot so pages flow naturally) ──
 
 const CoverPage = ({ data, userName }) => {
   const diff = (data.optimizedScore || 0) - (data.currentScore || 0);
+  const scoreTakeaway = data.scoreSummary ||
+    `Your score improved by ${diff} points. The biggest gains came from fixing timing conflicts and improving food pairing.`;
+  const benefits = data.topBenefits || [];
+  const issues = data.topIssues || [];
+
   return (
     <Page size="A4" style={styles.coverPage}>
-      <View style={{ alignItems: 'center', marginBottom: 32, marginTop: 16 }}>
-        <Text style={{ fontSize: 28, fontWeight: 700, color: COLORS.teal, marginBottom: 10 }}>Absovex</Text>
-        <Text style={{ fontSize: 22, fontWeight: 700, color: COLORS.black, marginBottom: 8, textAlign: 'center' }}>
+      {/* Title block */}
+      <View style={{ alignItems: 'center', marginBottom: 20, marginTop: 8 }}>
+        <Text style={{ fontSize: 28, fontWeight: 700, color: COLORS.teal, marginBottom: 8 }}>Absovex</Text>
+        <Text style={{ fontSize: 20, fontWeight: 700, color: COLORS.black, marginBottom: 6, textAlign: 'center' }}>
           Personalized Health Stack Report
         </Text>
         {userName ? (
-          <Text style={{ fontSize: 13, color: COLORS.gray, marginBottom: 6 }}>Prepared for {userName}</Text>
+          <Text style={{ fontSize: 12, color: COLORS.gray, marginBottom: 4 }}>Prepared for {userName}</Text>
         ) : null}
-        <Text style={{ fontSize: 12, color: COLORS.gray }}>Generated {fmtDate()}</Text>
+        <Text style={{ fontSize: 11, color: COLORS.gray }}>Generated {fmtDate()}</Text>
       </View>
 
-      <View style={[styles.row, { marginBottom: 20 }]}>
+      {/* Top stat boxes */}
+      <View style={[styles.row, { marginBottom: 14 }]}>
         <View style={styles.statBox}>
           <Text style={styles.statNum}>{data.currentScore || '—'}</Text>
           <Text style={styles.statLabel}>Current Score</Text>
@@ -374,31 +377,13 @@ const CoverPage = ({ data, userName }) => {
         </View>
       </View>
 
-      <DisclaimerBlock />
-      <PageFooter />
-    </Page>
-  );
-};
-
-// ─── PAGE 2 — Summary and Score Snapshot ─────────────────────────────────────
-
-const SummaryPage = ({ data }) => {
-  const diff = (data.optimizedScore || 0) - (data.currentScore || 0);
-  const scoreTakeaway = data.scoreSummary ||
-    `Your score improved by ${diff} points. The biggest gains came from fixing timing conflicts and improving food pairing.`;
-
-  const benefits = data.topBenefits || [];
-  const issues = data.topIssues || [];
-
-  return (
-    <Page size="A4" style={styles.page}>
-      <SectionHeader num={1} title="Summary and Score Snapshot" sub="Your personalized timing and absorption analysis" />
-
-      <CalloutBox bg={COLORS.tealBg} borderColor={COLORS.teal}>
+      {/* Score takeaway — flows directly after stats */}
+      <View style={[styles.calloutBox, { backgroundColor: COLORS.tealBg, borderLeftWidth: 3, borderLeftColor: COLORS.teal, marginVertical: 8 }]}>
         <Text style={styles.bodyText}>{scoreTakeaway}</Text>
-      </CalloutBox>
+      </View>
 
-      <View style={[styles.row, { marginTop: 12, marginBottom: 16 }]} wrap={false}>
+      {/* Summary snapshot — 2 boxes */}
+      <View style={[styles.row, { marginBottom: 14 }]}>
         <View style={[styles.statBox, { backgroundColor: COLORS.fixGreen, alignItems: 'flex-start' }]}>
           <Text style={[styles.labelSmall, { marginBottom: 6 }]}>Biggest Improvements</Text>
           {benefits.slice(0, 4).map((b, i) => (
@@ -413,7 +398,8 @@ const SummaryPage = ({ data }) => {
         </View>
       </View>
 
-      <View style={[styles.row, { backgroundColor: COLORS.lightGray, borderRadius: 6, padding: 10 }]}>
+      {/* What was reviewed */}
+      <View style={[styles.row, { backgroundColor: COLORS.lightGray, borderRadius: 6, padding: 10, marginBottom: 12 }]}>
         {['Timing', 'Food Pairing', 'Spacing Conflicts', 'Routine Fit'].map((label, i, arr) => (
           <View key={label} style={{ flex: 1, alignItems: 'center', borderRightWidth: i < arr.length - 1 ? 1 : 0, borderRightColor: COLORS.gray }}>
             <Text style={{ fontSize: 10, fontWeight: 600, color: COLORS.teal }}>{label}</Text>
@@ -421,6 +407,23 @@ const SummaryPage = ({ data }) => {
         ))}
       </View>
 
+      <DisclaimerBlock />
+      <PageFooter />
+    </Page>
+  );
+};
+
+// ─── PAGE 2 — Summary / Section 1 (Issue 1: lighter since key content moved to cover) ──
+
+const SummaryPage = ({ data }) => {
+  return (
+    <Page size="A4" style={styles.page}>
+      <SectionHeader num={1} title="Summary and Score Snapshot" sub="Your personalized timing and absorption analysis" />
+      <CalloutBox bg={COLORS.tealBg} borderColor={COLORS.teal}>
+        <Text style={styles.bodyText}>
+          Your report is ready. Use the sections below to review every timing change, spacing conflict, and recommendation that shaped your plan. Start with the Before vs After Breakdown on the next page.
+        </Text>
+      </CalloutBox>
       <PageFooter />
     </Page>
   );
@@ -486,14 +489,15 @@ const SchedulePage = ({ data }) => {
                 <Text style={[styles.smallText, { color: COLORS.gray }]}>{it.dose}</Text>
               </View>
 
+              {/* Issue 3: fmtT applied to instruction to convert any 24-hour times */}
               {it.instruction ? (
-                <Text style={[styles.smallText, { marginTop: 2 }]}>{it.instruction}</Text>
+                <Text style={[styles.smallText, { marginTop: 2 }]}>{fmtT(it.instruction) || it.instruction}</Text>
               ) : null}
 
               {it.absorption_profile ? (
                 <View style={[styles.calloutBox, { marginTop: 6, padding: 8 }]}>
                   {it.absorption_profile.bestTaken ? (
-                    <Text style={styles.smallText}>Best taken: {it.absorption_profile.bestTaken}</Text>
+                    <Text style={styles.smallText}>Best taken: {fmtT(it.absorption_profile.bestTaken) || it.absorption_profile.bestTaken}</Text>
                   ) : null}
                   {it.absorption_profile.preferredSolvent ? (
                     <Text style={styles.smallText}>Take with: {it.absorption_profile.preferredSolvent}</Text>
@@ -519,7 +523,8 @@ const SchedulePage = ({ data }) => {
               {it.reason ? (
                 <View style={[styles.tealAccent, { marginTop: 6 }]}>
                   <Text style={styles.labelSmall}>Why It's Here</Text>
-                  <Text style={[styles.smallText, { color: COLORS.black, marginTop: 2 }]}>{it.reason}</Text>
+                  {/* Issue 3: fmtT applied to reason text */}
+                  <Text style={[styles.smallText, { color: COLORS.black, marginTop: 2 }]}>{fmtT(it.reason) || it.reason}</Text>
                 </View>
               ) : null}
             </View>
@@ -553,38 +558,40 @@ const AuditPage = ({ data }) => {
         <Text style={styles.bodyText}>Every item in your stack was reviewed for timing fit, food needs, spacing, and common blockers.</Text>
       </CalloutBox>
 
+      {/* Issue 2: muted teal, wrap={false} keeps header + items together */}
       {noChange.length > 0 ? (
-        <View>
-          <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.teal, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 }}>
+        <View wrap={false}>
+          <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.auditTeal, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 }}>
             No Changes Needed
           </Text>
           {noChange.map((it, i) => (
             <View key={i} style={[styles.row, { marginBottom: 7, alignItems: 'flex-start' }]}>
-              <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.teal, marginRight: 6 }}>✓</Text>
+              <Text style={{ fontSize: 13, fontWeight: 700, color: COLORS.auditTeal, marginRight: 6, lineHeight: 1.3 }}>✓</Text>
               <Text style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{it.name}</Text>
-              <Text style={[styles.smallText, { flex: 2 }]}>{it.instruction || 'Timing is solid as-is.'}</Text>
+              <Text style={[styles.smallText, { flex: 2 }]}>{fmtT(it.instruction) || 'Timing is solid as-is.'}</Text>
             </View>
           ))}
           <Divider />
         </View>
       ) : null}
 
+      {/* Issue 2: muted orange, wrap={false} keeps header + items together */}
       {adjusted.length > 0 ? (
-        <View>
-          <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.orange, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 }}>
+        <View wrap={false}>
+          <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.auditOrange, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 }}>
             Timing Adjusted
           </Text>
           {adjusted.map((it, i) => {
             const logicItem = logic.find(o => o.item === it.name);
             return (
-              <View key={i} wrap={false} style={{ marginBottom: 10 }}>
+              <View key={i} style={{ marginBottom: 10 }}>
                 <View style={styles.row}>
-                  <Text style={{ fontSize: 12, color: COLORS.orange, marginRight: 6 }}>●</Text>
+                  <Text style={{ fontSize: 12, color: COLORS.auditOrange, marginRight: 6 }}>●</Text>
                   <Text style={{ fontSize: 12, fontWeight: 700 }}>{it.name}</Text>
                 </View>
                 <Text style={[styles.labelSmall, { marginLeft: 18 }]}>TIMING TIP</Text>
                 <Text style={[styles.smallText, { marginLeft: 18 }]}>
-                  {logicItem ? fmtT(logicItem.oldTiming) + ' → ' + fmtT(logicItem.newTiming) : it.instruction || ''}
+                  {logicItem ? fmtT(logicItem.oldTiming) + ' → ' + fmtT(logicItem.newTiming) : fmtT(it.instruction) || ''}
                 </Text>
               </View>
             );
@@ -783,10 +790,14 @@ const ScoreBreakdownPage = ({ data }) => {
       {breakdown.length > 0 ? (
         breakdown.map((cat, i) => {
           const pts = cat.after - cat.before;
-          const fillPct = cat.maxPoints > 0 ? Math.round((cat.after / cat.maxPoints) * 100) : 0;
+          const maxPts = cat.maxPoints > 0 ? cat.maxPoints : 1;
+          const beforePct = Math.round((cat.before / maxPts) * 100);
+          const afterPct = Math.round((cat.after / maxPts) * 100);
+
           return (
             <View key={i} style={styles.scoreCard} wrap={false}>
-              <View style={[styles.row, { alignItems: 'center', marginBottom: 4 }]}>
+              {/* Header row: category name + points badge */}
+              <View style={[styles.row, { alignItems: 'center', marginBottom: 10 }]}>
                 <Text style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{cat.category}</Text>
                 {pts > 0 ? (
                   <View style={{ backgroundColor: COLORS.fixGreen, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 }}>
@@ -795,17 +806,26 @@ const ScoreBreakdownPage = ({ data }) => {
                 ) : null}
               </View>
 
-              <View style={styles.progressBarTrack}>
-                <View style={[styles.progressBarFill, { width: `${fillPct}%` }]} />
+              {/* Issue 4: BEFORE bar (gray) */}
+              <View style={[styles.row, { alignItems: 'center', marginBottom: 5 }]}>
+                <Text style={[styles.labelSmall, { color: COLORS.gray, width: 44, marginBottom: 0, lineHeight: 1 }]}>BEFORE</Text>
+                <View style={{ flex: 1, height: 8, backgroundColor: '#E5E7EB', borderRadius: 2 }}>
+                  <View style={{ height: 8, backgroundColor: '#9CA3AF', borderRadius: 2, width: `${beforePct}%` }} />
+                </View>
+                <Text style={[styles.smallText, { width: 30, textAlign: 'right' }]}>{cat.before}</Text>
               </View>
 
-              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 8 }]}>
-                <Text style={styles.smallText}>{cat.before}</Text>
-                <Text style={styles.smallText}>{cat.after} / {cat.maxPoints}</Text>
+              {/* Issue 4: NOW bar (teal) */}
+              <View style={[styles.row, { alignItems: 'center', marginBottom: 8 }]}>
+                <Text style={[styles.labelSmall, { color: COLORS.teal, width: 44, marginBottom: 0, lineHeight: 1 }]}>NOW</Text>
+                <View style={{ flex: 1, height: 8, backgroundColor: '#E5E7EB', borderRadius: 2 }}>
+                  <View style={{ height: 8, backgroundColor: COLORS.teal, borderRadius: 2, width: `${afterPct}%` }} />
+                </View>
+                <Text style={[styles.smallText, { width: 30, textAlign: 'right' }]}>{cat.after} / {cat.maxPoints}</Text>
               </View>
 
               {(cat.actions_that_improved_score || []).length > 0 ? (
-                <View style={{ marginTop: 6 }}>
+                <View style={{ marginTop: 4 }}>
                   <Text style={styles.labelSmall}>What Improved This</Text>
                   {cat.actions_that_improved_score.slice(0, 3).map((act, j) => (
                     <Text key={j} style={[styles.smallText, { color: COLORS.black, marginTop: 2, marginLeft: 4 }]}>✓ {act}</Text>
@@ -925,14 +945,14 @@ const DoctorQsPage = ({ data, routine }) => {
         />
       ) : null}
 
-      <View style={{ marginTop: 16 }}>
+      <View style={{ marginTop: 16 }} wrap={false}>
         <Text style={[styles.itemHeader, { fontSize: 12, color: COLORS.teal }]}>Bring These With You</Text>
         {['This Absovex report', 'Your full medication and supplement list', 'Any recent lab results', 'A short list of symptoms or changes you have noticed'].map((item, i) => (
           <Text key={i} style={[styles.bodyText, { marginBottom: 4, paddingLeft: 8 }]}>· {item}</Text>
         ))}
       </View>
 
-      <View style={{ marginTop: 16 }}>
+      <View style={{ marginTop: 12 }}>
         <Text style={[styles.smallText, { fontSize: 9 }]}>
           This report is for educational purposes only and is not medical advice. Review any medication or supplement changes with your doctor, pharmacist, or other qualified healthcare professional.
         </Text>
@@ -992,6 +1012,7 @@ const TimingCardPage = ({ data }) => {
         return (
           <View key={i} wrap={false} style={{ marginBottom: 14 }}>
             <View style={[styles.groupHeader, { backgroundColor: headerColor }]}>
+              {/* Issue 3: fmtT applied to block.time for 12-hour display */}
               <Text style={styles.groupHeaderText}>{fmtT(block.time) || block.time}</Text>
             </View>
             {(block.items || []).map((itemName, j) => {
