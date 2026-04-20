@@ -26,6 +26,11 @@ const COLORS = {
   severityMed: '#F59E0B',
   severityLow: '#EAB308',
   tealBg: '#E6F4F3',
+  orange: '#FF9500',
+  blue: '#3B82F6',
+  purple: '#A78BFA',
+  darkBlue: '#1E40AF',
+  gold: '#FCD34D',
 };
 
 const DAYPART_LABELS = {
@@ -44,10 +49,33 @@ const DAYPART_HINTS = {
   bedtime: 'Before sleep',
 };
 
+const ROUTINE_CATEGORY_COLORS = {
+  'coffee timing': '#FF9500',
+  'meal timing': '#0D6B67',
+  'spacing rules': '#EF4444',
+  'food pairing': '#3B82F6',
+  'routine fit': '#A78BFA',
+};
+
+const DAYPART_COLORS = {
+  morning_fasting: '#FCD34D',
+  morning_with_breakfast: '#FF9500',
+  midday: '#3B82F6',
+  evening_with_dinner: '#A78BFA',
+  bedtime: '#1E40AF',
+};
+
+const DOCTOR_SECTION_BG = {
+  pharmacist: '#E6F4F3',
+  doctor: '#EFF6FF',
+  lifeStage: '#F5F3FF',
+  additional: '#F9FAFB',
+};
+
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Plus Jakarta Sans',
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.black,
     backgroundColor: COLORS.white,
     paddingTop: 48,
@@ -56,11 +84,11 @@ const styles = StyleSheet.create({
   },
   coverPage: {
     fontFamily: 'Plus Jakarta Sans',
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.black,
     backgroundColor: COLORS.cream,
-    paddingTop: 64,
-    paddingBottom: 72,
+    paddingTop: 40,
+    paddingBottom: 32,
     paddingHorizontal: 48,
   },
   sectionHeader: {
@@ -71,17 +99,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   subhead: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.gray,
     marginBottom: 14,
   },
   bodyText: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 1.6,
     color: COLORS.black,
   },
   smallText: {
-    fontSize: 9,
+    fontSize: 10,
     color: COLORS.gray,
   },
   footer: {
@@ -183,9 +211,40 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   groupHint: {
-    fontSize: 9,
+    fontSize: 10,
     color: COLORS.gray,
     marginBottom: 8,
+  },
+  scoreCard: {
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 6,
+    padding: 16,
+    marginVertical: 12,
+  },
+  progressBarTrack: {
+    height: 8,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 2,
+    marginVertical: 10,
+  },
+  progressBarFill: {
+    height: 8,
+    backgroundColor: COLORS.teal,
+    borderRadius: 2,
+  },
+  coloredSection: {
+    borderRadius: 6,
+    padding: 14,
+    marginVertical: 10,
+  },
+  numberedCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    marginTop: 1,
   },
 });
 
@@ -239,8 +298,8 @@ const PageFooter = () => (
 
 const DisclaimerBlock = () => (
   <View style={[styles.calloutBox, { borderLeftWidth: 3, borderLeftColor: COLORS.magenta, marginTop: 16 }]}>
-    <Text style={[styles.smallText, { fontWeight: 700, marginBottom: 4, color: COLORS.black }]}>MEDICAL DISCLAIMER</Text>
-    <Text style={styles.smallText}>
+    <Text style={[styles.smallText, { fontWeight: 700, marginBottom: 4, color: COLORS.black, fontSize: 9 }]}>MEDICAL DISCLAIMER</Text>
+    <Text style={[styles.smallText, { fontSize: 9 }]}>
       This report is for informational and educational purposes only and does not constitute medical advice, diagnosis, treatment, or pharmaceutical advice. It is based solely on user-submitted information and may be incomplete or inaccurate. Always consult a physician, licensed pharmacist, or other qualified healthcare professional before making any changes to your medication, supplement, or health routine. Do not use this report for emergency medical decisions.
     </Text>
   </View>
@@ -261,13 +320,31 @@ const CalloutBox = ({ children, bg, borderColor }) => (
 
 const Divider = () => <View style={styles.divider} />;
 
+// Colored question section for DoctorQsPage
+const QuestionSection = ({ title, questions, color, bg, intro }) => (
+  <View style={[styles.coloredSection, { backgroundColor: bg }]}>
+    <Text style={{ fontSize: 12, fontWeight: 700, color, marginBottom: intro ? 6 : 10 }}>{title}</Text>
+    {intro ? (
+      <Text style={{ fontSize: 10, color: COLORS.gray, marginBottom: 10, lineHeight: 1.6 }}>{intro}</Text>
+    ) : null}
+    {questions.map((q, i) => (
+      <View key={i} style={[styles.row, { marginBottom: 8, alignItems: 'flex-start' }]}>
+        <View style={[styles.numberedCircle, { backgroundColor: color }]}>
+          <Text style={{ fontSize: 8, fontWeight: 700, color: COLORS.white }}>{i + 1}</Text>
+        </View>
+        <Text style={[styles.bodyText, { flex: 1 }]}>{q}</Text>
+      </View>
+    ))}
+  </View>
+);
+
 // ─── PAGE 1 — Cover ──────────────────────────────────────────────────────────
 
 const CoverPage = ({ data, userName }) => {
   const diff = (data.optimizedScore || 0) - (data.currentScore || 0);
   return (
     <Page size="A4" style={styles.coverPage}>
-      <View style={{ alignItems: 'center', marginBottom: 40, marginTop: 20 }}>
+      <View style={{ alignItems: 'center', marginBottom: 32, marginTop: 16 }}>
         <Text style={{ fontSize: 28, fontWeight: 700, color: COLORS.teal, marginBottom: 10 }}>Absovex</Text>
         <Text style={{ fontSize: 22, fontWeight: 700, color: COLORS.black, marginBottom: 8, textAlign: 'center' }}>
           Personalized Health Stack Report
@@ -275,10 +352,10 @@ const CoverPage = ({ data, userName }) => {
         {userName ? (
           <Text style={{ fontSize: 13, color: COLORS.gray, marginBottom: 6 }}>Prepared for {userName}</Text>
         ) : null}
-        <Text style={{ fontSize: 11, color: COLORS.gray }}>Generated {fmtDate()}</Text>
+        <Text style={{ fontSize: 12, color: COLORS.gray }}>Generated {fmtDate()}</Text>
       </View>
 
-      <View style={[styles.row, { marginBottom: 24 }]}>
+      <View style={[styles.row, { marginBottom: 20 }]}>
         <View style={styles.statBox}>
           <Text style={styles.statNum}>{data.currentScore || '—'}</Text>
           <Text style={styles.statLabel}>Current Score</Text>
@@ -312,7 +389,6 @@ const SummaryPage = ({ data }) => {
 
   const benefits = data.topBenefits || [];
   const issues = data.topIssues || [];
-  const positives = data.positives_already_working || [];
 
   return (
     <Page size="A4" style={styles.page}>
@@ -322,23 +398,17 @@ const SummaryPage = ({ data }) => {
         <Text style={styles.bodyText}>{scoreTakeaway}</Text>
       </CalloutBox>
 
-      <View style={[styles.row, { marginTop: 12, marginBottom: 16 }]}>
+      <View style={[styles.row, { marginTop: 12, marginBottom: 16 }]} wrap={false}>
         <View style={[styles.statBox, { backgroundColor: COLORS.fixGreen, alignItems: 'flex-start' }]}>
           <Text style={[styles.labelSmall, { marginBottom: 6 }]}>Biggest Improvements</Text>
           {benefits.slice(0, 4).map((b, i) => (
             <Text key={i} style={[styles.smallText, { color: COLORS.black, marginBottom: 3 }]}>· {b}</Text>
           ))}
         </View>
-        <View style={[styles.statBox, { backgroundColor: COLORS.conflictRed, alignItems: 'flex-start' }]}>
-          <Text style={[styles.labelSmall, { marginBottom: 6 }]}>Key Issues Found</Text>
+        <View style={[styles.statBoxLast, { backgroundColor: COLORS.conflictRed, alignItems: 'flex-start' }]}>
+          <Text style={[styles.labelSmall, { marginBottom: 6, color: COLORS.conflictRedBorder }]}>Key Issues Found</Text>
           {issues.slice(0, 4).map((iss, i) => (
             <Text key={i} style={[styles.smallText, { color: COLORS.black, marginBottom: 3 }]}>· {iss.issue}</Text>
-          ))}
-        </View>
-        <View style={[styles.statBoxLast, { backgroundColor: COLORS.cream, alignItems: 'flex-start' }]}>
-          <Text style={[styles.labelSmall, { marginBottom: 6 }]}>What Checked Out Well</Text>
-          {positives.slice(0, 4).map((p, i) => (
-            <Text key={i} style={[styles.smallText, { color: COLORS.black, marginBottom: 3 }]}>· {p.strength}</Text>
           ))}
         </View>
       </View>
@@ -404,7 +474,7 @@ const SchedulePage = ({ data }) => {
 
       {Object.entries(schedule).map(([key, items]) => (
         <View key={key}>
-          <View style={styles.groupHeader}>
+          <View style={[styles.groupHeader, { backgroundColor: DAYPART_COLORS[key] || COLORS.teal }]}>
             <Text style={styles.groupHeaderText}>{DAYPART_LABELS[key] || key}</Text>
           </View>
           <Text style={styles.groupHint}>{DAYPART_HINTS[key] || ''}</Text>
@@ -412,7 +482,7 @@ const SchedulePage = ({ data }) => {
           {(items || []).map((it, j) => (
             <View key={j} wrap={false} style={{ marginBottom: 12 }}>
               <View style={styles.row}>
-                <Text style={{ fontSize: 11, fontWeight: 700, flex: 1 }}>{it.name}</Text>
+                <Text style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{it.name}</Text>
                 <Text style={[styles.smallText, { color: COLORS.gray }]}>{it.dose}</Text>
               </View>
 
@@ -485,10 +555,13 @@ const AuditPage = ({ data }) => {
 
       {noChange.length > 0 ? (
         <View>
-          <Text style={[styles.itemHeader, { color: COLORS.fixGreenBorder }]}>No Changes Needed</Text>
+          <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.teal, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 }}>
+            No Changes Needed
+          </Text>
           {noChange.map((it, i) => (
-            <View key={i} style={[styles.row, { marginBottom: 6, alignItems: 'flex-start' }]}>
-              <Text style={{ fontSize: 10, fontWeight: 700, flex: 1 }}>{it.name}</Text>
+            <View key={i} style={[styles.row, { marginBottom: 7, alignItems: 'flex-start' }]}>
+              <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.teal, marginRight: 6 }}>✓</Text>
+              <Text style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{it.name}</Text>
               <Text style={[styles.smallText, { flex: 2 }]}>{it.instruction || 'Timing is solid as-is.'}</Text>
             </View>
           ))}
@@ -498,14 +571,21 @@ const AuditPage = ({ data }) => {
 
       {adjusted.length > 0 ? (
         <View>
-          <Text style={[styles.itemHeader, { color: COLORS.teal }]}>Timing Adjusted</Text>
+          <Text style={{ fontSize: 12, fontWeight: 700, color: COLORS.orange, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 }}>
+            Timing Adjusted
+          </Text>
           {adjusted.map((it, i) => {
             const logicItem = logic.find(o => o.item === it.name);
             return (
               <View key={i} wrap={false} style={{ marginBottom: 10 }}>
-                <Text style={{ fontSize: 10, fontWeight: 700 }}>{it.name}</Text>
-                <Text style={styles.labelSmall}>TIMING TIP</Text>
-                <Text style={styles.smallText}>{logicItem ? fmtT(logicItem.oldTiming) + ' → ' + fmtT(logicItem.newTiming) : it.instruction || ''}</Text>
+                <View style={styles.row}>
+                  <Text style={{ fontSize: 12, color: COLORS.orange, marginRight: 6 }}>●</Text>
+                  <Text style={{ fontSize: 12, fontWeight: 700 }}>{it.name}</Text>
+                </View>
+                <Text style={[styles.labelSmall, { marginLeft: 18 }]}>TIMING TIP</Text>
+                <Text style={[styles.smallText, { marginLeft: 18 }]}>
+                  {logicItem ? fmtT(logicItem.oldTiming) + ' → ' + fmtT(logicItem.newTiming) : it.instruction || ''}
+                </Text>
               </View>
             );
           })}
@@ -631,12 +711,15 @@ const RoutineInsightsPage = ({ data, routine }) => {
         <Text style={styles.bodyText}>{summaryText}</Text>
       </CalloutBox>
 
-      {drivers.map((d, i) => (
-        <View key={i} style={[styles.tealAccent, { marginTop: 10 }]}>
-          <Text style={styles.labelSmall}>{d.label}</Text>
-          <Text style={[styles.bodyText, { marginTop: 3 }]}>{d.text}</Text>
-        </View>
-      ))}
+      {drivers.map((d, i) => {
+        const catColor = ROUTINE_CATEGORY_COLORS[d.label.toLowerCase()] || COLORS.teal;
+        return (
+          <View key={i} style={[styles.tealAccent, { borderLeftColor: catColor, marginTop: 10 }]}>
+            <Text style={[styles.labelSmall, { color: catColor }]}>{d.label}</Text>
+            <Text style={[styles.bodyText, { marginTop: 3 }]}>{d.text}</Text>
+          </View>
+        );
+      })}
 
       {insights.length > 1 ? (
         <View style={{ marginTop: 16 }}>
@@ -684,7 +767,7 @@ const ScoreBreakdownPage = ({ data }) => {
   ];
 
   const topCats = breakdown.length >= 2
-    ? breakdown.sort((a, b) => (b.after - b.before) - (a.after - a.before)).slice(0, 2).map(c => c.category)
+    ? breakdown.slice().sort((a, b) => (b.after - b.before) - (a.after - a.before)).slice(0, 2).map(c => c.category)
     : ['Timing', 'Spacing'];
 
   return (
@@ -698,21 +781,47 @@ const ScoreBreakdownPage = ({ data }) => {
       </CalloutBox>
 
       {breakdown.length > 0 ? (
-        breakdown.map((cat, i) => (
-          <View key={i} wrap={false} style={{ marginBottom: 10 }}>
-            <View style={[styles.row, { alignItems: 'center', marginBottom: 4 }]}>
-              <Text style={{ fontSize: 11, fontWeight: 700, flex: 1 }}>{cat.category}</Text>
-              <Text style={styles.smallText}>{cat.before} → {cat.after} / {cat.maxPoints}</Text>
+        breakdown.map((cat, i) => {
+          const pts = cat.after - cat.before;
+          const fillPct = cat.maxPoints > 0 ? Math.round((cat.after / cat.maxPoints) * 100) : 0;
+          return (
+            <View key={i} style={styles.scoreCard} wrap={false}>
+              <View style={[styles.row, { alignItems: 'center', marginBottom: 4 }]}>
+                <Text style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{cat.category}</Text>
+                {pts > 0 ? (
+                  <View style={{ backgroundColor: COLORS.fixGreen, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: 700, color: COLORS.teal }}>+{pts} pts</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <View style={styles.progressBarTrack}>
+                <View style={[styles.progressBarFill, { width: `${fillPct}%` }]} />
+              </View>
+
+              <View style={[styles.row, { justifyContent: 'space-between', marginBottom: 8 }]}>
+                <Text style={styles.smallText}>{cat.before}</Text>
+                <Text style={styles.smallText}>{cat.after} / {cat.maxPoints}</Text>
+              </View>
+
+              {(cat.actions_that_improved_score || []).length > 0 ? (
+                <View style={{ marginTop: 6 }}>
+                  <Text style={styles.labelSmall}>What Improved This</Text>
+                  {cat.actions_that_improved_score.slice(0, 3).map((act, j) => (
+                    <Text key={j} style={[styles.smallText, { color: COLORS.black, marginTop: 2, marginLeft: 4 }]}>✓ {act}</Text>
+                  ))}
+                </View>
+              ) : null}
+
+              {cat.why_not_perfect ? (
+                <View style={{ marginTop: 8 }}>
+                  <Text style={[styles.labelSmall, { color: COLORS.gray }]}>Why Not Perfect</Text>
+                  <Text style={{ fontSize: 9, color: COLORS.gray, marginTop: 2, lineHeight: 1.5 }}>{cat.why_not_perfect}</Text>
+                </View>
+              ) : null}
             </View>
-            {(cat.actions_that_improved_score || []).slice(0, 2).map((act, j) => (
-              <Text key={j} style={[styles.smallText, { marginLeft: 8, marginBottom: 2 }]}>· {act}</Text>
-            ))}
-            {cat.why_not_perfect ? (
-              <Text style={[styles.smallText, { color: COLORS.gray, marginTop: 3 }]}>{cat.why_not_perfect}</Text>
-            ) : null}
-            {i < breakdown.length - 1 ? <Divider /> : null}
-          </View>
-        ))
+          );
+        })
       ) : (
         simplified.map((row, i) => (
           <View key={i} style={[styles.tealAccent, { marginTop: 10 }]}>
@@ -783,44 +892,37 @@ const DoctorQsPage = ({ data, routine }) => {
     <Page size="A4" style={styles.page}>
       <SectionHeader num={8} title="Questions to Bring to Your Doctor or Pharmacist" sub="Use these prompts to make your next conversation more useful" />
 
-      <Text style={[styles.itemHeader, { fontSize: 12, color: COLORS.teal }]}>Ask Your Pharmacist</Text>
-      {PHARMACIST_QS.map((q, i) => (
-        <View key={i} style={{ marginBottom: 6, paddingLeft: 8 }}>
-          <Text style={styles.bodyText}>{i + 1}. {q}</Text>
-        </View>
-      ))}
+      <QuestionSection
+        title="Ask Your Pharmacist"
+        questions={PHARMACIST_QS}
+        color="#0D6B67"
+        bg={DOCTOR_SECTION_BG.pharmacist}
+      />
 
-      <Divider />
-
-      <Text style={[styles.itemHeader, { fontSize: 12, color: COLORS.teal }]}>Ask Your Doctor</Text>
-      {DOCTOR_QS.map((q, i) => (
-        <View key={i} style={{ marginBottom: 6, paddingLeft: 8 }}>
-          <Text style={styles.bodyText}>{i + 1}. {q}</Text>
-        </View>
-      ))}
+      <QuestionSection
+        title="Ask Your Doctor"
+        questions={DOCTOR_QS}
+        color="#3B82F6"
+        bg={DOCTOR_SECTION_BG.doctor}
+      />
 
       {stageQs ? (
-        <View>
-          <Divider />
-          <Text style={[styles.itemHeader, { fontSize: 12, color: COLORS.teal }]}>Ask Based on Your Life Stage</Text>
-          {stageQs.map((q, i) => (
-            <View key={i} style={{ marginBottom: 6, paddingLeft: 8 }}>
-              <Text style={styles.bodyText}>{i + 1}. {q}</Text>
-            </View>
-          ))}
-        </View>
+        <QuestionSection
+          title="Ask Based on Your Life Stage"
+          questions={stageQs}
+          color="#A78BFA"
+          bg={DOCTOR_SECTION_BG.lifeStage}
+          intro="Because you shared your hormonal stage, here are a few extra questions you may want to bring into your next appointment."
+        />
       ) : null}
 
       {doctorPrompts.length > 0 ? (
-        <View>
-          <Divider />
-          <Text style={[styles.itemHeader, { fontSize: 12, color: COLORS.teal }]}>Additional Questions from Your Analysis</Text>
-          {doctorPrompts.slice(0, 4).map((q, i) => (
-            <View key={i} style={{ marginBottom: 6, paddingLeft: 8 }}>
-              <Text style={styles.bodyText}>{i + 1}. {q}</Text>
-            </View>
-          ))}
-        </View>
+        <QuestionSection
+          title="Additional Questions from Your Analysis"
+          questions={doctorPrompts.slice(0, 4)}
+          color="#6B7280"
+          bg={DOCTOR_SECTION_BG.additional}
+        />
       ) : null}
 
       <View style={{ marginTop: 16 }}>
@@ -831,7 +933,7 @@ const DoctorQsPage = ({ data, routine }) => {
       </View>
 
       <View style={{ marginTop: 16 }}>
-        <Text style={styles.smallText}>
+        <Text style={[styles.smallText, { fontSize: 9 }]}>
           This report is for educational purposes only and is not medical advice. Review any medication or supplement changes with your doctor, pharmacist, or other qualified healthcare professional.
         </Text>
       </View>
@@ -863,8 +965,17 @@ const inferBadges = item => {
     .map(([, val]) => val);
 };
 
+const daypartForBlock = (schedule, itemNames) => {
+  for (const [key, schedItems] of Object.entries(schedule)) {
+    if ((schedItems || []).some(si => (itemNames || []).includes(si.name))) return key;
+  }
+  return null;
+};
+
 const TimingCardPage = ({ data }) => {
   const quickRef = data.quickReference || [];
+  const schedule = data.schedule || {};
+
   return (
     <Page size="A4" style={styles.page}>
       <View style={{ marginBottom: 4 }}>
@@ -873,37 +984,41 @@ const TimingCardPage = ({ data }) => {
         <Text style={[styles.smallText, { marginBottom: 10 }]}>Keep this handy. It covers your full daily schedule with key reminders for each item.</Text>
       </View>
 
-      {quickRef.map((block, i) => (
-        <View key={i} wrap={false} style={{ marginBottom: 14 }}>
-          <View style={styles.groupHeader}>
-            <Text style={styles.groupHeaderText}>{fmtT(block.time) || block.time}</Text>
-          </View>
-          {(block.items || []).map((itemName, j) => {
-            const schedule = data.schedule || {};
-            const allItems = Object.values(schedule).flat();
-            const itemDetail = allItems.find(it => it.name === itemName) || { name: itemName };
-            const badges = inferBadges(itemDetail);
+      {quickRef.map((block, i) => {
+        const dp = daypartForBlock(schedule, block.items || []);
+        const headerColor = DAYPART_COLORS[dp] || COLORS.teal;
+        const allItems = Object.values(schedule).flat();
 
-            return (
-              <View key={j} style={{ marginBottom: 6 }}>
-                <View style={styles.row}>
-                  <Text style={{ fontSize: 10, fontWeight: 700, flex: 1 }}>{itemDetail.name}</Text>
-                  {itemDetail.dose ? <Text style={styles.smallText}>{itemDetail.dose}</Text> : null}
-                </View>
-                {badges.length > 0 ? (
-                  <View style={[styles.row, { flexWrap: 'wrap', marginTop: 3 }]}>
-                    {badges.map((b, k) => (
-                      <View key={k} style={[styles.badge, { backgroundColor: b.avoid ? COLORS.magenta : COLORS.teal }]}>
-                        <Text style={styles.badgeText}>{b.label}</Text>
-                      </View>
-                    ))}
+        return (
+          <View key={i} wrap={false} style={{ marginBottom: 14 }}>
+            <View style={[styles.groupHeader, { backgroundColor: headerColor }]}>
+              <Text style={styles.groupHeaderText}>{fmtT(block.time) || block.time}</Text>
+            </View>
+            {(block.items || []).map((itemName, j) => {
+              const itemDetail = allItems.find(it => it.name === itemName) || { name: itemName };
+              const badges = inferBadges(itemDetail);
+
+              return (
+                <View key={j} style={{ marginBottom: 6 }}>
+                  <View style={styles.row}>
+                    <Text style={{ fontSize: 11, fontWeight: 700, flex: 1 }}>{itemDetail.name}</Text>
+                    {itemDetail.dose ? <Text style={styles.smallText}>{itemDetail.dose}</Text> : null}
                   </View>
-                ) : null}
-              </View>
-            );
-          })}
-        </View>
-      ))}
+                  {badges.length > 0 ? (
+                    <View style={[styles.row, { flexWrap: 'wrap', marginTop: 3 }]}>
+                      {badges.map((b, k) => (
+                        <View key={k} style={[styles.badge, { backgroundColor: b.avoid ? COLORS.magenta : COLORS.teal }]}>
+                          <Text style={styles.badgeText}>{b.label}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        );
+      })}
 
       <DisclaimerBlock />
       <PageFooter />
