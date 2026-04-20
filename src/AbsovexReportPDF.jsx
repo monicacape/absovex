@@ -4,9 +4,9 @@ import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/rendere
 Font.register({
   family: 'Plus Jakarta Sans',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yygg.woff2', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yygg.woff2', fontWeight: 600 },
-    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yygg.woff2', fontWeight: 700 },
+    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yygg.woff2', fontWeight: 400, fontStyle: 'normal' },
+    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yygg.woff2', fontWeight: 600, fontStyle: 'normal' },
+    { src: 'https://fonts.gstatic.com/s/plusjakartasans/v8/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yygg.woff2', fontWeight: 700, fontStyle: 'normal' },
   ],
 });
 
@@ -708,7 +708,7 @@ const ScoreBreakdownPage = ({ data }) => {
               <Text key={j} style={[styles.smallText, { marginLeft: 8, marginBottom: 2 }]}>· {act}</Text>
             ))}
             {cat.why_not_perfect ? (
-              <Text style={[styles.smallText, { color: COLORS.gray, marginTop: 3, fontStyle: 'italic' }]}>{cat.why_not_perfect}</Text>
+              <Text style={[styles.smallText, { color: COLORS.gray, marginTop: 3 }]}>{cat.why_not_perfect}</Text>
             ) : null}
             {i < breakdown.length - 1 ? <Divider /> : null}
           </View>
