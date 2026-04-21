@@ -475,14 +475,14 @@ const SchedulePage = ({ data }) => {
       <SectionHeader num={3} title="Your Optimized Daily Schedule" sub="Built around your meals, coffee habits, and spacing needs" />
 
       {Object.entries(schedule).filter(([_, items]) => items && items.length > 0).map(([key, items]) => (
-        <View key={key}>
+        <View key={key} wrap={false} style={{ marginBottom: 14 }}>
           <View style={[styles.groupHeader, { backgroundColor: DAYPART_COLORS[key] || COLORS.teal }]}>
             <Text style={styles.groupHeaderText}>{DAYPART_LABELS[key] || key}</Text>
           </View>
           <Text style={styles.groupHint}>{DAYPART_HINTS[key] || ''}</Text>
 
           {(items || []).map((it, j) => (
-            <View key={j} wrap={false} style={{ marginBottom: 12 }}>
+            <View key={j} style={{ marginBottom: 8 }}>
               <View style={styles.row}>
                 <Text style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{it.name}</Text>
                 <Text style={[styles.smallText, { color: COLORS.gray }]}>{it.dose}</Text>
@@ -805,22 +805,22 @@ const ScoreBreakdownPage = ({ data }) => {
                 ) : null}
               </View>
 
-              {/* Issue 4: BEFORE bar (gray) */}
-              <View style={[styles.row, { alignItems: 'center', marginBottom: 5 }]}>
+              {/* BEFORE bar (gray) */}
+              <View style={[styles.row, { alignItems: 'center', marginBottom: 4 }]}>
                 <Text style={[styles.labelSmall, { color: COLORS.gray, width: 44, marginBottom: 0, lineHeight: 1 }]}>BEFORE</Text>
-                <View style={{ flex: 1, height: 8, backgroundColor: '#E5E7EB', borderRadius: 2 }}>
-                  <View style={{ height: 8, backgroundColor: '#9CA3AF', borderRadius: 2, width: `${beforePct}%` }} />
+                <View style={{ flex: 1, height: 7, backgroundColor: '#E5E7EB', borderRadius: 2 }}>
+                  <View style={{ height: 7, backgroundColor: '#9CA3AF', borderRadius: 2, width: `${beforePct}%` }} />
                 </View>
-                <Text style={[styles.smallText, { width: 30, textAlign: 'right' }]}>{cat.before}</Text>
+                <Text style={{ fontSize: 9, color: COLORS.gray, width: 52, textAlign: 'right' }}>{cat.before}</Text>
               </View>
 
-              {/* Issue 4: NOW bar (teal) */}
+              {/* NOW bar (teal) */}
               <View style={[styles.row, { alignItems: 'center', marginBottom: 8 }]}>
                 <Text style={[styles.labelSmall, { color: COLORS.teal, width: 44, marginBottom: 0, lineHeight: 1 }]}>NOW</Text>
-                <View style={{ flex: 1, height: 8, backgroundColor: '#E5E7EB', borderRadius: 2 }}>
-                  <View style={{ height: 8, backgroundColor: COLORS.teal, borderRadius: 2, width: `${afterPct}%` }} />
+                <View style={{ flex: 1, height: 7, backgroundColor: '#E5E7EB', borderRadius: 2 }}>
+                  <View style={{ height: 7, backgroundColor: COLORS.teal, borderRadius: 2, width: `${afterPct}%` }} />
                 </View>
-                <Text style={[styles.smallText, { width: 30, textAlign: 'right' }]}>{cat.after} / {cat.maxPoints}</Text>
+                <Text style={{ fontSize: 9, color: COLORS.gray, width: 52, textAlign: 'right' }}>{cat.after} / {cat.maxPoints}</Text>
               </View>
 
               {(cat.actions_that_improved_score || []).length > 0 ? (
