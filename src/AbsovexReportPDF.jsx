@@ -475,14 +475,14 @@ const SchedulePage = ({ data }) => {
       <SectionHeader num={3} title="Your Optimized Daily Schedule" sub="Built around your meals, coffee habits, and spacing needs" />
 
       {Object.entries(schedule).filter(([_, items]) => items && items.length > 0).map(([key, items]) => (
-        <View key={key} wrap={false} style={{ marginBottom: 14 }}>
+        <View key={key} style={{ marginBottom: 14 }}>
           <View style={[styles.groupHeader, { backgroundColor: DAYPART_COLORS[key] || COLORS.teal }]}>
             <Text style={styles.groupHeaderText}>{DAYPART_LABELS[key] || key}</Text>
           </View>
           <Text style={styles.groupHint}>{DAYPART_HINTS[key] || ''}</Text>
 
           {(items || []).map((it, j) => (
-            <View key={j} style={{ marginBottom: 8 }}>
+            <View key={j} wrap={false} style={{ marginBottom: 8 }}>
               <View style={styles.row}>
                 <Text style={{ fontSize: 12, fontWeight: 700, flex: 1 }}>{it.name}</Text>
                 <Text style={[styles.smallText, { color: COLORS.gray }]}>{it.dose}</Text>
