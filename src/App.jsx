@@ -1119,10 +1119,10 @@ function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expa
           <div style={{fontSize:12,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Ask Your Pharmacist</div>
           <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:14,padding:'16px'}}>
             {[
-              'Is this timing plan a good fit for my current medications, supplements, and daily routine?',
-              'Are there any food, coffee, or mineral interactions in my stack I should be extra careful about?',
-              'Are any of my supplements better taken at a different time of day based on what else I take?',
-              'Is there anything in this plan that would interact with medications I might add in the future?',
+              "Do any of these supplements or timing changes conflict with other medications I haven't mentioned?",
+              'Is the spacing between my supplements and medications enough to prevent any absorption issues?',
+              "Are there any items in my stack I should take on an empty stomach even if it's uncomfortable?",
+              'Will any of these timing or supplement changes affect my lab results?',
             ].map((q,i)=>(
               <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<3?`1px solid ${C.tealBorder}`:'none'}}>
                 <div style={{width:20,height:20,borderRadius:'50%',background:C.primary,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
@@ -1136,10 +1136,10 @@ function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expa
           <div style={{fontSize:12,fontWeight:800,color:C.sky,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Ask Your Doctor</div>
           <div style={{background:C.skyBg,border:`1px solid ${C.skyBorder}`,borderRadius:14,padding:'16px'}}>
             {[
-              'Now that my timing is more consistent, should I watch for any changes in symptoms or how I feel?',
-              'Should I recheck any labs after improving the timing of my routine?',
-              'Would any medication or formulation changes make this plan easier to follow?',
-              'Is my current dosing still the right fit if my absorption improves?',
+              'My Absovex report suggests some timing changes — does anything here conflict with how you intended me to take these?',
+              'Should I adjust any of these timing recommendations based on my current health conditions?',
+              'Now that my timing is more consistent, should I watch for any changes in how I feel?',
+              'How often should I revisit this schedule as my routine or prescriptions change?',
             ].map((q,i)=>(
               <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<3?`1px solid ${C.skyBorder}`:'none'}}>
                 <div style={{width:20,height:20,borderRadius:'50%',background:C.sky,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
@@ -1755,7 +1755,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
       </div>
       <div style={{maxWidth:600,margin:'0 auto',padding:'20px 16px'}}>
         <div style={{marginBottom:18}}><h2 style={{margin:'0 0 4px',fontSize:fs(20),fontWeight:800,color:C.g900}}>My Routine</h2><p style={{margin:0,fontSize:fs(15),color:C.g500}}>Set your daily schedule to perfectly time your medications.</p></div>
-        <RRow icon={Ic.person()} title="About You" sub="Helps personalize advice for hormonal health, absorption, and age-related patterns">
+        <RRow icon={Ic.person()} title="About You" sub="Helps us personalize your plan for your current stage">
           <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:16,alignItems:'start'}}>
             <div>
               <div style={FLABEL8}>Biological Sex</div>
@@ -1779,7 +1779,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
           </div>
         </RRow>
         <RRow icon={Ic.sun()} title="Wake Time" sub="When do you typically wake up?"><TimeInput value={routine.wakeTime} onChange={v=>updR('wakeTime',v)}/></RRow>
-        <RRow icon={Ic.coffee()} title="Morning Tea or Coffee" sub="Helps plan spacing for thyroid and other sensitive medications">
+        <RRow icon={Ic.coffee()} title="Morning Tea or Coffee" sub="Helps us space things that need to stay away from caffeine">
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:routine.coffeeTea?12:0}}>
             <span style={FTOGGLE}>I drink coffee or tea in the morning</span>
             <Toggle on={routine.coffeeTea} onChange={v=>updR('coffeeTea',v)}/>
@@ -2011,7 +2011,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
                 </div>
                 {/* Score explanation */}
                 <p style={{fontSize:16,color:C.g600,lineHeight:1.7,marginBottom:20,textAlign:'left'}}>
-                  Your Current Score reflects how your existing routine supports absorption and timing. Your Optimized Score shows what's possible with the recommended adjustments in your report.
+                  Your Current Score shows how your existing routine supports absorption and timing. Your Optimized Score shows what's possible if you follow the adjusted plan in your report.
                 </p>
                 {/* Issue preview */}
                 {(()=>{

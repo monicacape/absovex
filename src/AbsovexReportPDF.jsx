@@ -435,7 +435,7 @@ const BeforeAfterPage = ({ data }) => {
   const logic = data.optimizationLogic || [];
   return (
     <Page size="A4" style={styles.page}>
-      <SectionHeader num={2} title="Before vs After Breakdown" sub="Our suggested changes to your routine, and why they matter" />
+      <SectionHeader num={2} title="Before vs After Breakdown" sub="What changed in your routine, and why it matters for your body" />
 
       {logic.map((o, i) => (
         <View key={i} wrap={false}>
@@ -454,7 +454,7 @@ const BeforeAfterPage = ({ data }) => {
             </View>
           </View>
           <View style={[styles.tealAccent, { marginTop: 8 }]}>
-            <Text style={styles.labelSmall}>WHY WE CHANGED IT</Text>
+            <Text style={styles.labelSmall}>WHY THIS MATTERS</Text>
             <Text style={[styles.bodyText, { marginTop: 3 }]}>{o.reason}</Text>
           </View>
           {i < logic.length - 1 ? <Divider /> : null}
@@ -472,10 +472,9 @@ const SchedulePage = ({ data }) => {
   const schedule = data.schedule || {};
   return (
     <Page size="A4" style={styles.page}>
-      <SectionHeader num={3} title="Your Optimized Daily Schedule" sub="Your personalized daily timing plan" />
-      <Text style={[styles.smallText, { marginBottom: 10 }]}>Built around your meals, coffee habits, and spacing needs.</Text>
+      <SectionHeader num={3} title="Your Optimized Daily Schedule" sub="Built around your meals, coffee habits, and spacing needs" />
 
-      {Object.entries(schedule).map(([key, items]) => (
+      {Object.entries(schedule).filter(([_, items]) => items && items.length > 0).map(([key, items]) => (
         <View key={key}>
           <View style={[styles.groupHeader, { backgroundColor: DAYPART_COLORS[key] || COLORS.teal }]}>
             <Text style={styles.groupHeaderText}>{DAYPART_LABELS[key] || key}</Text>
@@ -507,7 +506,7 @@ const SchedulePage = ({ data }) => {
 
               {(it.real_world_impact || []).length > 0 ? (
                 <View style={{ marginTop: 4 }}>
-                  <Text style={styles.labelSmall}>What You'll Notice</Text>
+                  <Text style={styles.labelSmall}>What You Might Notice</Text>
                   {it.real_world_impact.map((r, k) => (
                     <Text key={k} style={[styles.smallText, { marginLeft: 8 }]}>· {r}</Text>
                   ))}
@@ -555,7 +554,7 @@ const AuditPage = ({ data }) => {
       <SectionHeader num={4} title="Full Stack Timing Audit" sub="Every item reviewed for timing, spacing, and routine fit" />
 
       <CalloutBox bg={COLORS.tealBg}>
-        <Text style={styles.bodyText}>Every item in your stack was reviewed for timing fit, food needs, spacing, and common blockers.</Text>
+        <Text style={styles.bodyText}>We looked at every item in your stack — timing, food needs, spacing, and how each one fits your daily routine.</Text>
       </CalloutBox>
 
       {/* Issue 2: muted teal, wrap={false} keeps header + items together */}
@@ -684,8 +683,8 @@ const RoutineInsightsPage = ({ data, routine }) => {
 
   const summaryText = insights[0] ||
     (r.coffeeTea && r.coffeeTime
-      ? `Your plan accounts for coffee at ${fmtT(r.coffeeTime)}, your meal windows, and spacing needs across your full stack.`
-      : 'Your plan was shaped by your wake time, meal windows, and the spacing needs of your specific stack.');
+      ? `Your plan was shaped most by your coffee at ${fmtT(r.coffeeTime)}, your meal windows, and the spacing your medications and supplements need from each other.`
+      : 'Your plan was shaped most by your wake time, your meal windows, and the spacing your medications and supplements need from each other.');
 
   const drivers = [
     r.coffeeTea && r.coffeeTime && {
@@ -698,11 +697,11 @@ const RoutineInsightsPage = ({ data, routine }) => {
     },
     (data.conflicts || []).length > 0 && {
       label: 'Spacing Rules',
-      text: `${(data.conflicts || []).length} item pair${(data.conflicts || []).length !== 1 ? 's' : ''} needed more distance between them to avoid reducing effectiveness.`,
+      text: `${(data.conflicts || []).length} item pair${(data.conflicts || []).length !== 1 ? 's' : ''} needed more space between them so both can work properly.`,
     },
     (data.optimizationLogic || []).some(o => o.reason && o.reason.toLowerCase().includes('fat')) && {
       label: 'Food Pairing',
-      text: 'Some items in your stack absorb better with a meal, particularly one containing healthy fat.',
+      text: 'Some items in your stack need a meal to absorb well — particularly one with some healthy fat.',
     },
     r.wakeTime && {
       label: 'Routine Fit',
@@ -712,7 +711,7 @@ const RoutineInsightsPage = ({ data, routine }) => {
 
   return (
     <Page size="A4" style={styles.page}>
-      <SectionHeader num={6} title="What Shaped Your Plan" sub="Here is what Absovex looked at when building your schedule" />
+      <SectionHeader num={6} title="What Shaped Your Plan" sub="The parts of your routine that drove every decision" />
 
       <CalloutBox bg={COLORS.tealBg} borderColor={COLORS.teal}>
         <Text style={styles.bodyText}>{summaryText}</Text>
@@ -730,7 +729,7 @@ const RoutineInsightsPage = ({ data, routine }) => {
 
       {insights.length > 1 ? (
         <View style={{ marginTop: 16 }}>
-          <Text style={[styles.itemHeader, { fontSize: 12 }]}>What helped this plan work well</Text>
+          <Text style={[styles.itemHeader, { fontSize: 12 }]}>What made this plan work</Text>
           {insights.slice(1).map((ins, i) => (
             <Text key={i} style={[styles.bodyText, { marginBottom: 5 }]}>· {ins}</Text>
           ))}
@@ -783,7 +782,7 @@ const ScoreBreakdownPage = ({ data }) => {
 
       <CalloutBox bg={COLORS.tealBg}>
         <Text style={styles.bodyText}>
-          Your Health Stack Score reflects how well your routine supports timing, spacing, food pairing, and day-to-day follow-through across your full stack.
+          Your Health Stack Score measures how well your routine supports timing, spacing, food pairing, and follow-through across everything you take.
         </Text>
       </CalloutBox>
 
@@ -866,16 +865,16 @@ const ScoreBreakdownPage = ({ data }) => {
 // ─── PAGE 9 — Questions to Bring to Your Doctor or Pharmacist ────────────────
 
 const PHARMACIST_QS = [
-  'Are any of the items in this plan known to interact with each other based on my full medication list?',
+  'Do any of these supplements or timing changes conflict with other medications I haven\'t mentioned?',
   'Is the spacing between my supplements and medications enough to prevent any absorption issues?',
-  'Are there any items in my stack I should take on an empty stomach even if it feels uncomfortable?',
-  'Is there anything in this plan that could interfere with lab results I should know about before my next appointment?',
+  'Are there any items in my stack I should take on an empty stomach even if it\'s uncomfortable?',
+  'Will any of these timing or supplement changes affect my lab results?',
 ];
 
 const DOCTOR_QS = [
   'My Absovex report suggests some timing changes — does anything here conflict with how you intended me to take these?',
   'Should I adjust any of these timing recommendations based on my current health conditions?',
-  'Are there any items in this stack I should reconsider given my overall treatment goals?',
+  'Now that my timing is more consistent, should I watch for any changes in how I feel?',
   'How often should I revisit this schedule as my routine or prescriptions change?',
 ];
 
@@ -1000,7 +999,7 @@ const TimingCardPage = ({ data }) => {
     <Page size="A4" style={styles.page}>
       <View style={{ marginBottom: 4 }}>
         <Text style={{ fontSize: 16, fontWeight: 700, color: COLORS.teal }}>Your Daily Timing Card</Text>
-        <Text style={styles.subhead}>A quick reference for your optimized schedule</Text>
+        <Text style={styles.subhead}>Print or save this page. Quick daily reference for your optimized schedule.</Text>
         <Text style={[styles.smallText, { marginBottom: 10 }]}>Keep this handy. It covers your full daily schedule with key reminders for each item.</Text>
       </View>
 
@@ -1041,7 +1040,9 @@ const TimingCardPage = ({ data }) => {
         );
       })}
 
-      <DisclaimerBlock />
+      <Text style={{ fontSize: 9, color: COLORS.gray, marginTop: 12, lineHeight: 1.5 }}>
+        This report is for educational purposes only. Review any changes with your doctor or pharmacist.
+      </Text>
       <PageFooter />
     </Page>
   );
@@ -1056,7 +1057,6 @@ export default function AbsovexReportPDF({ data, userName, routine }) {
   return (
     <Document title="Absovex Health Stack Report" author="Absovex">
       <CoverPage data={d} userName={userName} />
-      <SummaryPage data={d} />
       <BeforeAfterPage data={d} />
       <SchedulePage data={d} />
       <AuditPage data={d} />
