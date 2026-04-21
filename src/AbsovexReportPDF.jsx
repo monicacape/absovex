@@ -382,18 +382,18 @@ const CoverPage = ({ data, userName }) => {
         <Text style={styles.bodyText}>{scoreTakeaway}</Text>
       </View>
 
-      {/* Summary snapshot — 2 boxes */}
-      <View style={[styles.row, { marginBottom: 14 }]}>
-        <View style={[styles.statBox, { backgroundColor: COLORS.fixGreen, alignItems: 'flex-start' }]}>
-          <Text style={[styles.labelSmall, { marginBottom: 6 }]}>Biggest Improvements</Text>
+      {/* Summary snapshot — stacked vertical */}
+      <View style={{ marginBottom: 14 }}>
+        <View style={{ backgroundColor: COLORS.fixGreen, borderRadius: 6, padding: 14, marginBottom: 10 }}>
+          <Text style={[styles.labelSmall, { marginBottom: 8, fontSize: 9 }]}>Biggest Improvements</Text>
           {benefits.slice(0, 4).map((b, i) => (
-            <Text key={i} style={[styles.smallText, { color: COLORS.black, marginBottom: 3 }]}>· {b}</Text>
+            <Text key={i} style={{ fontSize: 11, color: COLORS.black, marginBottom: 4, marginLeft: 4, lineHeight: 1.5 }}>· {b}</Text>
           ))}
         </View>
-        <View style={[styles.statBoxLast, { backgroundColor: COLORS.conflictRed, alignItems: 'flex-start' }]}>
-          <Text style={[styles.labelSmall, { marginBottom: 6, color: COLORS.conflictRedBorder }]}>Key Issues Found</Text>
+        <View style={{ backgroundColor: COLORS.conflictRed, borderRadius: 6, padding: 14 }}>
+          <Text style={[styles.labelSmall, { marginBottom: 8, fontSize: 9, color: COLORS.conflictRedBorder }]}>Key Issues Found</Text>
           {issues.slice(0, 4).map((iss, i) => (
-            <Text key={i} style={[styles.smallText, { color: COLORS.black, marginBottom: 3 }]}>· {iss.issue}</Text>
+            <Text key={i} style={{ fontSize: 11, color: COLORS.black, marginBottom: 4, marginLeft: 4, lineHeight: 1.5 }}>· {iss.issue}</Text>
           ))}
         </View>
       </View>
