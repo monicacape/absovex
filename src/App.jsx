@@ -661,9 +661,9 @@ function AIChatSection({a,chat,chatLoad,sendChat,revisionPending,setRevisionPend
 }
 
 // ─── COMPONENT 7: DOWNLOAD BUTTON ───────────────────────────────────────────
-function DownloadButton({a,downloadReport}){
+function DownloadButton({a,downloadReport,userEmail}){
   const[downloaded,setDownloaded]=useState(false);
-  const handleClick=()=>{downloadReport(a);setDownloaded(true);setTimeout(()=>setDownloaded(false),2500);};
+  const handleClick=async()=>{await downloadReport(a,'',userEmail);setDownloaded(true);setTimeout(()=>setDownloaded(false),2500);};
   return(
     <button onClick={handleClick} style={{background:downloaded?'#059669':C.primary,color:'white',border:'none',borderRadius:8,padding:'8px 14px',fontSize:13,cursor:'pointer',fontWeight:700,display:'flex',alignItems:'center',gap:6,transition:'background 0.2s'}}>
       {downloaded?'✓ Downloaded!':<>{Ic.download()}Download PDF</>}
@@ -1285,6 +1285,7 @@ export default function App(){
   const[promoCode,setPromoCode]=useState(''); // User enters BETA or other promo code
   const[stripeLoading,setStripeLoading]=useState(false);
   const[stripeErr,setStripeErr]=useState('');
+  const[userEmail,setUserEmail]=useState(null);
 
   // ─── FORM FONT SCALE ────────────────────────────────────────────────────────
   const FLABEL={fontSize:fs(16),fontWeight:600,color:C.g500,display:'block',marginBottom:4};
@@ -1436,6 +1437,20 @@ Return this JSON with SHORT values, maximum 10 words per text field:
         setChat(data.chat);
         localStorage.removeItem('absovexReport');
       }
+      const fetchSessionEmail=async()=>{
+        try{
+          const res=await fetch('/api/get-session-email',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({sessionId})
+          });
+          const data=await res.json();
+          if(data.email)setUserEmail(data.email);
+        }catch(error){
+          console.error('Failed to fetch session email:',error);
+        }
+      };
+      fetchSessionEmail();
       setScreen('results');
     }
 }, []);
@@ -1538,7 +1553,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
     setTimeout(()=>chatEnd.current?.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
   };
 
-  const downloadReport=async(d,userName='')=>{
+  const downloadReport=async(d,userName='',userEmail=null)=>{
     try{
       const blob=await pdf(
         <AbsovexReportPDF data={d} userName={userName} routine={routine}/>
@@ -1551,6 +1566,23 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      if(userEmail){
+        const reader=new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend=async()=>{
+          const base64=reader.result.split(',')[1];
+          try{
+            const emailRes=await fetch('/api/send-report',{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({email:userEmail,pdfBase64:base64,userName:userName||'User'})
+            });
+            const emailData=await emailRes.json();
+            if(emailData.success)console.log('Report email sent to:',userEmail);
+            else console.error('Failed to send report email:',emailData.error);
+          }catch(error){console.error('Error sending report email:',error);}
+        };
+      }
       return{success:true,blob};
     }catch(error){
       console.error('PDF generation failed:',error);
@@ -2167,7 +2199,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
               </div>
             </div>
             <div style={{display:'flex',gap:8}}>
-              <DownloadButton a={a} downloadReport={downloadReport}/>
+              <DownloadButton a={a} downloadReport={downloadReport} userEmail={userEmail}/>
               <button onClick={()=>{setScreen('routine');setPaymentStatus(null);}} style={{background:'none',border:`1px solid ${C.tealBorder}`,color:C.primary,borderRadius:8,padding:'8px 12px',fontSize:13,cursor:'pointer'}}>Edit</button>
             </div>
           </div>
