@@ -1966,6 +1966,14 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
   // ─── PREVIEW / PAYWALL ──────────────────────────────────────────────────────
   if(screen==='preview'&&result){
     const a=result;
+    const itemsReviewed=items.filter(i=>i.name.trim()).length;
+    const totalConflicts=(a.conflicts&&a.conflicts.length>0)?a.conflicts.length:(a.topIssues?a.topIssues.length:0);
+    const adjustmentsMade=(a.optimizationLogic||[]).length||totalConflicts;
+    const scoreImprovement=(a.optimizedScore||0)-(a.currentScore||0);
+    const topIssue=(a.conflicts&&a.conflicts.length>0)?[...a.conflicts].sort((x,y)=>(y.penalty||0)-(x.penalty||0))[0]:(a.topIssues&&a.topIssues.length>0)?{issue:a.topIssues[0].issue||a.topIssues[0],items:[],recommendation:''}:null;
+    const scheduleItems=a.quickReference||[];
+    const visibleSchedule=scheduleItems.slice(0,3);
+    const hasMoreSchedule=scheduleItems.length>3;
     return(
       <div style={{minHeight:'100vh',background:C.cream,fontFamily:'"Plus Jakarta Sans",system-ui,sans-serif'}}>
         <div style={{background:C.tealBg,borderTop:`3px solid ${C.primary}`,padding:'14px 20px'}}>
@@ -1990,66 +1998,91 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
           </div>
         </div>
         <div style={{maxWidth:700,margin:'0 auto',padding:'24px 20px'}}>
-          {/* Score cards */}
-          {(()=>{
-            const delta=(a.optimizedScore||0)-(a.currentScore||0);
-            return(
-              <>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:16,padding:'28px 0',marginBottom:16,background:'white',borderRadius:20,boxShadow:'0 2px 16px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
-                  <div style={{textAlign:'center'}}>
-                    <div style={{fontSize:62,fontWeight:900,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
-                    <div style={{fontSize:11,color:C.g400,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Current</div>
-                  </div>
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
-                    <svg width={36} height={18} viewBox="0 0 36 18"><path d="M0 9 L28 9 M22 3 L28 9 L22 15" stroke={C.pink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    <div style={{background:C.tealBg,color:C.teal,fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:20,border:`1px solid ${C.tealBorder}`}}>+{delta} pts</div>
-                  </div>
-                  <div style={{textAlign:'center'}}>
-                    <div style={{fontSize:62,fontWeight:900,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
-                    <div style={{fontSize:11,color:C.primary,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Optimized</div>
-                  </div>
+          {/* Score visual */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:16,padding:'28px 0',marginBottom:14,background:'white',borderRadius:20,boxShadow:'0 2px 16px rgba(0,0,0,0.06)',border:`1px solid ${C.g200}`}}>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:62,fontWeight:900,color:C.g400,lineHeight:1}}>{a.currentScore}</div>
+              <div style={{fontSize:11,color:C.g400,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Current</div>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
+              <svg width={36} height={18} viewBox="0 0 36 18"><path d="M0 9 L28 9 M22 3 L28 9 L22 15" stroke={C.pink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <div style={{background:C.tealBg,color:C.teal,fontSize:14,fontWeight:800,padding:'4px 14px',borderRadius:20,border:`1px solid ${C.tealBorder}`}}>+{scoreImprovement} pts</div>
+            </div>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:62,fontWeight:900,color:C.primary,lineHeight:1}}>{a.optimizedScore}</div>
+              <div style={{fontSize:11,color:C.primary,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.08em',marginTop:4}}>Optimized</div>
+            </div>
+          </div>
+          {/* Credibility stats */}
+          <div style={{display:'flex',gap:10,marginBottom:16}}>
+            {[[itemsReviewed,'Items Reviewed'],[adjustmentsMade,'Adjustments Made'],[`+${scoreImprovement}`,'Score Improvement']].map(([num,label])=>(
+              <div key={label} style={{flex:1,background:'white',borderRadius:12,padding:'14px 10px',textAlign:'center',boxShadow:'0 1px 8px rgba(0,0,0,0.05)',border:`1px solid ${C.g200}`}}>
+                <div style={{fontSize:24,fontWeight:800,color:C.primary,lineHeight:1}}>{num}</div>
+                <div style={{fontSize:11,color:C.g500,marginTop:4,lineHeight:1.3}}>{label}</div>
+              </div>
+            ))}
+          </div>
+          {/* Headline */}
+          <h2 style={{fontSize:fs(20),fontWeight:800,color:C.g900,margin:'0 0 16px',lineHeight:1.3}}>
+            Your routine has timing gaps. Your report shows how to fix them.
+          </h2>
+          {/* Issue preview */}
+          {topIssue&&(
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:fs(15),fontWeight:600,color:C.g700,marginBottom:10}}>
+                {totalConflicts>0?`We found ${totalConflicts} conflict${totalConflicts!==1?'s':''} in your routine. Here's the first one:`:"We found optimization opportunities in your routine. Here's the first one:"}
+              </div>
+              <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:14,padding:'16px 20px'}}>
+                {topIssue.items&&topIssue.items.length>0&&<div style={{fontSize:14,fontWeight:700,color:C.primary,marginBottom:6}}>{topIssue.items.join(' + ')}</div>}
+                <p style={{margin:0,fontSize:fs(15),color:C.dark,lineHeight:1.6}}>{topIssue.user_context||topIssue.issue}</p>
+                {topIssue.recommendation?<div style={{marginTop:10,fontSize:fs(14),color:C.mid,fontWeight:600}}>Fix: {topIssue.recommendation}</div>:<div style={{marginTop:10,fontSize:fs(14),color:C.mid,fontWeight:600}}>See your report for the full fix.</div>}
+              </div>
+              <p style={{fontSize:fs(14),color:C.g500,marginTop:10,lineHeight:1.6}}>
+                {totalConflicts>1?`This is 1 of ${totalConflicts} conflicts. Your full report shows all of them, plus your complete optimized schedule and when to take everything.`:'Your full report shows all optimization details, plus your complete optimized schedule and when to take everything.'}
+              </p>
+            </div>
+          )}
+          {/* Schedule teaser */}
+          {visibleSchedule.length>0&&(
+            <div style={{background:'white',borderRadius:16,padding:'18px 20px',marginBottom:20,boxShadow:'0 1px 8px rgba(0,0,0,0.05)',border:`1px solid ${C.g200}`}}>
+              <div style={{fontSize:fs(14),fontWeight:700,color:C.g700,marginBottom:12}}>Here's what your optimized day looks like</div>
+              {visibleSchedule.map((block,i)=>(
+                <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start',marginBottom:8}}>
+                  <div style={{fontSize:fs(13),fontWeight:700,color:C.primary,minWidth:72,flexShrink:0}}>{block.time}</div>
+                  <div style={{fontSize:fs(13),color:C.g700}}>{(block.items||[]).join(', ')}</div>
                 </div>
-                {/* Score explanation */}
-                <p style={{fontSize:16,color:C.g600,lineHeight:1.7,marginBottom:20,textAlign:'left'}}>
-                  Your Current Score shows how your existing routine supports absorption and timing. Your Optimized Score shows what's possible if you follow the adjusted plan in your report.
-                </p>
-                {/* Issue preview */}
-                {(()=>{
-                  const topIssue=(a.conflicts&&a.conflicts.length>0)
-                    ?[...a.conflicts].sort((x,y)=>(y.penalty||0)-(x.penalty||0))[0]
-                    :(a.topIssues&&a.topIssues.length>0)?{issue:a.topIssues[0].issue||a.topIssues[0],items:[],recommendation:''}:null;
-                  if(!topIssue)return null;
-                  return(
-                    <div style={{marginBottom:24}}>
-                      <div style={{fontSize:16,fontWeight:700,color:C.g700,marginBottom:10}}>Here is one thing we found:</div>
-                      <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:14,padding:'16px 20px'}}>
-                        {topIssue.items&&topIssue.items.length>0&&<div style={{fontSize:14,fontWeight:700,color:C.primary,marginBottom:6}}>{topIssue.items.join(' + ')}</div>}
-                        <p style={{margin:0,fontSize:16,color:C.dark,lineHeight:1.6}}>{topIssue.issue}</p>
-                        {topIssue.recommendation&&<div style={{marginTop:10,fontSize:15,color:C.mid,fontWeight:600}}>Fix: {topIssue.recommendation}</div>}
-                      </div>
-                      <p style={{fontSize:16,color:C.g500,marginTop:12,textAlign:'left'}}>Your full report includes all identified issues, a personalized schedule, and recommendations.</p>
+              ))}
+              {hasMoreSchedule&&(
+                <div style={{marginTop:4,filter:'blur(3px)',opacity:0.35,userSelect:'none',pointerEvents:'none'}}>
+                  {scheduleItems.slice(3,6).map((block,i)=>(
+                    <div key={i} style={{display:'flex',gap:10,alignItems:'flex-start',marginBottom:8}}>
+                      <div style={{fontSize:fs(13),fontWeight:700,color:C.primary,minWidth:72,flexShrink:0}}>{block.time}</div>
+                      <div style={{fontSize:fs(13),color:C.g700}}>{(block.items||[]).join(', ')}</div>
                     </div>
-                  );
-                })()}
-              </>
-            );
-          })()}
+                  ))}
+                </div>
+              )}
+              {hasMoreSchedule&&(
+                <div style={{marginTop:8,fontSize:fs(12),color:C.g500,fontStyle:'italic'}}>Unlock your complete personalized schedule</div>
+              )}
+            </div>
+          )}
 
           {/* Paywall section */}
           <div style={{background:`linear-gradient(150deg,${C.primary} 0%,${C.mid} 60%,${C.light} 100%)`,borderRadius:24,padding:'32px 28px',boxShadow:'0 8px 32px rgba(13,126,122,0.3)'}}>
-            <div style={{marginBottom:24}}>
-              <div style={{color:'rgba(255,255,255,0.8)',fontSize:13,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:8}}>ABSOVEX Full Report</div>
+            <div style={{marginBottom:20}}>
+              <div style={{color:'rgba(255,255,255,0.8)',fontSize:13,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.12em',marginBottom:6}}>ABSOVEX Full Report</div>
+              <div style={{color:'rgba(255,255,255,0.85)',fontSize:15,marginBottom:10}}>Personalized timing plan for your health stack</div>
               <div style={{display:'flex',alignItems:'baseline',gap:4,marginBottom:6}}>
                 <span style={{color:'white',fontSize:52,fontWeight:800,lineHeight:1}}>$29</span>
               </div>
               <div style={{color:'rgba(255,255,255,0.7)',fontSize:16,marginBottom:0}}>One-time · Instant access · Downloadable PDF</div>
             </div>
-            <div style={{background:'rgba(255,255,255,0.1)',borderRadius:14,padding:'18px 20px',marginBottom:24}}>
-              <div style={{color:'white',fontSize:13,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:14}}>What is inside your report</div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                {['Full optimized daily schedule','All conflicts and how to fix them','Personalized routine insights','Printable fridge chart','Food and absorption tips','Questions for your doctor','AI Health Advisor chat','Full score breakdown'].map(text=>(
-                  <div key={text} style={{display:'flex',alignItems:'flex-start',gap:8,color:'white',fontSize:16}}>
-                    <span style={{width:18,height:18,borderRadius:'50%',background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:2}}>
+            <div style={{background:'rgba(255,255,255,0.1)',borderRadius:14,padding:'18px 20px',marginBottom:20}}>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {['Your exact daily timing plan','Every timing conflict we found, plus the fix','Food and absorption guidance','Questions to ask your doctor or pharmacist','Full score explanation','AI follow-up chat before download'].map(text=>(
+                  <div key={text} style={{display:'flex',alignItems:'flex-start',gap:8,color:'white',fontSize:fs(15)}}>
+                    <span style={{width:18,height:18,borderRadius:'50%',background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>
                       {Ic.check()}
                     </span>
                     <span style={{lineHeight:1.4}}>{text}</span>
@@ -2097,12 +2130,12 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
               onClick={startCheckout}
               disabled={stripeLoading||paymentStatus==='paid'}
               style={{width:'100%',background:paymentStatus==='paid'?'rgba(255,255,255,0.3)':C.pink,color:'white',border:'none',borderRadius:14,padding:'16px 24px',fontSize:17,fontWeight:800,cursor:paymentStatus==='paid'?'default':'pointer',boxShadow:paymentStatus==='paid'?'none':'0 4px 20px rgba(0,0,0,0.2)',marginBottom:10,display:'flex',alignItems:'center',justifyContent:'center',gap:10,opacity:stripeLoading?0.7:1}}>
-              {stripeLoading?'Processing...':paymentStatus==='paid'?'Proceeding to Report...':'Get Full Report - $29'}
+              {stripeLoading?'Processing...':paymentStatus==='paid'?'Proceeding to Report...':'Unlock My Full Report - $29'}
             </button>
 
-            {paymentStatus!=='paid'&&(
-              <p style={{color:'rgba(255,255,255,0.6)',fontSize:12,textAlign:'center',margin:0}}>No account needed - Instant access after checkout</p>
-            )}
+            <p style={{color:'rgba(255,255,255,0.65)',fontSize:12,textAlign:'center',margin:'0 0 4px'}}>
+              No account needed. Pay once. Instant download.
+            </p>
           </div>
         </div>
       </div>
