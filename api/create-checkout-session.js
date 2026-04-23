@@ -19,6 +19,11 @@ export default async function handler(req, res) {
       success_url: `${origin}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}?cancelled=true`,
       allow_promotion_codes: true,
+      custom_text: {
+        submit: {
+          message: "We'll email your report to this address. Please use a real email to receive it."
+        }
+      },
     };
 
     // Apply coupon if promo code matches STRIPE_COUPON_ID
