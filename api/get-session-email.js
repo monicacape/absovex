@@ -16,11 +16,21 @@ export default async function handler(req, res) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (!session || !session.customer_email) {
+    console.log('Session retrieved:', JSON.stringify(session, null, 2));
+    console.log('Customer email field:', session.customer_email);
+    console.log('Customer details:', session.customer_details);
+
+    // Try different email field names
+    const email = session.customer_email ||
+                  session.customer?.email ||
+                  session.customer_details?.email;
+
+    if (!email) {
+      console.error('No email found in session. Full session object logged above.');
       return res.status(400).json({ error: 'Email not found in session' });
     }
 
-    return res.status(200).json({ email: session.customer_email });
+    return res.status(200).json({ email });
   } catch (error) {
     console.error('Stripe session retrieval error:', error);
     return res.status(500).json({ error: 'Failed to retrieve session' });
