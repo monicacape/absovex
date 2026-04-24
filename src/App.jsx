@@ -2165,8 +2165,11 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
               {stripeLoading?'Processing...':paymentStatus==='paid'?'Proceeding to Report...':'Unlock My Full Report - $29'}
             </button>
 
-            <p style={{color:'rgba(255,255,255,0.65)',fontSize:12,textAlign:'center',margin:'0 0 4px'}}>
-              No account needed. Pay once. View instantly. Use your real email at checkout so your report reaches your inbox.
+            <p style={{color:'rgba(255,255,255,0.85)',fontSize:12,textAlign:'center',margin:'0 0 2px'}}>
+              Use your real email at checkout so your report reaches your inbox.
+            </p>
+            <p style={{color:'rgba(255,255,255,0.55)',fontSize:11,textAlign:'center',margin:'0 0 4px'}}>
+              No account needed. Pay once. View instantly.
             </p>
           </div>
         </div>
