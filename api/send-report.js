@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     const firstName = userName && userName !== 'User' ? userName.split(' ')[0] : 'there';
 
     const result = await resend.emails.send({
-      from: 'hello@absovex.com',
+      from: 'hello@hello.absovex.com',
       to: email,
       subject: 'Your ABSOVEX Health Stack Report',
       html: `
