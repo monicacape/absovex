@@ -2166,7 +2166,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             </button>
 
             <p style={{color:'rgba(255,255,255,0.65)',fontSize:12,textAlign:'center',margin:'0 0 4px'}}>
-              No account needed. Pay once. Instant download.
+              No account needed. Pay once. View instantly. Use your real email at checkout so your report reaches your inbox.
             </p>
           </div>
         </div>
