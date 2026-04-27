@@ -550,6 +550,227 @@ function NameField({value,onCommit,onSelect,onUnrecognized}){
   );
 }
 
+function QuickAddTable({items,updItem,setItems,onMoreClick,pickDrug,C,fs,TIMING_OPTIONS}){
+  const cellBase={padding:'6px 8px',verticalAlign:'top'};
+  const inputSty={border:`1px solid ${C.g300}`,borderRadius:6,padding:'7px 9px',fontSize:13,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none'};
+  const selSty={...inputSty,cursor:'pointer',paddingRight:24,backgroundImage:'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M6 9l6 6 6-6\' stroke=\'%239CA3AF\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',backgroundRepeat:'no-repeat',backgroundPosition:'right 8px center'};
+  return(
+    <div>
+      <div style={{display:'flex',justifyContent:'flex-end',gap:8,marginBottom:10}}>
+        <button disabled title="Coming soon" style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${C.g300}`,background:'white',color:C.g500,fontSize:13,fontWeight:500,cursor:'not-allowed',opacity:0.5}}>📋 Paste a list</button>
+        <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{padding:'7px 14px',borderRadius:8,border:'none',background:C.primary,color:'white',fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Add item</button>
+      </div>
+      <div style={{overflowX:'auto'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'fixed'}}>
+          <colgroup>
+            <col style={{width:'22%'}}/>
+            <col style={{width:'13%'}}/>
+            <col style={{width:'14%'}}/>
+            <col style={{width:'14%'}}/>
+            <col style={{width:'29%'}}/>
+            <col style={{width:'8%'}}/>
+          </colgroup>
+          <thead>
+            <tr style={{borderBottom:`1.5px solid ${C.g200}`}}>
+              {['Name','Dose','Type','Frequency','When','More'].map(h=>(
+                <th key={h} style={{...cellBase,fontSize:11,fontWeight:700,color:C.g500,textTransform:'uppercase',letterSpacing:'0.05em',textAlign:'left',paddingBottom:8}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item,idx)=>{
+              const selTimes=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
+              return(
+                <tr key={item.id} style={{borderBottom:`1px solid ${C.g100}`,background:idx%2===0?'white':C.g50}}>
+                  <td style={cellBase}>
+                    <NameField
+                      value={item.name}
+                      onCommit={v=>updItem(item.id,'name',v)}
+                      onSelect={m=>{updItem(item.id,'unrecognized',false);pickDrug(item.id,m);}}
+                      onUnrecognized={flag=>updItem(item.id,'unrecognized',flag)}/>
+                  </td>
+                  <td style={cellBase}>
+                    <DoseCell value={item.dose} onChange={v=>updItem(item.id,'dose',v)} inputSty={inputSty}/>
+                  </td>
+                  <td style={cellBase}>
+                    <select value={item.type} onChange={e=>updItem(item.id,'type',e.target.value)} style={selSty}>
+                      {['medication','supplement','vitamin','mineral','herb'].map(o=><option key={o} value={o}>{o.charAt(0).toUpperCase()+o.slice(1)}</option>)}
+                    </select>
+                  </td>
+                  <td style={cellBase}>
+                    <select value={item.frequency||'1x day'} onChange={e=>updItem(item.id,'frequency',e.target.value)} style={selSty}>
+                      {['1x day','2x day','3x day','Weekly','Monthly','As needed'].map(f=><option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </td>
+                  <td style={cellBase}>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                      {TIMING_OPTIONS.map(opt=>{
+                        const sel=selTimes.includes(opt);
+                        return(
+                          <button key={opt} type="button" onClick={()=>{
+                            const cur=selTimes;
+                            const next=sel?cur.filter(x=>x!==opt):[...cur,opt];
+                            const newTimes={...item.timingTimes};
+                            if(!next.includes(opt))delete newTimes[opt];
+                            updItem(item.id,'timingTimes',newTimes);
+                            updItem(item.id,'timing',next.join(', '));
+                          }} style={{padding:'3px 8px',borderRadius:999,border:`1px solid ${sel?C.primary:C.g300}`,background:sel?C.primary:'white',color:sel?'white':C.g500,fontSize:11,fontWeight:sel?600:400,cursor:'pointer',whiteSpace:'nowrap'}}>
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </td>
+                  <td style={{...cellBase,textAlign:'center'}}>
+                    <button onClick={()=>onMoreClick(item.id)} style={{background:'none',border:'none',color:C.primary,fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>More ▼</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{marginTop:10,background:'none',border:'none',color:C.primary,fontSize:13,fontWeight:600,cursor:'pointer',padding:'6px 0'}}>+ Add another item</button>
+      <div style={{marginTop:12,borderLeft:`3px solid ${C.primary}`,background:C.tealBg,borderRadius:'0 8px 8px 0',padding:'10px 14px',fontSize:13,color:C.primary}}>
+        ✓ Start with the basics. We'll ask for exact times and special instructions only when needed.
+      </div>
+    </div>
+  );
+}
+
+function DoseCell({value,onChange,inputSty}){
+  const[v,setV]=useState(value||'');
+  useEffect(()=>setV(value||''),[value]);
+  return <input type="text" value={v} onChange={e=>setV(e.target.value)} onBlur={()=>onChange(v)} placeholder="e.g., 500mg" autoComplete="off" style={inputSty}/>;
+}
+
+function DetailPanel({item,onClose,onSave,onDelete,pickDrug,C,fs,TIMING_OPTIONS}){
+  const[draft,setDraft]=useState({
+    name:item.name,dose:item.dose,type:item.type,
+    frequency:item.frequency||'1x day',timing:item.timing||'',
+    timingTimes:item.timingTimes||{},ingredients:item.ingredients||'',notes:item.notes||''
+  });
+  const[nameErr,setNameErr]=useState('');
+  const[showKeyInfo,setShowKeyInfo]=useState(true);
+  const selTimes=(draft.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const showExactTimes=draft.frequency==='2x day'||draft.frequency==='3x day';
+  const inputSty={border:`1px solid ${C.g300}`,borderRadius:6,padding:'9px 11px',fontSize:14,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none'};
+  const selSty={...inputSty,cursor:'pointer',paddingRight:24,backgroundImage:'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M6 9l6 6 6-6\' stroke=\'%239CA3AF\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',backgroundRepeat:'no-repeat',backgroundPosition:'right 8px center'};
+  const labelSty={fontSize:13,fontWeight:600,color:C.g600,display:'block',marginBottom:6};
+  return(
+    <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:200,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'flex-start',justifyContent:'center',padding:'5vh 16px 16px'}}>
+      <div style={{background:'white',borderRadius:16,padding:24,width:'100%',maxWidth:500,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 8px 32px rgba(0,0,0,0.18)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+          <button onClick={onClose} style={{background:'none',border:'none',color:C.primary,fontSize:14,fontWeight:600,cursor:'pointer',padding:0}}>← Back to stack</button>
+          <button onClick={onDelete} style={{background:'none',border:'none',color:C.g400,fontSize:20,cursor:'pointer',padding:'0 4px'}} title="Delete item">🗑</button>
+        </div>
+        <h3 style={{margin:'0 0 20px',fontSize:18,fontWeight:800,color:C.g900}}>{draft.name||'New Item'}</h3>
+
+        <div style={{display:'flex',flexDirection:'column',gap:16}}>
+          <div>
+            <label style={labelSty}>Name</label>
+            <NameField
+              value={draft.name}
+              onCommit={v=>setDraft(d=>({...d,name:v}))}
+              onSelect={m=>{setDraft(d=>({...d,name:m.name,type:m.type||d.type}));pickDrug(item.id,m);}}
+              onUnrecognized={()=>{}}/>
+            {nameErr&&<p style={{margin:'4px 0 0',fontSize:12,color:'#DC2626'}}>{nameErr}</p>}
+          </div>
+
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div>
+              <label style={labelSty}>Dose</label>
+              <input type="text" value={draft.dose} onChange={e=>setDraft(d=>({...d,dose:e.target.value}))} placeholder="e.g., 500mg" style={inputSty}/>
+            </div>
+            <div>
+              <label style={labelSty}>Type</label>
+              <select value={draft.type} onChange={e=>setDraft(d=>({...d,type:e.target.value}))} style={selSty}>
+                {['medication','supplement','vitamin','mineral','herb'].map(o=><option key={o} value={o}>{o.charAt(0).toUpperCase()+o.slice(1)}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label style={labelSty}>Frequency</label>
+            <select value={draft.frequency} onChange={e=>setDraft(d=>({...d,frequency:e.target.value}))} style={selSty}>
+              {['1x day','2x day','3x day','Weekly','Monthly','As needed'].map(f=><option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label style={labelSty}>When do you take this?</label>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+              {TIMING_OPTIONS.map(opt=>{
+                const sel=selTimes.includes(opt);
+                return(
+                  <button key={opt} type="button" onClick={()=>{
+                    const next=sel?selTimes.filter(x=>x!==opt):[...selTimes,opt];
+                    const newTimes={...draft.timingTimes};
+                    if(!next.includes(opt))delete newTimes[opt];
+                    setDraft(d=>({...d,timing:next.join(', '),timingTimes:newTimes}));
+                  }} style={{padding:'7px 14px',borderRadius:999,border:`1.5px solid ${sel?C.primary:C.g200}`,background:sel?C.primary:'white',color:sel?'white':C.g600,fontSize:14,fontWeight:sel?700:400,cursor:'pointer'}}>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {showExactTimes&&selTimes.length>0&&(
+            <div>
+              <label style={labelSty}>Exact time (optional)</label>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {selTimes.map(opt=>(
+                  <div key={opt} style={{display:'flex',alignItems:'center',gap:10}}>
+                    <label style={{fontSize:14,color:C.g600,fontWeight:600,minWidth:120}}>{opt}</label>
+                    <input type="time" value={(draft.timingTimes||{})[opt]||''} onChange={e=>setDraft(d=>({...d,timingTimes:{...d.timingTimes,[opt]:e.target.value}}))} style={{border:`1.5px solid ${C.g200}`,borderRadius:8,padding:'6px 10px',fontSize:14,color:C.g800,background:'white',outline:'none',cursor:'pointer'}}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label style={labelSty}>Ingredients or active components <span style={{fontWeight:400,color:C.g400}}>(optional)</span></label>
+            <textarea value={draft.ingredients} onChange={e=>setDraft(d=>({...d,ingredients:e.target.value}))} placeholder="e.g., Lutein 10mg, Zeaxanthin 2mg" rows={3} style={{...inputSty,resize:'vertical',lineHeight:1.5}}/>
+          </div>
+
+          <div>
+            <label style={labelSty}>Personal Notes <span style={{fontWeight:400,color:C.g400}}>(optional)</span></label>
+            <input type="text" value={draft.notes} onChange={e=>setDraft(d=>({...d,notes:e.target.value}))} placeholder="e.g., makes me nauseous, take with food..." style={inputSty}/>
+          </div>
+
+          <div>
+            <button onClick={()=>setShowKeyInfo(s=>!s)} style={{background:'none',border:'none',color:C.primary,fontSize:13,fontWeight:600,cursor:'pointer',padding:0,marginBottom:8}}>
+              {showKeyInfo?'▼':'▶'} Key info (FDA / Database)
+            </button>
+            {showKeyInfo&&(
+              <div style={{border:`1px solid ${C.g200}`,borderRadius:8,padding:'12px 14px',background:C.g50}}>
+                {item.fetching&&<p style={{margin:0,fontSize:13,color:C.blue,fontWeight:600}}>Looking up in FDA database...</p>}
+                {!item.fetching&&item.fdaLabel&&<p style={{margin:0,fontSize:13,color:'#1E3A8A',lineHeight:1.6}}>{item.fdaLabel}</p>}
+                {!item.fetching&&!item.fdaLabel&&draft.name.length>2&&(
+                  <button onClick={()=>pickDrug(item.id,{name:draft.name,type:draft.type,dose:draft.dose})} style={{background:'none',border:`1px solid ${C.blueBorder||C.g300}`,borderRadius:6,padding:'7px 12px',fontSize:12,color:C.blue||C.primary,cursor:'pointer',fontWeight:600}}>
+                    Look up "{draft.name}" in FDA database
+                  </button>
+                )}
+                {!item.fetching&&!item.fdaLabel&&draft.name.length<=2&&<p style={{margin:0,fontSize:13,color:C.g400}}>Enter a name above to look up database info.</p>}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <button onClick={()=>{
+          if(!draft.name.trim()){setNameErr('Name is required.');return;}
+          setNameErr('');
+          onSave(draft);
+        }} style={{marginTop:20,width:'100%',background:C.primary,color:'white',border:'none',borderRadius:10,padding:'13px 0',fontSize:15,fontWeight:700,cursor:'pointer'}}>
+          Save changes
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Toggle({on,onChange}){
   return <div onClick={()=>onChange(!on)} style={{width:44,height:26,borderRadius:13,background:on?C.teal:C.g300,cursor:'pointer',position:'relative',transition:'background 0.2s',flexShrink:0}}><div style={{position:'absolute',top:3,left:on?21:3,width:20,height:20,borderRadius:'50%',background:'white',transition:'left 0.2s',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}}/></div>;
 }
@@ -1286,6 +1507,8 @@ export default function App(){
   const[stripeLoading,setStripeLoading]=useState(false);
   const[stripeErr,setStripeErr]=useState('');
   const[userEmail,setUserEmail]=useState(null);
+  const[viewMode,setViewMode]=useState('quickAdd');
+  const[selectedItemForDetail,setSelectedItemForDetail]=useState(null);
 
   // ─── FORM FONT SCALE ────────────────────────────────────────────────────────
   const FLABEL={fontSize:fs(16),fontWeight:600,color:C.g500,display:'block',marginBottom:4};
@@ -1297,6 +1520,12 @@ export default function App(){
   const FTOGGLE={fontSize:fs(16),color:C.g600};
 
   const updItem=(id,f,v)=>setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i));
+  const handleDetailSave=(itemId,draft)=>{
+    ['name','dose','type','frequency','timing','timingTimes','ingredients','notes'].forEach(f=>{
+      setItems(p=>p.map(i=>i.id===itemId?{...i,[f]:draft[f]}:i));
+    });
+    setSelectedItemForDetail(null);
+  };
   const updR=(f,v)=>setRoutine(p=>({...p,[f]:v}));
   const HORMONAL=routine.sex==='female'?['Pre-menopausal','Peri-menopausal','Post-menopausal','On HRT','Prefer not to say']:['Standard','On TRT','Prefer not to say'];
 
@@ -1643,8 +1872,20 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         </div>
         <div style={{background:'white',borderRadius:14,padding:'22px',boxShadow:'0 2px 8px rgba(0,0,0,0.07)',marginBottom:14}}>
           <h2 style={{margin:'0 0 6px',fontSize:18,fontWeight:800,color:C.g900}}>Your Current Health Stack</h2>
-          <p style={{margin:'0 0 18px',fontSize:14,color:C.g500}}>Add everything you take - medications, supplements, vitamins, minerals, herbs.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          <p style={{margin:'0 0 14px',fontSize:14,color:C.g500}}>Add everything you take - medications, supplements, vitamins, minerals, herbs.</p>
+          <div style={{display:'flex',gap:8,marginBottom:16}}>
+            {[['quickAdd','⚡ Quick Add'],['detailed','≡ Detailed']].map(([mode,label])=>(
+              <button key={mode} onClick={()=>{setSelectedItemForDetail(null);setViewMode(mode);}}
+                style={{padding:'7px 16px',borderRadius:8,border:`1.5px solid ${viewMode===mode?C.primary:C.g300}`,background:viewMode===mode?C.primary:'white',color:viewMode===mode?'white':C.g600,fontSize:14,fontWeight:600,cursor:'pointer'}}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {viewMode==='quickAdd'&&(
+            <QuickAddTable items={items} updItem={updItem} setItems={setItems} onMoreClick={id=>setSelectedItemForDetail(id)} pickDrug={pickDrug} C={C} fs={fs} TIMING_OPTIONS={TIMING_OPTIONS}/>
+          )}
+          {viewMode==='detailed'&&(<>
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
             {items.map((item,idx)=>{
               const tip=item.name?getTip(item.name):null;
               return(
@@ -1763,6 +2004,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             })}
           </div>
           <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{marginTop:10,background:'none',border:`2px dashed ${C.g300}`,borderRadius:8,padding:11,width:'100%',color:C.g500,fontSize:14,cursor:'pointer'}}>+ Add Another Item</button>
+          </>)}
         </div>
         {err&&<div style={{background:C.redBg,border:`1px solid ${C.red}`,borderRadius:8,padding:'10px 14px',color:C.red,fontSize:14,marginBottom:12}}>{err}</div>}
         <button onClick={()=>{const f=items.filter(i=>i.name.trim());if(f.length<2){setErr('Please add at least 2 items.');return;}setErr('');setScreen('routine');}} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:15,fontSize:16,fontWeight:800,cursor:'pointer'}}>
@@ -1770,6 +2012,20 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         </button>
         <p style={{textAlign:'center',color:C.g500,fontSize:13,marginTop:8}}>Your data is private and never stored.</p>
       </div>
+      {selectedItemForDetail!==null&&(()=>{
+        const panelItem=items.find(i=>i.id===selectedItemForDetail);
+        if(!panelItem)return null;
+        return(
+          <DetailPanel
+            item={panelItem}
+            onClose={()=>setSelectedItemForDetail(null)}
+            onSave={draft=>handleDetailSave(selectedItemForDetail,draft)}
+            onDelete={()=>{setItems(p=>p.filter(i=>i.id!==selectedItemForDetail));setSelectedItemForDetail(null);}}
+            pickDrug={pickDrug}
+            C={C} fs={fs} TIMING_OPTIONS={TIMING_OPTIONS}
+          />
+        );
+      })()}
     </div>
   );
 
