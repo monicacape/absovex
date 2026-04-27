@@ -584,7 +584,7 @@ function QuickAddTable({items,updItem,setItems,onMoreClick,pickDrug,C,fs,TIMING_
             {items.map((item,idx)=>{
               const selTimes=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
               return(
-                <tr key={item.id} style={{borderBottom:`1px solid #F0F0ED`,background:idx%2===0?'white':'#FAFAFA'}}>
+                <tr key={item.id} style={{borderBottom:`1px solid #F0F0ED`,background:idx%2===0?'white':'#FAFAFA',minHeight:65}}>
                   <td style={cellPad}>
                     <NameField
                       value={item.name}
@@ -605,8 +605,8 @@ function QuickAddTable({items,updItem,setItems,onMoreClick,pickDrug,C,fs,TIMING_
                       {['1x day','2x day','3x day','Weekly','Monthly','As needed'].map(f=><option key={f} value={f}>{f}</option>)}
                     </select>
                   </td>
-                  <td style={{...cellPad,minWidth:300}}>
-                    <div style={{display:'flex',flexWrap:'nowrap',gap:6,overflowX:'auto'}}>
+                  <td style={{...cellPad,minWidth:500}}>
+                    <div style={{display:'flex',flexWrap:'nowrap',gap:6,overflowX:'auto',paddingRight:8}}>
                       {TIMING_OPTIONS.map(opt=>{
                         const sel=selTimes.includes(opt);
                         return(
@@ -617,7 +617,7 @@ function QuickAddTable({items,updItem,setItems,onMoreClick,pickDrug,C,fs,TIMING_
                             if(!next.includes(opt))delete newTimes[opt];
                             updItem(item.id,'timingTimes',newTimes);
                             updItem(item.id,'timing',next.join(', '));
-                          }} style={{padding:'10px 14px',minHeight:36,borderRadius:999,border:`1px solid ${sel?C.primary:'#DDD'}`,background:sel?C.primary:'white',color:sel?'white':'#808080',fontSize:12,fontWeight:500,cursor:'pointer',whiteSpace:'nowrap',fontFamily:'inherit',lineHeight:1}}>
+                          }} style={{padding:'6px 10px',minHeight:32,borderRadius:999,border:`1px solid ${sel?C.primary:'#DDD'}`,background:sel?C.primary:'white',color:sel?'white':'#808080',fontSize:12,fontWeight:500,cursor:'pointer',whiteSpace:'nowrap',fontFamily:'inherit',lineHeight:1}}>
                             {opt}
                           </button>
                         );
