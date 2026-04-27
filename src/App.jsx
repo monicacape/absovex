@@ -556,21 +556,21 @@ function QuickAddTable({items,updItem,setItems,onMoreClick,pickDrug,C,fs,TIMING_
   const selSty={...inputSty,cursor:'pointer',paddingRight:28,backgroundImage:'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M6 9l6 6 6-6\' stroke=\'%23808080\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',backgroundRepeat:'no-repeat',backgroundPosition:'right 10px center'};
   const hdrCell={padding:'12px 16px',fontSize:13,fontWeight:500,color:'#808080',textAlign:'left',background:'#F0F0ED',whiteSpace:'nowrap'};
   const w=typeof window!=='undefined'?window.innerWidth:1280;
-  const containerSty={width:'100%',maxWidth:w>1024?1400:w>640?900:'100%',margin:'0 auto',padding:w>1024?'0 32px':w>640?'0 20px':'0 16px',boxSizing:'border-box'};
+  const containerSty={width:'100%',maxWidth:'none',margin:'0 auto',padding:w>1024?'0 32px':w>640?'0 20px':'0 16px',boxSizing:'border-box'};
   return(
     <div style={containerSty}>
       <div style={{display:'flex',justifyContent:'flex-end',gap:12,marginBottom:12}}>
         <button disabled title="Coming soon" style={{padding:'10px 14px',minHeight:40,borderRadius:6,border:'1px solid #DDD',background:'white',color:'#808080',fontSize:13,fontWeight:500,cursor:'not-allowed',opacity:0.5,fontFamily:'inherit'}}>📋 Paste a list</button>
         <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{padding:'10px 14px',minHeight:40,borderRadius:6,border:'none',background:C.primary,color:'white',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>+ Add item</button>
       </div>
-      <div style={{overflowX:'auto'}}>
-        <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'auto'}}>
+      <div style={{overflowX:'auto',overflowY:'hidden',WebkitOverflowScrolling:'touch'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'fixed'}}>
           <colgroup>
             <col style={{width:'180px'}}/>
             <col style={{width:'100px'}}/>
             <col style={{width:'120px'}}/>
             <col style={{width:'140px'}}/>
-            <col/>
+            <col style={{minWidth:'450px'}}/>
             <col style={{width:'100px'}}/>
           </colgroup>
           <thead>
