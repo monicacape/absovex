@@ -551,55 +551,86 @@ function NameField({value,onCommit,onSelect,onUnrecognized}){
 }
 
 function QuickAddTable({items,updItem,setItems,onMoreClick,pickDrug,C,fs,TIMING_OPTIONS}){
-  const toggleTiming=(id,opt)=>{
-    const it=items.find(i=>i.id===id);
-    if(!it)return;
-    const cur=(it.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const sel=cur.includes(opt);
-    const next=sel?cur.filter(x=>x!==opt):[...cur,opt];
-    const newTimes={...it.timingTimes};
-    if(!next.includes(opt))delete newTimes[opt];
-    updItem(id,'timingTimes',newTimes);
-    updItem(id,'timing',next.join(', '));
-  };
+  const cellBase={padding:'6px 8px',verticalAlign:'top'};
+  const inputSty={border:`1px solid ${C.g300}`,borderRadius:6,padding:'7px 9px',fontSize:13,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none'};
+  const selSty={...inputSty,cursor:'pointer',paddingRight:24,backgroundImage:'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M6 9l6 6 6-6\' stroke=\'%239CA3AF\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',backgroundRepeat:'no-repeat',backgroundPosition:'right 8px center'};
   return(
-    <div style={{width:'100%'}}>
-      <div style={{display:'flex',justifyContent:'flex-end',gap:12,marginBottom:12}}>
-        <button disabled title="Coming soon" style={{padding:'10px 14px',minHeight:40,borderRadius:6,border:'1px solid #DDD',background:'white',color:'#808080',fontSize:13,fontWeight:500,cursor:'not-allowed',opacity:0.5,fontFamily:'inherit'}}>📋 Paste a list</button>
-        <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{padding:'10px 14px',minHeight:40,borderRadius:6,border:'none',background:C.primary,color:'white',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'inherit'}}>+ Add item</button>
+    <div>
+      <div style={{display:'flex',justifyContent:'flex-end',gap:8,marginBottom:10}}>
+        <button disabled title="Coming soon" style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${C.g300}`,background:'white',color:C.g500,fontSize:13,fontWeight:500,cursor:'not-allowed',opacity:0.5}}>📋 Paste a list</button>
+        <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{padding:'7px 14px',borderRadius:8,border:'none',background:C.primary,color:'white',fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Add item</button>
       </div>
-      {items.map(item=>{
-        const selTimes=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
-        return(
-          <div key={item.id} style={{border:'1px solid #F0F0ED',borderRadius:8,padding:'14px 16px',marginBottom:12,background:'white'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-              <span style={{fontSize:14,fontWeight:600,color:'#1A1A1A'}}>{item.name||<em style={{color:'#808080',fontStyle:'normal'}}>New item</em>}</span>
-              <span style={{fontSize:13,color:'#808080'}}>{[item.dose,item.type,item.frequency].filter(Boolean).join(' • ')}</span>
-            </div>
-            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexWrap:'wrap'}}>
-              <span style={{fontSize:13,color:'#808080',flexShrink:0}}>When:</span>
-              <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                {TIMING_OPTIONS.map(opt=>{
-                  const sel=selTimes.includes(opt);
-                  return(
-                    <button key={opt} type="button" onClick={()=>toggleTiming(item.id,opt)}
-                      style={{padding:'6px 10px',minHeight:32,borderRadius:999,border:`1px solid ${sel?C.primary:'#DDD'}`,background:sel?C.primary:'white',color:sel?'white':'#808080',fontSize:12,fontWeight:500,cursor:'pointer',whiteSpace:'nowrap',fontFamily:'inherit',lineHeight:1}}>
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div style={{textAlign:'right'}}>
-              <button onClick={()=>onMoreClick(item.id)}
-                style={{background:'none',border:'none',color:C.primary,cursor:'pointer',fontSize:13,fontWeight:500,fontFamily:'inherit'}}>
-                More details ▼
-              </button>
-            </div>
-          </div>
-        );
-      })}
-      <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{marginTop:4,background:'none',border:'none',color:C.primary,fontSize:13,fontWeight:500,cursor:'pointer',padding:'8px 0',fontFamily:'inherit'}}>+ Add another item</button>
+      <div style={{overflowX:'auto'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'fixed'}}>
+          <colgroup>
+            <col style={{width:'22%'}}/>
+            <col style={{width:'13%'}}/>
+            <col style={{width:'14%'}}/>
+            <col style={{width:'14%'}}/>
+            <col style={{width:'29%'}}/>
+            <col style={{width:'8%'}}/>
+          </colgroup>
+          <thead>
+            <tr style={{borderBottom:`1.5px solid ${C.g200}`}}>
+              {['Name','Dose','Type','Frequency','When','More'].map(h=>(
+                <th key={h} style={{...cellBase,fontSize:11,fontWeight:700,color:C.g500,textTransform:'uppercase',letterSpacing:'0.05em',textAlign:'left',paddingBottom:8}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item,idx)=>{
+              const selTimes=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
+              return(
+                <tr key={item.id} style={{borderBottom:`1px solid ${C.g100}`,background:idx%2===0?'white':C.g50}}>
+                  <td style={cellBase}>
+                    <NameField
+                      value={item.name}
+                      onCommit={v=>updItem(item.id,'name',v)}
+                      onSelect={m=>{updItem(item.id,'unrecognized',false);pickDrug(item.id,m);}}
+                      onUnrecognized={flag=>updItem(item.id,'unrecognized',flag)}/>
+                  </td>
+                  <td style={cellBase}>
+                    <DoseCell value={item.dose} onChange={v=>updItem(item.id,'dose',v)} inputSty={inputSty}/>
+                  </td>
+                  <td style={cellBase}>
+                    <select value={item.type} onChange={e=>updItem(item.id,'type',e.target.value)} style={selSty}>
+                      {['medication','supplement','vitamin','mineral','herb'].map(o=><option key={o} value={o}>{o.charAt(0).toUpperCase()+o.slice(1)}</option>)}
+                    </select>
+                  </td>
+                  <td style={cellBase}>
+                    <select value={item.frequency||'1x day'} onChange={e=>updItem(item.id,'frequency',e.target.value)} style={selSty}>
+                      {['1x day','2x day','3x day','Weekly','Monthly','As needed'].map(f=><option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </td>
+                  <td style={cellBase}>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                      {TIMING_OPTIONS.map(opt=>{
+                        const sel=selTimes.includes(opt);
+                        return(
+                          <button key={opt} type="button" onClick={()=>{
+                            const cur=selTimes;
+                            const next=sel?cur.filter(x=>x!==opt):[...cur,opt];
+                            const newTimes={...item.timingTimes};
+                            if(!next.includes(opt))delete newTimes[opt];
+                            updItem(item.id,'timingTimes',newTimes);
+                            updItem(item.id,'timing',next.join(', '));
+                          }} style={{padding:'3px 8px',borderRadius:999,border:`1px solid ${sel?C.primary:C.g300}`,background:sel?C.primary:'white',color:sel?'white':C.g500,fontSize:11,fontWeight:sel?600:400,cursor:'pointer',whiteSpace:'nowrap'}}>
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </td>
+                  <td style={{...cellBase,textAlign:'center'}}>
+                    <button onClick={()=>onMoreClick(item.id)} style={{background:'none',border:'none',color:C.primary,fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>More ▼</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{marginTop:10,background:'none',border:'none',color:C.primary,fontSize:13,fontWeight:600,cursor:'pointer',padding:'6px 0'}}>+ Add another item</button>
       <div style={{marginTop:12,borderLeft:`3px solid ${C.primary}`,background:C.tealBg,borderRadius:'0 8px 8px 0',padding:'10px 14px',fontSize:13,color:C.primary}}>
         ✓ Start with the basics. We'll ask for exact times and special instructions only when needed.
       </div>
@@ -623,9 +654,9 @@ function DetailPanel({item,onClose,onSave,onDelete,pickDrug,C,fs,TIMING_OPTIONS}
   const[showKeyInfo,setShowKeyInfo]=useState(true);
   const selTimes=(draft.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
   const showExactTimes=draft.frequency==='2x day'||draft.frequency==='3x day';
-  const inputSty={border:'1px solid #DDD',borderRadius:6,padding:'10px 14px',fontSize:13,width:'100%',boxSizing:'border-box',outline:'none',background:'#F5F5F2',color:'#1A1A1A',minHeight:42,WebkitAppearance:'none',fontFamily:'inherit'};
-  const selSty={...inputSty,cursor:'pointer',paddingRight:28,backgroundImage:'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M6 9l6 6 6-6\' stroke=\'%23808080\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',backgroundRepeat:'no-repeat',backgroundPosition:'right 10px center'};
-  const labelSty={fontSize:13,fontWeight:500,color:'#1A1A1A',display:'block',marginBottom:6};
+  const inputSty={border:`1px solid ${C.g300}`,borderRadius:6,padding:'9px 11px',fontSize:14,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none'};
+  const selSty={...inputSty,cursor:'pointer',paddingRight:24,backgroundImage:'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M6 9l6 6 6-6\' stroke=\'%239CA3AF\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',backgroundRepeat:'no-repeat',backgroundPosition:'right 8px center'};
+  const labelSty={fontSize:13,fontWeight:600,color:C.g600,display:'block',marginBottom:6};
   return(
     <div style={{position:'fixed',top:0,left:0,right:0,bottom:0,zIndex:200,background:'rgba(0,0,0,0.45)',display:'flex',alignItems:'flex-start',justifyContent:'center',padding:'5vh 16px 16px'}}>
       <div style={{background:'white',borderRadius:16,padding:24,width:'100%',maxWidth:500,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 8px 32px rgba(0,0,0,0.18)'}}>
@@ -677,7 +708,7 @@ function DetailPanel({item,onClose,onSave,onDelete,pickDrug,C,fs,TIMING_OPTIONS}
                     const newTimes={...draft.timingTimes};
                     if(!next.includes(opt))delete newTimes[opt];
                     setDraft(d=>({...d,timing:next.join(', '),timingTimes:newTimes}));
-                  }} style={{padding:'10px 14px',minHeight:36,borderRadius:999,border:`1px solid ${sel?C.primary:'#DDD'}`,background:sel?C.primary:'white',color:sel?'white':'#808080',fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:'inherit',lineHeight:1}}>
+                  }} style={{padding:'7px 14px',borderRadius:999,border:`1.5px solid ${sel?C.primary:C.g200}`,background:sel?C.primary:'white',color:sel?'white':C.g600,fontSize:14,fontWeight:sel?700:400,cursor:'pointer'}}>
                     {opt}
                   </button>
                 );
