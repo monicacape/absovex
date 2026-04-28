@@ -550,94 +550,6 @@ function NameField({value,onCommit,onSelect,onUnrecognized}){
   );
 }
 
-function QuickAddTable({items,updItem,setItems,onMoreClick,pickDrug,C,fs,TIMING_OPTIONS}){
-  const cellBase={padding:'6px 8px',verticalAlign:'top'};
-  const inputSty={border:`1px solid ${C.g300}`,borderRadius:6,padding:'7px 9px',fontSize:13,width:'100%',boxSizing:'border-box',outline:'none',background:'white',color:'#111827',WebkitAppearance:'none'};
-  const selSty={...inputSty,cursor:'pointer',paddingRight:24,backgroundImage:'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M6 9l6 6 6-6\' stroke=\'%239CA3AF\' stroke-width=\'2\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',backgroundRepeat:'no-repeat',backgroundPosition:'right 8px center'};
-  return(
-    <div>
-      <div style={{display:'flex',justifyContent:'flex-end',gap:8,marginBottom:10}}>
-        <button disabled title="Coming soon" style={{padding:'7px 14px',borderRadius:8,border:`1px solid ${C.g300}`,background:'white',color:C.g500,fontSize:13,fontWeight:500,cursor:'not-allowed',opacity:0.5}}>📋 Paste a list</button>
-        <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{padding:'7px 14px',borderRadius:8,border:'none',background:C.primary,color:'white',fontSize:13,fontWeight:600,cursor:'pointer'}}>+ Add item</button>
-      </div>
-      <div style={{overflowX:'auto'}}>
-        <table style={{width:'100%',borderCollapse:'collapse',tableLayout:'fixed'}}>
-          <colgroup>
-            <col style={{width:'22%'}}/>
-            <col style={{width:'13%'}}/>
-            <col style={{width:'14%'}}/>
-            <col style={{width:'14%'}}/>
-            <col style={{width:'29%'}}/>
-            <col style={{width:'8%'}}/>
-          </colgroup>
-          <thead>
-            <tr style={{borderBottom:`1.5px solid ${C.g200}`}}>
-              {['Name','Dose','Type','Frequency','When','More'].map(h=>(
-                <th key={h} style={{...cellBase,fontSize:11,fontWeight:700,color:C.g500,textTransform:'uppercase',letterSpacing:'0.05em',textAlign:'left',paddingBottom:8}}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item,idx)=>{
-              const selTimes=(item.timing||'').split(',').map(s=>s.trim()).filter(Boolean);
-              return(
-                <tr key={item.id} style={{borderBottom:`1px solid ${C.g100}`,background:idx%2===0?'white':C.g50}}>
-                  <td style={cellBase}>
-                    <NameField
-                      value={item.name}
-                      onCommit={v=>updItem(item.id,'name',v)}
-                      onSelect={m=>{updItem(item.id,'unrecognized',false);pickDrug(item.id,m);}}
-                      onUnrecognized={flag=>updItem(item.id,'unrecognized',flag)}/>
-                  </td>
-                  <td style={cellBase}>
-                    <DoseCell value={item.dose} onChange={v=>updItem(item.id,'dose',v)} inputSty={inputSty}/>
-                  </td>
-                  <td style={cellBase}>
-                    <select value={item.type} onChange={e=>updItem(item.id,'type',e.target.value)} style={selSty}>
-                      {['medication','supplement','vitamin','mineral','herb'].map(o=><option key={o} value={o}>{o.charAt(0).toUpperCase()+o.slice(1)}</option>)}
-                    </select>
-                  </td>
-                  <td style={cellBase}>
-                    <select value={item.frequency||'1x day'} onChange={e=>updItem(item.id,'frequency',e.target.value)} style={selSty}>
-                      {['1x day','2x day','3x day','Weekly','Monthly','As needed'].map(f=><option key={f} value={f}>{f}</option>)}
-                    </select>
-                  </td>
-                  <td style={cellBase}>
-                    <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-                      {TIMING_OPTIONS.map(opt=>{
-                        const sel=selTimes.includes(opt);
-                        return(
-                          <button key={opt} type="button" onClick={()=>{
-                            const cur=selTimes;
-                            const next=sel?cur.filter(x=>x!==opt):[...cur,opt];
-                            const newTimes={...item.timingTimes};
-                            if(!next.includes(opt))delete newTimes[opt];
-                            updItem(item.id,'timingTimes',newTimes);
-                            updItem(item.id,'timing',next.join(', '));
-                          }} style={{padding:'3px 8px',borderRadius:999,border:`1px solid ${sel?C.primary:C.g300}`,background:sel?C.primary:'white',color:sel?'white':C.g500,fontSize:11,fontWeight:sel?600:400,cursor:'pointer',whiteSpace:'nowrap'}}>
-                            {opt}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </td>
-                  <td style={{...cellBase,textAlign:'center'}}>
-                    <button onClick={()=>onMoreClick(item.id)} style={{background:'none',border:'none',color:C.primary,fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}}>More ▼</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{marginTop:10,background:'none',border:'none',color:C.primary,fontSize:13,fontWeight:600,cursor:'pointer',padding:'6px 0'}}>+ Add another item</button>
-      <div style={{marginTop:12,borderLeft:`3px solid ${C.primary}`,background:C.tealBg,borderRadius:'0 8px 8px 0',padding:'10px 14px',fontSize:13,color:C.primary}}>
-        ✓ Start with the basics. We'll ask for exact times and special instructions only when needed.
-      </div>
-    </div>
-  );
-}
-
 function DoseCell({value,onChange,inputSty}){
   const[v,setV]=useState(value||'');
   useEffect(()=>setV(value||''),[value]);
@@ -1507,7 +1419,6 @@ export default function App(){
   const[stripeLoading,setStripeLoading]=useState(false);
   const[stripeErr,setStripeErr]=useState('');
   const[userEmail,setUserEmail]=useState(null);
-  const[viewMode,setViewMode]=useState('quickAdd');
   const[selectedItemForDetail,setSelectedItemForDetail]=useState(null);
 
   // ─── FORM FONT SCALE ────────────────────────────────────────────────────────
@@ -1873,18 +1784,6 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         <div style={{background:'white',borderRadius:14,padding:'22px',boxShadow:'0 2px 8px rgba(0,0,0,0.07)',marginBottom:14}}>
           <h2 style={{margin:'0 0 6px',fontSize:18,fontWeight:800,color:C.g900}}>Your Current Health Stack</h2>
           <p style={{margin:'0 0 14px',fontSize:14,color:C.g500}}>Add everything you take - medications, supplements, vitamins, minerals, herbs.</p>
-          <div style={{display:'flex',gap:8,marginBottom:16}}>
-            {[['quickAdd','⚡ Quick Add'],['detailed','≡ Detailed']].map(([mode,label])=>(
-              <button key={mode} onClick={()=>{setSelectedItemForDetail(null);setViewMode(mode);}}
-                style={{padding:'7px 16px',borderRadius:8,border:`1.5px solid ${viewMode===mode?C.primary:C.g300}`,background:viewMode===mode?C.primary:'white',color:viewMode===mode?'white':C.g600,fontSize:14,fontWeight:600,cursor:'pointer'}}>
-                {label}
-              </button>
-            ))}
-          </div>
-          {viewMode==='quickAdd'&&(
-            <QuickAddTable items={items} updItem={updItem} setItems={setItems} onMoreClick={id=>setSelectedItemForDetail(id)} pickDrug={pickDrug} C={C} fs={fs} TIMING_OPTIONS={TIMING_OPTIONS}/>
-          )}
-          {viewMode==='detailed'&&(<>
             <div style={{display:'flex',flexDirection:'column',gap:12}}>
             {items.map((item,idx)=>{
               const tip=item.name?getTip(item.name):null;
@@ -2004,7 +1903,6 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
             })}
           </div>
           <button onClick={()=>setItems(p=>[...p,NEW_ITEM(Date.now())])} style={{marginTop:10,background:'none',border:`2px dashed ${C.g300}`,borderRadius:8,padding:11,width:'100%',color:C.g500,fontSize:14,cursor:'pointer'}}>+ Add Another Item</button>
-          </>)}
         </div>
         {err&&<div style={{background:C.redBg,border:`1px solid ${C.red}`,borderRadius:8,padding:'10px 14px',color:C.red,fontSize:14,marginBottom:12}}>{err}</div>}
         <button onClick={()=>{const f=items.filter(i=>i.name.trim());if(f.length<2){setErr('Please add at least 2 items.');return;}setErr('');setScreen('routine');}} style={{width:'100%',background:`linear-gradient(135deg,${C.primary},${C.mid})`,color:'white',border:'none',borderRadius:12,padding:15,fontSize:16,fontWeight:800,cursor:'pointer'}}>
