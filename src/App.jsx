@@ -1695,8 +1695,21 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
 
   const downloadReport=async(d,userName='',userEmail=null)=>{
     try{
+      let logoUrl=null;
+      try{
+        const res=await fetch('/Logo.png');
+        if(res.ok){
+          const imgBlob=await res.blob();
+          logoUrl=await new Promise((resolve,reject)=>{
+            const reader=new FileReader();
+            reader.onload=()=>resolve(reader.result);
+            reader.onerror=reject;
+            reader.readAsDataURL(imgBlob);
+          });
+        }
+      }catch(_){}
       const blob=await pdf(
-        <AbsovexReportPDF data={d} userName={userName} routine={routine}/>
+        <AbsovexReportPDF data={d} userName={userName} routine={routine} logoUrl={logoUrl}/>
       ).toBlob();
       const url=URL.createObjectURL(blob);
       const link=document.createElement('a');

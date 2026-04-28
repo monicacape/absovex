@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 
 Font.register({
   family: 'Plus Jakarta Sans',
@@ -336,7 +336,7 @@ const QuestionSection = ({ title, questions, color, bg, intro }) => (
 
 // ─── PAGE 1 — Cover (Issue 1: includes summary snapshot so pages flow naturally) ──
 
-const CoverPage = ({ data, userName }) => {
+const CoverPage = ({ data, userName, logoUrl }) => {
   const diff = (data.optimizedScore || 0) - (data.currentScore || 0);
   const scoreTakeaway = data.scoreSummary ||
     `Your score improved by ${diff} points. The biggest gains came from fixing timing conflicts and improving food pairing.`;
@@ -347,7 +347,10 @@ const CoverPage = ({ data, userName }) => {
     <Page size="A4" style={styles.coverPage}>
       {/* Title block */}
       <View style={{ alignItems: 'center', marginBottom: 20, marginTop: 8 }}>
-        <Text style={{ fontSize: 28, fontWeight: 700, color: COLORS.teal, marginBottom: 8 }}>Absovex</Text>
+        {logoUrl
+          ? <Image src={logoUrl} style={{ width: 220, marginBottom: 8 }} />
+          : <Text style={{ fontSize: 28, fontWeight: 700, color: COLORS.teal, marginBottom: 8 }}>Absovex</Text>
+        }
         <Text style={{ fontSize: 20, fontWeight: 700, color: COLORS.black, marginBottom: 6, textAlign: 'center' }}>
           Personalized Health Stack Report
         </Text>
@@ -1050,13 +1053,13 @@ const TimingCardPage = ({ data }) => {
 
 // ─── Main document export ─────────────────────────────────────────────────────
 
-export default function AbsovexReportPDF({ data, userName, routine }) {
+export default function AbsovexReportPDF({ data, userName, routine, logoUrl = null }) {
   const d = data || {};
   const r = routine || null;
 
   return (
     <Document title="Absovex Health Stack Report" author="Absovex">
-      <CoverPage data={d} userName={userName} />
+      <CoverPage data={d} userName={userName} logoUrl={logoUrl} />
       <BeforeAfterPage data={d} />
       <SchedulePage data={d} />
       <AuditPage data={d} />
