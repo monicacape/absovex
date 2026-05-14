@@ -74,6 +74,7 @@ const fmtTiming=str=>{
   s=s.replace(/(\d{1,2}:\d{2}\s*(?:AM|PM))\s*([a-zA-Z])/gi,(_,time,char)=>`${time.trim()} · ${char.toUpperCase()}`);
   return s;
 };
+const fmt=t=>{if(!t)return null;const[h,m]=t.split(':');const hr=parseInt(h);return`${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;};
 
 
 const lookupDrug=async(name)=>{
@@ -338,8 +339,6 @@ function enrichReportData(result,items,routine){
   const allItems=items||[];
   const getAbs=name=>{const n=(name||'').toLowerCase();for(const[k,v]of Object.entries(ABSORPTION_DB)){if(n.includes(k))return v;}return null;};
   const getImpact=name=>{const n=(name||'').toLowerCase();for(const[k,v]of Object.entries(REAL_WORLD_IMPACT_DB)){if(n.includes(k))return v;}return[];};
-  const fmt=t=>{if(!t)return null;const[h,m]=t.split(':');const hr=parseInt(h);return`${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;};
-
   // 1. absorption_profile on each scheduled item
   Object.keys(r.schedule||{}).forEach(blk=>{
     r.schedule[blk]=(r.schedule[blk]||[]).map(it=>{
