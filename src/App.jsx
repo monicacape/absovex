@@ -75,6 +75,26 @@ const fmtTiming=str=>{
   return s;
 };
 
+const queryDailyMed=async(name)=>{
+  try{
+    const r=await fetch(`https://dailymed.nlm.nih.gov/dailymed/services/v2/spls.json?drug_name=${encodeURIComponent(name)}`);
+    const d=await r.json();
+    if(!d?.data||d.data.length===0)return null;
+    const spl=d.data[0];
+    const clean=t=>t?t.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,500):null;
+    return{
+      activeIngredients:spl.activeingredient?.map(a=>a.name)||[],
+      inactiveIngredients:spl.inactiveingredient?.map(a=>a.name)||[],
+      contraindications:clean(spl.contraindications),
+      precautions:clean(spl.precautions),
+      pregnancyWarning:clean(spl.pregnancy),
+      nursingWarning:clean(spl.nursing),
+      mechanism:clean(spl.mechanism_of_action),
+      route:spl.openfda?.route?.[0]||null
+    };
+  }catch{return null;}
+};
+
 const lookupDrug=async(name)=>{
   try{
     const r=await fetch(`https://rxnav.nlm.nih.gov/REST/rxcui.json?name=${encodeURIComponent(name)}&search=1`);
@@ -97,8 +117,9 @@ const lookupDrug=async(name)=>{
         if(parts.length)label=parts.join(' | ');
       }
     }catch{}
-    return{rxcui,label};
-  }catch{return{rxcui:null,label:null};}
+    const dailyMedData=await queryDailyMed(name);
+    return{rxcui,label,dailyMedData};
+  }catch{return{rxcui:null,label:null,dailyMedData:null};}
 };
 
 const TIMING_TIPS={
@@ -486,7 +507,7 @@ function enrichReportData(result,items,routine){
   return r;
 }
 
-const NEW_ITEM=id=>({id,name:'',type:'supplement',dose:'',timing:'',timingTimes:{},frequency:'1x day',notes:'',ingredients:'',unrecognized:false,rxcui:null,fdaLabel:null,fetching:false});
+const NEW_ITEM=id=>({id,name:'',type:'supplement',dose:'',timing:'',timingTimes:{},frequency:'1x day',notes:'',ingredients:'',unrecognized:false,rxcui:null,fdaLabel:null,dailyMedData:null,fetching:false});
 
 const SAMPLE=[
   {id:1,name:'Metformin',type:'medication',dose:'500mg',timing:'Wake (before breakfast)',frequency:'2x day',notes:'',rxcui:null,fdaLabel:null,fetching:false},
@@ -1441,9 +1462,9 @@ export default function App(){
   const HORMONAL=routine.sex==='female'?['Pre-menopausal','Peri-menopausal','Post-menopausal','On HRT','Prefer not to say']:['Standard','On TRT','Prefer not to say'];
 
   const pickDrug=async(itemId,drug)=>{
-    setItems(p=>p.map(i=>i.id===itemId?{...i,name:drug.name,type:drug.type,dose:drug.dose,unrecognized:false,rxcui:null,fdaLabel:null,fetching:true}:i));
-    const{rxcui,label}=await lookupDrug(drug.generic||drug.name);
-    setItems(p=>p.map(i=>i.id===itemId?{...i,rxcui,fdaLabel:label,fetching:false}:i));
+    setItems(p=>p.map(i=>i.id===itemId?{...i,name:drug.name,type:drug.type,dose:drug.dose,unrecognized:false,rxcui:null,fdaLabel:null,dailyMedData:null,fetching:true}:i));
+    const{rxcui,label,dailyMedData}=await lookupDrug(drug.generic||drug.name);
+    setItems(p=>p.map(i=>i.id===itemId?{...i,rxcui,fdaLabel:label,dailyMedData,fetching:false}:i));
   };
 
   const analyze=async()=>{
@@ -1453,7 +1474,7 @@ export default function App(){
     const r=routine;
     const stackLines=filled.map((i,n)=>{
       const timingDetail=i.timing?i.timing+(i.timingTimes&&Object.keys(i.timingTimes).length>0?' ('+Object.entries(i.timingTimes).map(([k,v])=>`${k}: ${v}`).join(', ')+')'  :''):'unspecified';
-      return `${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${timingDetail}${i.ingredients?', ingredients: '+i.ingredients:''}${i.notes?', '+i.notes:''}${i.unrecognized?', [user-submitted, not in database — include in analysis using clinical judgment]':''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,60):''})`;}
+      return `${n+1}. ${i.name} (${i.type}, ${i.dose}, ${i.frequency||'1x day'}, currently: ${timingDetail}${i.ingredients?', ingredients: '+i.ingredients:''}${i.notes?', '+i.notes:''}${i.unrecognized?', [user-submitted, not in database — include in analysis using clinical judgment]':''}${i.fdaLabel?', FDA: '+i.fdaLabel.slice(0,60):''}${i.dailyMedData?.contraindications?', Contraindicated: '+i.dailyMedData.contraindications.slice(0,80):''}${i.dailyMedData?.activeIngredients?.length?', Active: '+i.dailyMedData.activeIngredients.slice(0,3).join(', '):''})`;}
     ).join('\n');
     const routineStr=`${r.sex}${r.age?', age '+r.age:''}${r.hormonalStage?', '+r.hormonalStage:''}. Wake ${r.wakeTime}. ${r.coffeeTea?'Coffee at '+r.coffeeTime+'.':''} Breakfast ${r.breakfastStart}-${r.breakfastEnd}. Lunch ${r.lunchStart}-${r.lunchEnd}. Dinner ${r.dinnerTime}. Bedtime ${r.bedtime}. Water ${r.waterGlasses} glasses/day. Alcohol ${r.alcoholFrequency==='never'?'none':r.alcoholFrequency+', '+r.alcoholDrinks+' drinks'}.`;
     const prompt=`You are a clinical pharmacist. Return ONLY a JSON object. No text before or after. No markdown. No backticks. Keep ALL text fields under 10 words.
