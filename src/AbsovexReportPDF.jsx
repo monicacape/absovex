@@ -904,7 +904,7 @@ const STAGE_QS = {
   ],
 };
 
-const DoctorQsPage = ({ data, routine, dynamicPharmacistQs, dynamicDoctorQs }) => {
+const DoctorQsPage = ({ data, routine }) => {
   const r = routine || {};
   const stage = (r.hormonalStage || '').toLowerCase().trim();
   const stageQs = STAGE_QS[stage] || null;
@@ -916,14 +916,14 @@ const DoctorQsPage = ({ data, routine, dynamicPharmacistQs, dynamicDoctorQs }) =
 
       <QuestionSection
         title="Ask Your Pharmacist"
-        questions={(dynamicPharmacistQs && dynamicPharmacistQs.length > 0) ? dynamicPharmacistQs : PHARMACIST_QS}
+        questions={PHARMACIST_QS}
         color="#0D6B67"
         bg={DOCTOR_SECTION_BG.pharmacist}
       />
 
       <QuestionSection
         title="Ask Your Doctor"
-        questions={(dynamicDoctorQs && dynamicDoctorQs.length > 0) ? dynamicDoctorQs : DOCTOR_QS}
+        questions={DOCTOR_QS}
         color="#3B82F6"
         bg={DOCTOR_SECTION_BG.doctor}
       />
@@ -1053,7 +1053,7 @@ const TimingCardPage = ({ data }) => {
 
 // ─── Main document export ─────────────────────────────────────────────────────
 
-export default function AbsovexReportPDF({ data, userName, routine, logoUrl = null, dynamicPharmacistQs, dynamicDoctorQs }) {
+export default function AbsovexReportPDF({ data, userName, routine, logoUrl = null }) {
   const d = data || {};
   const r = routine || null;
 
@@ -1066,7 +1066,7 @@ export default function AbsovexReportPDF({ data, userName, routine, logoUrl = nu
       <ConflictsPage data={d} />
       <RoutineInsightsPage data={d} routine={r} />
       <ScoreBreakdownPage data={d} />
-      <DoctorQsPage data={d} routine={r} dynamicPharmacistQs={dynamicPharmacistQs} dynamicDoctorQs={dynamicDoctorQs} />
+      <DoctorQsPage data={d} routine={r} />
       <TimingCardPage data={d} />
     </Document>
   );

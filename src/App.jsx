@@ -868,31 +868,6 @@ function DownloadButton({a,downloadReport,userEmail}){
   );
 }
 
-const generatePharmacistQs=(conflicts=[],scheduleItems=[])=>{
-  const qs=["Do any of these supplements or timing changes conflict with other medications I haven't mentioned?"];
-  (conflicts||[]).filter(c=>c.severity==='high').slice(0,2).forEach(c=>{
-    const names=(c.items||[]).join(' and ');
-    qs.push(`My report flagged a conflict between ${names}: "${c.issue}". ${c.recommendation}. Should I avoid one of these entirely?`);
-  });
-  if((conflicts||[]).some(c=>c.absorption_loss_percent&&c.absorption_loss_percent>=30))
-    qs.push('Is the spacing between my supplements and medications enough to prevent any absorption issues?');
-  if((scheduleItems||[]).some(i=>i.timing&&i.timing.toLowerCase().includes('empty')))
-    qs.push("Are there any items in my stack I should take on an empty stomach even if it's uncomfortable?");
-  return qs.slice(0,4);
-};
-
-const generateDoctorQs=(conflicts=[])=>{
-  const qs=[
-    'My Absovex report suggests some timing changes — does anything here conflict with how you intended me to take these?',
-    'Should I adjust any of these timing recommendations based on my current health conditions?',
-  ];
-  (conflicts||[]).filter(c=>c.severity==='medium').slice(0,1).forEach(c=>{
-    qs.push(`My report identified "${c.issue}". ${c.recommendation}. Is this something I should adjust?`);
-  });
-  qs.push('How often should I revisit this schedule as my routine or prescriptions change?');
-  return qs.slice(0,4);
-};
-
 // ─── FULL REPORT: SINGLE SCROLL ─────────────────────────────────────────────
 function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expandedConflict,setExpandedConflict,expandedScore,setExpandedScore,chat,chatLoad,sendChat,revisionPending,setRevisionPending,runRevision,advisorLocked,interactionCount,reportUpdateUsed,downloadReport,chatEnd}){
   const[expandedAudit,setExpandedAudit]=useState(null);
@@ -1340,8 +1315,13 @@ function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expa
         <div style={{marginBottom:20}}>
           <div style={{fontSize:12,fontWeight:800,color:C.teal,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Ask Your Pharmacist</div>
           <div style={{background:C.tealBg,border:`1px solid ${C.tealBorder}`,borderRadius:14,padding:'16px'}}>
-            {generatePharmacistQs(a.conflicts,scheduleItems).map((q,i,arr)=>(
-              <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<arr.length-1?`1px solid ${C.tealBorder}`:'none'}}>
+            {[
+              "Do any of these supplements or timing changes conflict with other medications I haven't mentioned?",
+              'Is the spacing between my supplements and medications enough to prevent any absorption issues?',
+              "Are there any items in my stack I should take on an empty stomach even if it's uncomfortable?",
+              'Will any of these timing or supplement changes affect my lab results?',
+            ].map((q,i)=>(
+              <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<3?`1px solid ${C.tealBorder}`:'none'}}>
                 <div style={{width:20,height:20,borderRadius:'50%',background:C.primary,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
                 <div style={{fontSize:13,color:C.mid,lineHeight:1.6}}>{q}</div>
               </div>
@@ -1352,8 +1332,13 @@ function FullReport({a,routine,expandedScheduleItem,setExpandedScheduleItem,expa
         <div style={{marginBottom:20}}>
           <div style={{fontSize:12,fontWeight:800,color:C.sky,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:12}}>Ask Your Doctor</div>
           <div style={{background:C.skyBg,border:`1px solid ${C.skyBorder}`,borderRadius:14,padding:'16px'}}>
-            {generateDoctorQs(a.conflicts).map((q,i,arr)=>(
-              <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<arr.length-1?`1px solid ${C.skyBorder}`:'none'}}>
+            {[
+              'My Absovex report suggests some timing changes — does anything here conflict with how you intended me to take these?',
+              'Should I adjust any of these timing recommendations based on my current health conditions?',
+              'Now that my timing is more consistent, should I watch for any changes in how I feel?',
+              'How often should I revisit this schedule as my routine or prescriptions change?',
+            ].map((q,i)=>(
+              <div key={i} style={{display:'flex',gap:10,padding:'10px 0',borderBottom:i<3?`1px solid ${C.skyBorder}`:'none'}}>
                 <div style={{width:20,height:20,borderRadius:'50%',background:C.sky,color:'white',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:1}}>{i+1}</div>
                 <div style={{fontSize:13,color:'#0C4A6E',lineHeight:1.6}}>{q}</div>
               </div>
@@ -1788,7 +1773,7 @@ Return ONLY a complete updated JSON object using the exact same schema as the in
         }
       }catch(_){}
       const blob=await pdf(
-        <AbsovexReportPDF data={d} userName={userName} routine={routine} logoUrl={logoUrl} dynamicPharmacistQs={generatePharmacistQs(d.conflicts,Object.values(d.schedule||{}).flat())} dynamicDoctorQs={generateDoctorQs(d.conflicts)}/>
+        <AbsovexReportPDF data={d} userName={userName} routine={routine} logoUrl={logoUrl}/>
       ).toBlob();
       const url=URL.createObjectURL(blob);
       const link=document.createElement('a');
